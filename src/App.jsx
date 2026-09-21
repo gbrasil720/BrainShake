@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import JSZip from 'jszip'
 import {
   ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpToLine, BoxSelect, Check, ChevronDown,
-  CircleHelp, Copy, Download, FileCode2, FileImage, FilePlus2, FileText, Hand, ImagePlus,
+  CircleHelp, Copy, Download, FileArchive, FileCode2, FileImage, FilePlus2, FileText, Hand, ImagePlus,
   Link2, Menu, Minus, MoreHorizontal, Move, Palette, PanelRight, Pencil, Play, Plus,
   Redo2, RotateCcw, Save, Search, Settings2, Shapes, StickyNote, Trash2, Type, Undo2,
   Upload, Video, X, Zap
@@ -22,6 +23,7 @@ function App() {
   const [past, setPast] = useState([])
   const [future, setFuture] = useState([])
   const [tool, setTool] = useState('select')
+  const [strokeWidth, setStrokeWidth] = useState(4)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [selected, setSelected] = useState([])
@@ -102,8 +104,12 @@ function App() {
   function duplicateSelection() { const copies = board.objects.filter(item => selected.includes(item.id)).map(item => ({ ...item, id: makeId(item.type), x: item.x + 24, y: item.y + 24 })); if (!copies.length) return; updateBoard(current => ({ ...current, objects: [...current.objects, ...copies] })); setSelected(copies.map(item => item.id)) }
   function copySelection() { const items = board.objects.filter(item => selected.includes(item.id)); if (!items.length) return; navigator.clipboard?.writeText(JSON.stringify(items)); sessionStorage.setItem('brainshake-copy', JSON.stringify(items)); setToast('Copied to clipboard') }
   function pasteSelection() { try { const items = JSON.parse(sessionStorage.getItem('brainshake-copy') || '[]').map(item => ({ ...item, id: makeId(item.type), x: item.x + 32, y: item.y + 32 })); if (!items.length) return; updateBoard(current => ({ ...current, objects: [...current.objects, ...items] })); setSelected(items.map(item => item.id)) } catch { setToast('Could not paste') } }
-  function exportBoard() { const blob = new Blob([JSON.stringify(board, null, 2)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${board.name.replaceAll(' ', '-').toLowerCase()}.brainshake.json`; link.click(); URL.revokeObjectURL(link.href); setToast('Board exported') }
-  function importBoard(file) { const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); if (!data.objects || !Array.isArray(data.objects)) throw Error(); updateBoard(() => data); setSelected([]); setToast('Board imported') } catch { setToast('Invalid BrainShake file') } }; reader.readAsText(file) }
+  function boardFilename(extension) { return `${board.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'brainshake-board'}.${extension}` }
+  function downloadBlob(blob, filename) { const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; link.click(); setTimeout(() => URL.revokeObjectURL(link.href), 0) }
+  function dataUrlInfo(src, id) { const match = /^data:([^;,]+)?(?:;[^,]*)?,(.*)$/s.exec(src); if (!match) return null; const mediaType = match[1] || 'application/octet-stream'; const extension = ({ 'image/jpeg': 'jpg', 'image/svg+xml': 'svg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'video/mp4': 'mp4', 'video/webm': 'webm', 'text/html': 'html' })[mediaType] || 'bin'; return { mediaType, extension, data: match[2], id: id.replace(/[^a-z0-9_-]/gi, '-') } }
+  async function exportBrainshake() { const zip = new JSZip(); const media = []; const objects = board.objects.map(item => { if (!['image', 'video', 'html'].includes(item.type) || !item.src?.startsWith('data:')) return { ...item }; const info = dataUrlInfo(item.src, item.id); if (!info) return { ...item }; const path = `media/${info.id}.${info.extension}`; const binary = atob(info.data); const bytes = Uint8Array.from(binary, character => character.charCodeAt(0)); media.push({ path, bytes }); return { ...item, src: path, mediaType: info.mediaType } }); zip.file('board.json', JSON.stringify({ name: board.name, objects }, null, 2)); media.forEach(item => zip.file(item.path, item.bytes)); downloadBlob(await zip.generateAsync({ type: 'blob' }), boardFilename('brainshake')); setToast('Board exported') }
+  function exportJson() { const objects = board.objects.map(item => { if (!['image', 'video', 'html'].includes(item.type)) return { ...item }; const { src, ...withoutSrc } = item; return { ...withoutSrc, mediaOmitted: true } }); downloadBlob(new Blob([JSON.stringify({ name: board.name, objects }, null, 2)], { type: 'application/json' }), boardFilename('json')); setToast('Board exported') }
+  async function importBoard(file) { try { const buffer = await file.arrayBuffer(); const bytes = new Uint8Array(buffer); let data; if (bytes[0] === 0x50 && bytes[1] === 0x4b) { const zip = await JSZip.loadAsync(buffer); const manifest = zip.file('board.json'); if (!manifest) throw Error(); data = JSON.parse(await manifest.async('text')); for (const item of data.objects || []) { if (!item.src?.startsWith('media/')) continue; const mediaFile = zip.file(item.src); if (!mediaFile || !item.mediaType) throw Error(); item.src = `data:${item.mediaType};base64,${await mediaFile.async('base64')}` } } else data = JSON.parse(new TextDecoder().decode(bytes)); if (!data || typeof data.name !== 'string' || !Array.isArray(data.objects)) throw Error(); updateBoard(() => data); setSelected([]); setToast('Board imported') } catch { setToast('Invalid BrainShake file') } }
 
   function beginDrag(event, item) {
     if (tool !== 'select' || ![0, 1, 2].includes(event.button) || item.locked) return
@@ -128,7 +134,7 @@ function App() {
     if (dragging.type === 'move') updateBoard(current => ({ ...current, objects: current.objects.map(item => { const origin = dragging.origins.find(value => value.id === item.id); return origin ? { ...item, x: origin.x + point.x - dragging.start.x, y: origin.y + point.y - dragging.start.y } : item }) }), false)
   }
   function endPointer() { if (drawing) { updateBoard(current => ({ ...current, objects: [...current.objects, drawing] })); setDrawing(null) } setDragging(null) }
-  function beginDrawing(event) { if (tool !== 'pen' || event.button !== 0) return; event.currentTarget.setPointerCapture?.(event.pointerId); const point = screenPoint(event); setDrawing({ id: makeId('stroke'), type: 'stroke', x: point.x, y: point.y, w: 500, h: 500, points: [{ x: 0, y: 0 }] }) }
+  function beginDrawing(event) { if (tool !== 'pen' || event.button !== 0) return; event.currentTarget.setPointerCapture?.(event.pointerId); const point = screenPoint(event); setDrawing({ id: makeId('stroke'), type: 'stroke', x: point.x, y: point.y, w: 500, h: 500, strokeWidth, points: [{ x: 0, y: 0 }] }) }
 
   function selectObject(event, item) {
     event.stopPropagation()
@@ -182,10 +188,10 @@ function App() {
     <header className="topbar">
       <div className="brand"><img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="BrainShake" /><span className="brand-name">BrainShake</span><span className="brand-sub">workspace</span></div>
       <div className="board-title"><Shapes size={15} /><input aria-label="Nome do board" value={board.name} onChange={event => setBoard(current => ({ ...current, name: event.target.value }))} /></div>
-      <div className="top-actions"><span className="save-state"><i className="save-dot" /> Saved locally</span><button className="icon-button" title="Search"><Search size={17} /></button><button className="icon-button" title="Help"><CircleHelp size={17} /></button><button className="icon-button" title="Export board" onClick={exportBoard}><Download size={17} /></button><button className="icon-button" title="Import board" onClick={() => boardFileRef.current?.click()}><Upload size={17} /></button><button className="icon-button" title="Settings" onClick={() => setShowPanel(value => !value)}><Settings2 size={17} /></button></div>
+      <div className="top-actions"><span className="save-state"><i className="save-dot" /> Saved locally</span><button className="icon-button" title="Search"><Search size={17} /></button><button className="icon-button" title="Help"><CircleHelp size={17} /></button><ExportMenu onExport={exportBrainshake} onExportJson={exportJson} compact /><button className="icon-button" title="Import board" onClick={() => boardFileRef.current?.click()}><Upload size={17} /></button><button className="icon-button" title="Settings" onClick={() => setShowPanel(value => !value)}><Settings2 size={17} /></button></div>
     </header>
     <aside className="sidebar">
-      <div className="sidebar-section"><div className="section-label">Workspace</div><button className="nav-item active"><BoxSelect size={16} /><span>Canvas</span></button><button className="nav-item" onClick={() => fileRef.current?.click()}><Upload size={16} /><span>Import</span></button><button className="nav-item" onClick={importUrl}><Link2 size={16} /><span>Import image URL</span></button><button className="nav-item" onClick={exportBoard}><Download size={16} /><span>Export</span></button></div>
+      <div className="sidebar-section"><div className="section-label">Workspace</div><button className="nav-item active"><BoxSelect size={16} /><span>Canvas</span></button><button className="nav-item" onClick={() => fileRef.current?.click()}><Upload size={16} /><span>Import</span></button><button className="nav-item" onClick={importUrl}><Link2 size={16} /><span>Import image URL</span></button><ExportMenu onExport={exportBrainshake} onExportJson={exportJson} /></div>
       <div className="sidebar-section"><div className="section-label">Boards <button className="icon-button" style={{ display: 'inline-grid', width: 20, height: 20 }} title="New board" onClick={() => { const name = `Board ${Date.now().toString().slice(-4)}`; setBoard({ name, objects: [] }); setSelected([]) }}><Plus size={14} /></button></div><div className="board-list"><div className="board-item active"><span>{board.name}</span><button aria-label="More options"><MoreHorizontal size={15} /></button></div></div></div>
       <div className="sidebar-section"><div className="section-label">View</div><button className="nav-item" onClick={() => setGrid(value => !value)}><Shapes size={16} /><span>{grid ? 'Hide grid' : 'Show grid'}</span></button><button className="nav-item" onClick={() => setShowPanel(value => !value)}><PanelRight size={16} /><span>Properties</span></button></div>
       <div className="sidebar-foot">Everything stays in your browser.<br />No account. No cloud. Just ideas.</div>
@@ -195,18 +201,18 @@ function App() {
         <div className="canvas-world" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}>
           <svg className="canvas-world" style={{ width: 1, height: 1, overflow: 'visible' }}>{connectors.map(item => { const from = board.objects.find(object => object.id === item.from); const to = board.objects.find(object => object.id === item.to); if (!from || !to) return null; const x1 = from.x + from.w / 2; const y1 = from.y + from.h / 2; const x2 = to.x + to.w / 2; const y2 = to.y + to.h / 2; return <g className="connector" key={item.id}><line x1={x1} y1={y1} x2={x2} y2={y2} /><polygon points={`${x2},${y2} ${x2 - 10},${y2 - 4} ${x2 - 7},${y2 + 7}`} /></g>})}</svg>
           {contentObjects.map(item => <CanvasObject key={item.id} item={item} selected={selected.includes(item.id)} onSelect={selectObject} onDrag={beginDrag} onResize={beginResize} onChange={(id, patch) => updateObject(id, patch, false)} onRemove={id => { updateBoard(current => ({ ...current, objects: current.objects.filter(object => object.id !== id) })); setSelected(current => current.filter(value => value !== id)) }} />)}
-          {drawing && <svg className="stroke" style={{ position: 'absolute', left: drawing.x, top: drawing.y, width: 500, height: 500 }}><path d={drawing.points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')} /></svg>}
+          {drawing && <svg className="stroke" style={{ position: 'absolute', left: drawing.x, top: drawing.y, width: 500, height: 500 }}><path style={{ strokeWidth }} d={drawing.points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')} /></svg>}
         </div>
         {!board.objects.length && <div className="empty-state"><div className="empty-icon"><Zap size={28} /></div><h1>A place to think out loud</h1><p>Drop files here, create a note, draw, or connect ideas. Your board is saved automatically on this device.</p></div>}
         {dropActive && <div className="drop-overlay"><Upload size={20} /> Drop to add to the board</div>}
       </div>
-      <Toolbar tool={tool} setTool={value => value === 'image' || value === 'video' || value === 'html' ? fileRef.current?.click() : setTool(value)} undo={undo} redo={redo} canUndo={past.length > 0} canRedo={future.length > 0} addObject={addObject} />
+      <Toolbar tool={tool} setTool={value => value === 'image' || value === 'video' || value === 'html' ? fileRef.current?.click() : setTool(value)} strokeWidth={strokeWidth} setStrokeWidth={setStrokeWidth} undo={undo} redo={redo} canUndo={past.length > 0} canRedo={future.length > 0} addObject={addObject} />
       <div className="zoom-controls"><button className="icon-button" title="Zoom out" onClick={() => setZoom(value => Math.max(.35, value - .1))}><Minus size={15} /></button><span className="zoom-value">{Math.round(zoom * 100)}%</span><button className="icon-button" title="Zoom in" onClick={() => setZoom(value => Math.min(2.4, value + .1))}><Plus size={15} /></button><button className="icon-button" title="Fit content" onClick={fitContent}><MaximizeIcon /></button></div>
       {showPanel && <Properties item={selectedItem} accent={accent} setAccent={setAccent} theme={theme} setTheme={setTheme} grid={grid} setGrid={setGrid} onClose={() => setShowPanel(false)} onChange={(id, patch) => updateObject(id, patch)} />}
       {context && <ContextMenu position={context} hasSelection={selected.length > 0} onDuplicate={duplicateSelection} onDelete={removeSelection} onCopy={copySelection} onFront={() => updateBoard(current => ({ ...current, objects: [...current.objects.filter(item => !selected.includes(item.id)), ...current.objects.filter(item => selected.includes(item.id))] }))} />}
       {toast && <div className="toast"><Check size={14} /> {toast}</div>}
       <input ref={fileRef} type="file" hidden multiple accept="image/*,video/*,.html,.md,.txt" onChange={event => { importFiles(event.target.files); event.target.value = '' }} />
-      <input ref={boardFileRef} type="file" hidden accept="application/json,.json,.brainshake.json" onChange={event => { if (event.target.files[0]) importBoard(event.target.files[0]); event.target.value = '' }} />
+      <input ref={boardFileRef} type="file" hidden accept="application/json,application/zip,.json,.brainshake,.brainshake.json" onChange={event => { if (event.target.files[0]) importBoard(event.target.files[0]); event.target.value = '' }} />
     </main>
   </div>
 }
@@ -220,13 +226,21 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange, on
   if (item.type === 'image') content = <div className="widget-body image-card"><img src={item.src} alt={item.name || 'Imported image'} /></div>
   if (item.type === 'video') content = <div className="widget-body video-card"><video src={item.src} controls /></div>
   if (item.type === 'html') content = <div className="widget-body html-card"><div className="html-label"><FileCode2 size={12} /> {item.name}</div><iframe title={item.name} src={item.src} sandbox="allow-scripts" /></div>
-  if (item.type === 'stroke') content = <svg className="widget-body stroke" viewBox="0 0 500 500"><path d={item.points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')} /></svg>
+  if (item.type === 'stroke') content = <svg className="widget-body stroke" viewBox="0 0 500 500"><path style={{ strokeWidth: item.strokeWidth || 4 }} d={item.points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')} /></svg>
   return <div {...common} onPointerDown={event => { common.onPointerDown(event); onDrag(event, item) }}><div className="object-card"><div className="widget-titlebar" onPointerDown={event => onDrag(event, item)}><span>{item.name || item.title || item.type}</span><button type="button" aria-label="Close widget" title="Close widget" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onRemove(item.id) }}><X size={13} /></button></div>{content}</div>{resize}</div>
 }
 
-function Toolbar({ tool, setTool, undo, redo, canUndo, canRedo }) {
+function Toolbar({ tool, setTool, strokeWidth, setStrokeWidth, undo, redo, canUndo, canRedo }) {
   const tools = [{ id: 'select', icon: BoxSelect, label: 'Select (V)' }, { id: 'hand', icon: Hand, label: 'Pan canvas (H)' }, { id: 'text', icon: Type, label: 'Text (T)' }, { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' }, { id: 'pen', icon: Pencil, label: 'Pen (P)' }, { id: 'connector', icon: Link2, label: 'Connect (L)' }]
-  return <div className="toolbar">{tools.map(({ id, icon: Icon, label }) => <button key={id} className={`tool-button ${tool === id ? 'active' : ''}`} title={label} onClick={() => setTool(id)}><Icon size={17} /></button>)}<div className="toolbar-divider" /><button className="tool-button" title="Import image, video, or file" onClick={() => setTool('image')}><ImagePlus size={17} /></button><button className="tool-button" title="Undo" disabled={!canUndo} onClick={undo}><Undo2 size={17} /></button><button className="tool-button" title="Redo" disabled={!canRedo} onClick={redo}><Redo2 size={17} /></button></div>
+  return <div className="toolbar">{tools.map(({ id, icon: Icon, label }) => <button key={id} className={`tool-button ${tool === id ? 'active' : ''}`} title={label} onClick={() => setTool(id)}><Icon size={17} /></button>)}<label className="stroke-control" title="Stroke width"><Pencil size={14} /><select value={strokeWidth} onChange={event => setStrokeWidth(Number(event.target.value))}><option value="2">Fine</option><option value="4">Regular</option><option value="7">Bold</option><option value="11">Heavy</option></select></label><div className="toolbar-divider" /><button className="tool-button" title="Import image, video, or file" onClick={() => setTool('image')}><ImagePlus size={17} /></button><button className="tool-button" title="Undo" disabled={!canUndo} onClick={undo}><Undo2 size={17} /></button><button className="tool-button" title="Redo" disabled={!canRedo} onClick={redo}><Redo2 size={17} /></button></div>
+}
+
+function ExportMenu({ onExport, onExportJson, compact = false }) {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef(null)
+  useEffect(() => { const close = event => { if (!menuRef.current?.contains(event.target)) setOpen(false) }; document.addEventListener('pointerdown', close); return () => document.removeEventListener('pointerdown', close) }, [])
+  function choose(action) { setOpen(false); action() }
+  return <div ref={menuRef} className={`export-menu ${compact ? 'compact' : ''}`} onClick={event => event.stopPropagation()}><button className={compact ? 'icon-button' : 'nav-item'} title="Export board" onClick={() => setOpen(value => !value)}>{compact ? <Download size={17} /> : <><Download size={16} /><span>Export</span></>}</button>{open && <div className="export-popover"><button onClick={() => choose(onExport)}><FileArchive size={16} /><span><strong>.brainshake</strong><small>Complete, with media</small></span></button><button onClick={() => choose(onExportJson)}><FileText size={16} /><span><strong>.json</strong><small>Compact, without media</small></span></button></div>}</div>
 }
 
 function Properties({ item, accent, setAccent, theme, setTheme, grid, setGrid, onClose, onChange }) {
