@@ -27,4 +27,4 @@ npm run preview
 - File picker and drag-and-drop import
 - Static deployment configured for GitHub Pages
 
-Imported files are kept as Blob URLs during the session. The board, text, and metadata are persisted locally; after a reload, binary files must be imported again, a deliberate limitation to avoid exceeding `localStorage` limits.
+Imported assets are stored as Data URLs so images, videos, and HTML previews remain available after reopening the page. Large files can exceed the browser's `localStorage` quota; when that happens, export the board as a `.brainshake.json` backup and re-import large assets when needed.

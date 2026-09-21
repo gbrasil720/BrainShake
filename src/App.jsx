@@ -35,9 +35,14 @@ function App() {
   const [accent, setAccent] = useState('#d86e50')
   const canvasRef = useRef(null)
   const fileRef = useRef(null)
+  const boardFileRef = useRef(null)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(board))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(board))
+    } catch {
+      setToast('Storage limit reached. Export your board to keep a backup.')
+    }
   }, [board])
 
   useEffect(() => {
@@ -116,7 +121,7 @@ function App() {
     if (dragging.type === 'move') updateBoard(current => ({ ...current, objects: current.objects.map(item => { const origin = dragging.origins.find(value => value.id === item.id); return origin ? { ...item, x: origin.x + point.x - dragging.start.x, y: origin.y + point.y - dragging.start.y } : item }) }), false)
   }
   function endPointer() { if (drawing) { updateBoard(current => ({ ...current, objects: [...current.objects, drawing] })); setDrawing(null) } setDragging(null) }
-  function beginDrawing(event) { if (tool !== 'pen' || event.button !== 0) return; const point = screenPoint(event); setDrawing({ id: makeId('stroke'), type: 'stroke', x: point.x, y: point.y, w: 2, h: 2, points: [{ x: 0, y: 0 }] }) }
+  function beginDrawing(event) { if (tool !== 'pen' || event.button !== 0) return; const point = screenPoint(event); setDrawing({ id: makeId('stroke'), type: 'stroke', x: point.x, y: point.y, w: 500, h: 500, points: [{ x: 0, y: 0 }] }) }
 
   function selectObject(event, item) {
     event.stopPropagation()
@@ -124,7 +129,18 @@ function App() {
     if (event.shiftKey) setSelected(current => current.includes(item.id) ? current.filter(id => id !== item.id) : [...current, item.id]); else if (!selected.includes(item.id)) setSelected([item.id])
   }
 
-  function importFiles(files) { Array.from(files).forEach(file => { const url = URL.createObjectURL(file); if (file.type.startsWith('image/')) addObject('image', { src: url, name: file.name, w: 280, h: 200 }); else if (file.type.startsWith('video/')) addObject('video', { src: url, name: file.name, w: 320, h: 220 }); else if (file.name.endsWith('.html')) addObject('html', { src: url, name: file.name, w: 350, h: 240 }); else if (file.type.startsWith('text/') || file.name.endsWith('.md')) { const reader = new FileReader(); reader.onload = () => addObject('text', { text: reader.result, name: file.name }); reader.readAsText(file) } else setToast(`Unsupported format: ${file.name}`) }) }
+  function readFileAsDataUrl(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file) }) }
+  async function importFiles(files) {
+    for (const file of Array.from(files)) {
+      try {
+        if (file.type.startsWith('image/')) addObject('image', { src: await readFileAsDataUrl(file), name: file.name, w: 280, h: 200 })
+        else if (file.type.startsWith('video/')) addObject('video', { src: await readFileAsDataUrl(file), name: file.name, w: 320, h: 220 })
+        else if (file.name.toLowerCase().endsWith('.html')) addObject('html', { src: await readFileAsDataUrl(file), name: file.name, w: 350, h: 240 })
+        else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.md')) { const reader = new FileReader(); reader.onload = () => addObject('text', { text: reader.result, name: file.name }); reader.readAsText(file) }
+        else setToast(`Unsupported format: ${file.name}`)
+      } catch { setToast(`Could not import ${file.name}`) }
+    }
+  }
 
   function onWheel(event) { if (!event.ctrlKey && !event.metaKey) return; event.preventDefault(); setZoom(current => Math.min(2.4, Math.max(.35, current + (event.deltaY > 0 ? -.08 : .08)))) }
   function fitContent() { if (!board.objects.length) { setZoom(1); setPan({ x: 0, y: 0 }); return } setZoom(.8); setPan({ x: 80, y: 30 }) }
@@ -137,7 +153,7 @@ function App() {
     <header className="topbar">
       <div className="brand"><div className="brand-mark"><Zap size={17} fill="currentColor" /></div><span className="brand-name">BrainShake</span><span className="brand-sub">workspace</span></div>
       <div className="board-title"><Shapes size={15} /><input aria-label="Nome do board" value={board.name} onChange={event => setBoard(current => ({ ...current, name: event.target.value }))} /></div>
-      <div className="top-actions"><span className="save-state"><i className="save-dot" /> Saved locally</span><button className="icon-button" title="Search"><Search size={17} /></button><button className="icon-button" title="Help"><CircleHelp size={17} /></button><button className="icon-button" title="Export board" onClick={exportBoard}><Download size={17} /></button><button className="icon-button" title="Settings" onClick={() => setShowPanel(value => !value)}><Settings2 size={17} /></button></div>
+      <div className="top-actions"><span className="save-state"><i className="save-dot" /> Saved locally</span><button className="icon-button" title="Search"><Search size={17} /></button><button className="icon-button" title="Help"><CircleHelp size={17} /></button><button className="icon-button" title="Export board" onClick={exportBoard}><Download size={17} /></button><button className="icon-button" title="Import board" onClick={() => boardFileRef.current?.click()}><Upload size={17} /></button><button className="icon-button" title="Settings" onClick={() => setShowPanel(value => !value)}><Settings2 size={17} /></button></div>
     </header>
     <aside className="sidebar">
       <div className="sidebar-section"><div className="section-label">Workspace</div><button className="nav-item active"><BoxSelect size={16} /><span>Canvas</span></button><button className="nav-item" onClick={() => fileRef.current?.click()}><Upload size={16} /><span>Import</span></button><button className="nav-item" onClick={exportBoard}><Download size={16} /><span>Export</span></button></div>
@@ -161,6 +177,7 @@ function App() {
       {context && <ContextMenu position={context} hasSelection={selected.length > 0} onDuplicate={duplicateSelection} onDelete={removeSelection} onCopy={copySelection} onFront={() => updateBoard(current => ({ ...current, objects: [...current.objects.filter(item => !selected.includes(item.id)), ...current.objects.filter(item => selected.includes(item.id))] }))} />}
       {toast && <div className="toast"><Check size={14} /> {toast}</div>}
       <input ref={fileRef} type="file" hidden multiple accept="image/*,video/*,.html,.md,.txt" onChange={event => { importFiles(event.target.files); event.target.value = '' }} />
+      <input ref={boardFileRef} type="file" hidden accept="application/json,.json,.brainshake.json" onChange={event => { if (event.target.files[0]) importBoard(event.target.files[0]); event.target.value = '' }} />
     </main>
   </div>
 }
@@ -174,6 +191,7 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange }) 
   if (item.type === 'image') content = <div className="object-card image-card"><img src={item.src} alt={item.name || 'Imported image'} /></div>
   if (item.type === 'video') content = <div className="object-card video-card"><video src={item.src} controls onPointerDown={event => event.stopPropagation()} /></div>
   if (item.type === 'html') content = <div className="object-card html-card"><div className="html-label"><FileCode2 size={12} /> {item.name}</div><iframe title={item.name} src={item.src} sandbox="allow-scripts" /></div>
+  if (item.type === 'stroke') content = <svg className="stroke object-card" viewBox="0 0 500 500"><path d={item.points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')} /></svg>
   return <div {...common} onPointerDown={event => { common.onPointerDown(event); onDrag(event, item) }}>{content}{resize}</div>
 }
 
