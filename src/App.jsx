@@ -179,7 +179,7 @@ function App() {
 
   return <div className={`app theme-${theme}`} style={{ '--accent': accent }} onClick={() => setContext(null)}>
     <header className="topbar">
-      <div className="brand"><img className="brand-logo" src="/logo.png" alt="BrainShake" /><span className="brand-name">BrainShake</span><span className="brand-sub">workspace</span></div>
+      <div className="brand"><img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="BrainShake" /><span className="brand-name">BrainShake</span><span className="brand-sub">workspace</span></div>
       <div className="board-title"><Shapes size={15} /><input aria-label="Nome do board" value={board.name} onChange={event => setBoard(current => ({ ...current, name: event.target.value }))} /></div>
       <div className="top-actions"><span className="save-state"><i className="save-dot" /> Saved locally</span><button className="icon-button" title="Search"><Search size={17} /></button><button className="icon-button" title="Help"><CircleHelp size={17} /></button><button className="icon-button" title="Export board" onClick={exportBoard}><Download size={17} /></button><button className="icon-button" title="Import board" onClick={() => boardFileRef.current?.click()}><Upload size={17} /></button><button className="icon-button" title="Settings" onClick={() => setShowPanel(value => !value)}><Settings2 size={17} /></button></div>
     </header>
