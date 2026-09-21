@@ -72,7 +72,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .canvas-shell { position: absolute; inset: 0; overflow: hidden; background-color: #f4f6f2; background-image: radial-gradient(#cdd5ce 1px, transparent 1px); background-size: 24px 24px; }
 .canvas-shell { touch-action: none; cursor: default; }
 .canvas-shell.is-panning { cursor: grabbing; }
-.canvas-shell.grid-off { background-image: none; }
+.canvas-shell.grid-off { background-image: none !important; }
 .canvas-world { position: absolute; transform-origin: 0 0; width: 1px; height: 1px; }
 .canvas-object { position: absolute; user-select: none; animation: object-in .24s ease-out; transition: filter .18s ease, transform .18s ease; }
 .canvas-object:hover { filter: brightness(1.02); }
