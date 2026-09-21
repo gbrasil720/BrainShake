@@ -33,6 +33,7 @@ function App() {
   const [showPanel, setShowPanel] = useState(true)
   const [grid, setGrid] = useState(true)
   const [accent, setAccent] = useState('#d86e50')
+  const [theme, setTheme] = useState(() => localStorage.getItem('brainshake-theme') || 'light')
   const canvasRef = useRef(null)
   const fileRef = useRef(null)
   const boardFileRef = useRef(null)
@@ -44,6 +45,8 @@ function App() {
       setToast('Storage limit reached. Export your board to keep a backup.')
     }
   }, [board])
+
+  useEffect(() => { localStorage.setItem('brainshake-theme', theme) }, [theme])
 
   useEffect(() => {
     if (!toast) return undefined
@@ -86,9 +89,9 @@ function App() {
   function redo() { if (!future.length) return; setPast(items => [...items, board]); setBoard(future[0]); setFuture(items => items.slice(1)); setSelected([]) }
   function screenPoint(event) { const rect = canvasRef.current.getBoundingClientRect(); return { x: (event.clientX - rect.left - pan.x) / zoom, y: (event.clientY - rect.top - pan.y) / zoom } }
 
-  function addObject(type, data = {}) {
-    const center = screenPoint({ clientX: window.innerWidth * .52, clientY: window.innerHeight * .48 })
-    const item = { id: makeId(type), type, x: center.x - 130, y: center.y - 90, w: type === 'text' ? 280 : 250, h: type === 'text' ? 145 : 180, color: 'yellow', text: '', ...data }
+  function addObject(type, data = {}, position) {
+    const point = position || screenPoint({ clientX: window.innerWidth * .52, clientY: window.innerHeight * .48 })
+    const item = { id: makeId(type), type, x: point.x - 130, y: point.y - 90, w: type === 'text' ? 280 : 250, h: type === 'text' ? 145 : 180, color: 'yellow', text: '', ...data }
     updateBoard(current => ({ ...current, objects: [...current.objects, item] }))
     setSelected([item.id]); setTool('select')
   }
@@ -102,8 +105,11 @@ function App() {
   function importBoard(file) { const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); if (!data.objects || !Array.isArray(data.objects)) throw Error(); updateBoard(() => data); setSelected([]); setToast('Board imported') } catch { setToast('Invalid BrainShake file') } }; reader.readAsText(file) }
 
   function beginDrag(event, item) {
-    if (tool !== 'select' || event.button !== 0) return
+    if (tool !== 'select' || ![0, 1, 2].includes(event.button) || item.locked) return
+    if (event.target.closest('textarea') && event.button === 0 && event.buttons === 1) return
+    if (event.button !== 0) event.preventDefault()
     event.stopPropagation()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     const point = screenPoint(event)
     const ids = selected.includes(item.id) ? selected : [item.id]
     if (!selected.includes(item.id)) setSelected([item.id])
@@ -121,7 +127,7 @@ function App() {
     if (dragging.type === 'move') updateBoard(current => ({ ...current, objects: current.objects.map(item => { const origin = dragging.origins.find(value => value.id === item.id); return origin ? { ...item, x: origin.x + point.x - dragging.start.x, y: origin.y + point.y - dragging.start.y } : item }) }), false)
   }
   function endPointer() { if (drawing) { updateBoard(current => ({ ...current, objects: [...current.objects, drawing] })); setDrawing(null) } setDragging(null) }
-  function beginDrawing(event) { if (tool !== 'pen' || event.button !== 0) return; const point = screenPoint(event); setDrawing({ id: makeId('stroke'), type: 'stroke', x: point.x, y: point.y, w: 500, h: 500, points: [{ x: 0, y: 0 }] }) }
+  function beginDrawing(event) { if (tool !== 'pen' || event.button !== 0) return; event.currentTarget.setPointerCapture?.(event.pointerId); const point = screenPoint(event); setDrawing({ id: makeId('stroke'), type: 'stroke', x: point.x, y: point.y, w: 500, h: 500, points: [{ x: 0, y: 0 }] }) }
 
   function selectObject(event, item) {
     event.stopPropagation()
@@ -142,27 +148,49 @@ function App() {
     }
   }
 
-  function onWheel(event) { if (!event.ctrlKey && !event.metaKey) return; event.preventDefault(); setZoom(current => Math.min(2.4, Math.max(.35, current + (event.deltaY > 0 ? -.08 : .08)))) }
+  function importUrl() {
+    const url = window.prompt('Image URL')
+    if (!url || !/^https?:\/\//i.test(url)) { if (url) setToast('Enter a valid image URL'); return }
+    addObject('image', { src: url, name: 'Web image', w: 280, h: 200 })
+  }
+
+  function onWheel(event) {
+    event.preventDefault()
+    const rect = canvasRef.current.getBoundingClientRect()
+    const point = screenPoint(event)
+    const nextZoom = Math.min(2.4, Math.max(.35, zoom + (event.deltaY > 0 ? -.08 : .08)))
+    setZoom(nextZoom)
+    setPan({ x: event.clientX - rect.left - point.x * nextZoom, y: event.clientY - rect.top - point.y * nextZoom })
+  }
   function fitContent() { if (!board.objects.length) { setZoom(1); setPan({ x: 0, y: 0 }); return } setZoom(.8); setPan({ x: 80, y: 30 }) }
+
+  function handleCanvasPointerDown(event) {
+    if (event.target !== event.currentTarget) return
+    const point = screenPoint(event)
+    if (tool === 'text' || tool === 'sticky') { addObject(tool, {}, point); return }
+    setSelected([])
+    beginPan(event)
+    beginDrawing(event)
+  }
 
   const selectedItem = board.objects.find(item => item.id === selected[0])
   const connectors = board.objects.filter(item => item.type === 'connector')
   const contentObjects = board.objects.filter(item => item.type !== 'connector')
 
-  return <div className="app" style={{ '--accent': accent }} onClick={() => setContext(null)}>
+  return <div className={`app theme-${theme}`} style={{ '--accent': accent }} onClick={() => setContext(null)}>
     <header className="topbar">
-      <div className="brand"><div className="brand-mark"><Zap size={17} fill="currentColor" /></div><span className="brand-name">BrainShake</span><span className="brand-sub">workspace</span></div>
+      <div className="brand"><img className="brand-logo" src="/logo.png" alt="BrainShake" /><span className="brand-name">BrainShake</span><span className="brand-sub">workspace</span></div>
       <div className="board-title"><Shapes size={15} /><input aria-label="Nome do board" value={board.name} onChange={event => setBoard(current => ({ ...current, name: event.target.value }))} /></div>
       <div className="top-actions"><span className="save-state"><i className="save-dot" /> Saved locally</span><button className="icon-button" title="Search"><Search size={17} /></button><button className="icon-button" title="Help"><CircleHelp size={17} /></button><button className="icon-button" title="Export board" onClick={exportBoard}><Download size={17} /></button><button className="icon-button" title="Import board" onClick={() => boardFileRef.current?.click()}><Upload size={17} /></button><button className="icon-button" title="Settings" onClick={() => setShowPanel(value => !value)}><Settings2 size={17} /></button></div>
     </header>
     <aside className="sidebar">
-      <div className="sidebar-section"><div className="section-label">Workspace</div><button className="nav-item active"><BoxSelect size={16} /><span>Canvas</span></button><button className="nav-item" onClick={() => fileRef.current?.click()}><Upload size={16} /><span>Import</span></button><button className="nav-item" onClick={exportBoard}><Download size={16} /><span>Export</span></button></div>
+      <div className="sidebar-section"><div className="section-label">Workspace</div><button className="nav-item active"><BoxSelect size={16} /><span>Canvas</span></button><button className="nav-item" onClick={() => fileRef.current?.click()}><Upload size={16} /><span>Import</span></button><button className="nav-item" onClick={importUrl}><Link2 size={16} /><span>Import image URL</span></button><button className="nav-item" onClick={exportBoard}><Download size={16} /><span>Export</span></button></div>
       <div className="sidebar-section"><div className="section-label">Boards <button className="icon-button" style={{ display: 'inline-grid', width: 20, height: 20 }} title="New board" onClick={() => { const name = `Board ${Date.now().toString().slice(-4)}`; setBoard({ name, objects: [] }); setSelected([]) }}><Plus size={14} /></button></div><div className="board-list"><div className="board-item active"><span>{board.name}</span><button aria-label="More options"><MoreHorizontal size={15} /></button></div></div></div>
       <div className="sidebar-section"><div className="section-label">View</div><button className="nav-item" onClick={() => setGrid(value => !value)}><Shapes size={16} /><span>{grid ? 'Hide grid' : 'Show grid'}</span></button><button className="nav-item" onClick={() => setShowPanel(value => !value)}><PanelRight size={16} /><span>Properties</span></button></div>
       <div className="sidebar-foot">Everything stays in your browser.<br />No account. No cloud. Just ideas.</div>
     </aside>
     <main className="workspace">
-      <div ref={canvasRef} className={`canvas-shell ${grid ? '' : 'grid-off'}`} onWheel={onWheel} onPointerDown={event => { if (event.target === event.currentTarget) { setSelected([]); beginPan(event); beginDrawing(event) } }} onPointerMove={movePointer} onPointerUp={endPointer} onPointerCancel={endPointer} onDragOver={event => { event.preventDefault(); setDropActive(true) }} onDragLeave={() => setDropActive(false)} onDrop={event => { event.preventDefault(); setDropActive(false); importFiles(event.dataTransfer.files) }} onContextMenu={event => { event.preventDefault(); setContext({ x: event.clientX, y: event.clientY }) }}>
+      <div ref={canvasRef} className={`canvas-shell ${grid ? '' : 'grid-off'}`} onWheel={onWheel} onPointerDown={handleCanvasPointerDown} onPointerMove={movePointer} onPointerUp={endPointer} onPointerCancel={endPointer} onDragOver={event => { event.preventDefault(); setDropActive(true) }} onDragLeave={() => setDropActive(false)} onDrop={event => { event.preventDefault(); setDropActive(false); importFiles(event.dataTransfer.files) }} onContextMenu={event => { event.preventDefault(); setContext({ x: event.clientX, y: event.clientY }) }}>
         <div className="canvas-world" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}>
           <svg className="canvas-world" style={{ width: 1, height: 1, overflow: 'visible' }}>{connectors.map(item => { const from = board.objects.find(object => object.id === item.from); const to = board.objects.find(object => object.id === item.to); if (!from || !to) return null; const x1 = from.x + from.w / 2; const y1 = from.y + from.h / 2; const x2 = to.x + to.w / 2; const y2 = to.y + to.h / 2; return <g className="connector" key={item.id}><line x1={x1} y1={y1} x2={x2} y2={y2} /><polygon points={`${x2},${y2} ${x2 - 10},${y2 - 4} ${x2 - 7},${y2 + 7}`} /></g>})}</svg>
           {contentObjects.map(item => <CanvasObject key={item.id} item={item} selected={selected.includes(item.id)} onSelect={selectObject} onDrag={beginDrag} onResize={beginResize} onChange={(id, patch) => updateObject(id, patch, false)} />)}
@@ -173,7 +201,7 @@ function App() {
       </div>
       <Toolbar tool={tool} setTool={value => value === 'image' || value === 'video' || value === 'html' ? fileRef.current?.click() : setTool(value)} undo={undo} redo={redo} canUndo={past.length > 0} canRedo={future.length > 0} addObject={addObject} />
       <div className="zoom-controls"><button className="icon-button" title="Zoom out" onClick={() => setZoom(value => Math.max(.35, value - .1))}><Minus size={15} /></button><span className="zoom-value">{Math.round(zoom * 100)}%</span><button className="icon-button" title="Zoom in" onClick={() => setZoom(value => Math.min(2.4, value + .1))}><Plus size={15} /></button><button className="icon-button" title="Fit content" onClick={fitContent}><MaximizeIcon /></button></div>
-      {showPanel && <Properties item={selectedItem} accent={accent} setAccent={setAccent} grid={grid} setGrid={setGrid} onClose={() => setShowPanel(false)} onChange={(id, patch) => updateObject(id, patch)} />}
+      {showPanel && <Properties item={selectedItem} accent={accent} setAccent={setAccent} theme={theme} setTheme={setTheme} grid={grid} setGrid={setGrid} onClose={() => setShowPanel(false)} onChange={(id, patch) => updateObject(id, patch)} />}
       {context && <ContextMenu position={context} hasSelection={selected.length > 0} onDuplicate={duplicateSelection} onDelete={removeSelection} onCopy={copySelection} onFront={() => updateBoard(current => ({ ...current, objects: [...current.objects.filter(item => !selected.includes(item.id)), ...current.objects.filter(item => selected.includes(item.id))] }))} />}
       {toast && <div className="toast"><Check size={14} /> {toast}</div>}
       <input ref={fileRef} type="file" hidden multiple accept="image/*,video/*,.html,.md,.txt" onChange={event => { importFiles(event.target.files); event.target.value = '' }} />
@@ -195,13 +223,13 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange }) 
   return <div {...common} onPointerDown={event => { common.onPointerDown(event); onDrag(event, item) }}>{content}{resize}</div>
 }
 
-function Toolbar({ tool, setTool, undo, redo, canUndo, canRedo, addObject }) {
+function Toolbar({ tool, setTool, undo, redo, canUndo, canRedo }) {
   const tools = [{ id: 'select', icon: BoxSelect, label: 'Select (V)' }, { id: 'hand', icon: Hand, label: 'Pan canvas (H)' }, { id: 'text', icon: Type, label: 'Text (T)' }, { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' }, { id: 'pen', icon: Pencil, label: 'Pen (P)' }, { id: 'connector', icon: Link2, label: 'Connect (L)' }]
-  return <div className="toolbar">{tools.map(({ id, icon: Icon, label }) => <button key={id} className={`tool-button ${tool === id ? 'active' : ''}`} title={label} onClick={() => { setTool(id); if (id === 'text' || id === 'sticky') addObject(id) }}><Icon size={17} /></button>)}<div className="toolbar-divider" /><button className="tool-button" title="Import image, video, or file" onClick={() => setTool('image')}><ImagePlus size={17} /></button><button className="tool-button" title="Undo" disabled={!canUndo} onClick={undo}><Undo2 size={17} /></button><button className="tool-button" title="Redo" disabled={!canRedo} onClick={redo}><Redo2 size={17} /></button></div>
+  return <div className="toolbar">{tools.map(({ id, icon: Icon, label }) => <button key={id} className={`tool-button ${tool === id ? 'active' : ''}`} title={label} onClick={() => setTool(id)}><Icon size={17} /></button>)}<div className="toolbar-divider" /><button className="tool-button" title="Import image, video, or file" onClick={() => setTool('image')}><ImagePlus size={17} /></button><button className="tool-button" title="Undo" disabled={!canUndo} onClick={undo}><Undo2 size={17} /></button><button className="tool-button" title="Redo" disabled={!canRedo} onClick={redo}><Redo2 size={17} /></button></div>
 }
 
-function Properties({ item, accent, setAccent, grid, setGrid, onClose, onChange }) {
-  return <div className="floating-panel"><div className="panel-heading"><span><PanelRight size={14} /> Properties</span><button className="icon-button" title="Close properties" onClick={onClose}><X size={14} /></button></div>{item ? <><div className="panel-row"><span>Type</span><strong>{item.type}</strong></div><div className="panel-row"><span>Position</span><span>{Math.round(item.x)} × {Math.round(item.y)}</span></div><div className="panel-row"><span>Size</span><span>{Math.round(item.w)} × {Math.round(item.h)}</span></div>{item.type === 'sticky' && <div className="panel-row"><span>Note color</span><div className="color-row">{Object.keys(colors).map(color => <button key={color} className={`color-swatch ${item.color === color ? 'active' : ''}`} style={{ background: colors[color] }} onClick={() => onChange(item.id, { color })} aria-label={`${color} color`} />)}</div></div>}<button className="nav-item" style={{ padding: 0, marginTop: 8, color: '#b2553c' }} onClick={() => onChange(item.id, { locked: !item.locked })}>{item.locked ? 'Unlock object' : 'Lock object'}</button></> : <p style={{ color: 'var(--muted)', fontSize: 12, lineHeight: 1.5 }}>Select an item to edit its properties.</p>}<div className="panel-row" style={{ marginTop: 8 }}><span>Grid</span><button className="nav-item" style={{ padding: '0 7px', minHeight: 25, background: grid ? '#eaf0eb' : '#f0f2ef' }} onClick={() => setGrid(value => !value)}>{grid ? 'On' : 'Off'}</button></div><div className="panel-row"><span>Accent</span><div className="color-row">{['#d86e50', '#577d6a', '#50739a', '#8a6b9f', '#c58a44'].map(color => <button key={color} className={`color-swatch ${accent === color ? 'active' : ''}`} style={{ background: color }} onClick={() => setAccent(color)} aria-label="Choose accent color" />)}</div></div></div>
+function Properties({ item, accent, setAccent, theme, setTheme, grid, setGrid, onClose, onChange }) {
+  return <div className="floating-panel"><div className="panel-heading"><span><PanelRight size={14} /> Properties</span><button className="icon-button" title="Close properties" onClick={onClose}><X size={14} /></button></div>{item ? <><div className="panel-row"><span>Type</span><strong>{item.type}</strong></div><div className="panel-row"><span>Position</span><span>{Math.round(item.x)} × {Math.round(item.y)}</span></div><div className="panel-row"><span>Size</span><span>{Math.round(item.w)} × {Math.round(item.h)}</span></div>{item.type === 'sticky' && <div className="panel-row"><span>Note color</span><div className="color-row">{Object.keys(colors).map(color => <button key={color} className={`color-swatch ${item.color === color ? 'active' : ''}`} style={{ background: colors[color] }} onClick={() => onChange(item.id, { color })} aria-label={`${color} color`} />)}</div></div>}<button className="nav-item" style={{ padding: 0, marginTop: 8, color: '#b2553c' }} onClick={() => onChange(item.id, { locked: !item.locked })}>{item.locked ? 'Unlock object' : 'Lock object'}</button></> : <p style={{ color: 'var(--muted)', fontSize: 12, lineHeight: 1.5 }}>Select an item to edit its properties.</p>}<div className="panel-row" style={{ marginTop: 8 }}><span>Grid</span><button className="nav-item" style={{ padding: '0 7px', minHeight: 25, background: grid ? '#eaf0eb' : '#f0f2ef' }} onClick={() => setGrid(value => !value)}>{grid ? 'On' : 'Off'}</button></div><div className="panel-row"><span>Theme</span><select value={theme} onChange={event => setTheme(event.target.value)}><option value="light">Light</option><option value="warm">Warm</option><option value="mint">Mint</option></select></div><div className="panel-row"><span>Accent</span><div className="color-row">{['#d86e50', '#577d6a', '#50739a', '#8a6b9f', '#c58a44'].map(color => <button key={color} className={`color-swatch ${accent === color ? 'active' : ''}`} style={{ background: color }} onClick={() => setAccent(color)} aria-label="Choose accent color" />)}</div></div></div>
 }
 
 function ContextMenu({ position, hasSelection, onDuplicate, onDelete, onCopy, onFront }) {
