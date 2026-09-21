@@ -2,7 +2,7 @@
 
 # BrainShake
 
-### A local-first canvas for ideas in motion
+### A local-first, libre, and free canvas website.
 
 Create notes, connect thoughts, draw freely, and bring assets into one focused workspace. No account, no backend, no cloud lock-in.
 
