@@ -1,6 +1,6 @@
 <div align="center">
 
-# BrainShake
+# [BrainShake](https://pxdritz1.github.io/BrainShake/)
 
 ### A local-first, libre, and free canvas website.
 
