@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Check, ChevronLeft, ChevronRight, Eye, MoveRight, Sparkles, Type, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Check, ChevronLeft, ChevronRight, MoveRight, Sparkles, X } from 'lucide-react'
 import type { usePreferences } from '@/features/preferences/usePreferences'
 
 const TOUR_STEPS = [
@@ -39,20 +39,26 @@ export function AccessibilityTour({
   preferences: ReturnType<typeof usePreferences>
   onClose: () => void
 }) {
+  if (!isOpen) return null
+
+  return <AccessibilityTourContent preferences={preferences} onClose={onClose} />
+}
+
+function AccessibilityTourContent({
+  preferences,
+  onClose
+}: {
+  preferences: ReturnType<typeof usePreferences>
+  onClose: () => void
+}) {
   const [stepIndex, setStepIndex] = useState(0)
   const { setTutorialCompleted } = preferences
-
-  useEffect(() => {
-    if (isOpen) setStepIndex(0)
-  }, [isOpen])
 
   const currentStep = TOUR_STEPS[stepIndex]
   const progress = useMemo(
     () => ((stepIndex + 1) / TOUR_STEPS.length) * 100,
     [stepIndex]
   )
-
-  if (!isOpen) return null
 
   function nextStep() {
     if (stepIndex === TOUR_STEPS.length - 1) {
@@ -98,7 +104,10 @@ export function AccessibilityTour({
                 <button className="tour-mini-button" onClick={() => preferences.setFontSize('small')}>
                   A−
                 </button>
-                <button className="tour-mini-button active" onClick={() => preferences.setFontSize('default')}>
+                <button
+                  className="tour-mini-button active"
+                  onClick={() => preferences.setFontSize('default')}
+                >
                   Default
                 </button>
                 <button className="tour-mini-button" onClick={() => preferences.setFontSize('large')}>
@@ -122,7 +131,10 @@ export function AccessibilityTour({
                 </div>
               </div>
               <div className="tour-demo-toggle">
-                <button className="segmented-toggle on" onClick={() => preferences.setHighContrast((value) => !value)}>
+                <button
+                  className="segmented-toggle on"
+                  onClick={() => preferences.setHighContrast((value) => !value)}
+                >
                   {preferences.highContrast ? 'High Contrast On' : 'Turn on contrast'}
                 </button>
               </div>
@@ -179,11 +191,17 @@ export function AccessibilityTour({
             <div className="tour-demo-card keyboard-demo">
               <span className="tour-demo-label">Keyboard flow</span>
               <div className="tour-key-list">
-                <button className="tour-key" aria-label="Tab button">Tab</button>
+                <button className="tour-key" aria-label="Tab button">
+                  Tab
+                </button>
                 <MoveRight size={14} />
-                <button className="tour-key" aria-label="Enter button">Enter</button>
+                <button className="tour-key" aria-label="Enter button">
+                  Enter
+                </button>
                 <MoveRight size={14} />
-                <button className="tour-key" aria-label="Escape button">Esc</button>
+                <button className="tour-key" aria-label="Escape button">
+                  Esc
+                </button>
               </div>
               <div className="tour-helper">
                 Focus moves logically, opens actions, and closes overlays with Escape.
@@ -198,7 +216,10 @@ export function AccessibilityTour({
           <button className="dialog-button secondary" onClick={previousStep} disabled={stepIndex === 0}>
             <ChevronLeft size={14} /> Back
           </button>
-          <button className="dialog-button primary" onClick={stepIndex === TOUR_STEPS.length - 1 ? finishTour : nextStep}>
+          <button
+            className="dialog-button primary"
+            onClick={stepIndex === TOUR_STEPS.length - 1 ? finishTour : nextStep}
+          >
             {stepIndex === TOUR_STEPS.length - 1 ? 'Finish' : 'Next'}
             {stepIndex !== TOUR_STEPS.length - 1 && <ChevronRight size={14} />}
           </button>
