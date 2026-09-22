@@ -79,7 +79,7 @@ export function ObjectProperties({ item, onChange }) {
       )}
       <button
         className="nav-item"
-        style={{ padding: 0, marginTop: 8, color: 'var(--accent)' }}
+        style={{ padding: 0, marginTop: 8, color: 'var(--primary)' }}
         onClick={() => onChange(item.id, { locked: !item.locked })}
       >
         {item.locked ? 'Unlock object' : 'Lock object'}

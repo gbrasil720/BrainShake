@@ -1,4 +1,4 @@
-const COLOR = 'var(--accent)'
+const COLOR = 'var(--primary)'
 
 const POLYGONS = {
   triangle: '50,8 92,90 8,90',

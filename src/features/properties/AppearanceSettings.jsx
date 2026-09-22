@@ -11,7 +11,7 @@ export function AppearanceSettings({ preferences }) {
           style={{
             padding: '0 7px',
             minHeight: 25,
-            background: grid ? 'var(--accent-soft)' : 'var(--line)'
+            background: grid ? 'var(--primary-soft)' : 'var(--line)'
           }}
           onClick={() => setGrid((value) => !value)}
         >

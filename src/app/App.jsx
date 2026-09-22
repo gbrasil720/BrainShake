@@ -48,7 +48,7 @@ export default function App() {
   return (
     <div
       className={`app theme-${preferences.theme}`}
-      style={{ '--accent': preferences.accent }}
+      style={{ '--primary': preferences.accent }}
       onClick={() => setContext(null)}
     >
       <Topbar
