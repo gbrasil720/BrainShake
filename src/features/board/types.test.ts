@@ -1,0 +1,19 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { isBoard, isBoardData, isBoardItem } from './types.ts'
+
+test('accepts saved boards and old exports without an id', () => {
+  const objects = [
+    { id: 'note', type: 'sticky', x: 1, y: 2, w: 3, h: 4, text: 'hello' },
+    { id: 'link', type: 'connector', from: 'note', to: 'note' }
+  ]
+  assert.equal(isBoard({ id: 'board', name: 'Board', objects }), true)
+  assert.equal(isBoardData({ name: 'Board', objects }), true)
+  assert.equal(isBoard({ name: 'Board', objects }), false)
+})
+
+test('keeps unknown positioned objects and rejects malformed input', () => {
+  assert.equal(isBoardItem({ id: 'new', type: 'future', x: 0, y: 0, w: 1, h: 1 }), true)
+  assert.equal(isBoardItem({ id: 'bad', type: 'sticky', x: 'wrong', y: 0, w: 1, h: 1 }), false)
+  assert.equal(isBoardData({ name: 'Board', objects: [{}] }), false)
+})
