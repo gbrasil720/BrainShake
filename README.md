@@ -65,12 +65,6 @@ npm run build
 npm run preview
 ```
 
-## Support
-
-If BrainShake helps your workflow, you can support its development:
-
-
-
 ## Project status
 
 BrainShake is an actively evolving browser canvas. The project is intentionally small, local-first, and easy to run, inspect, and deploy.
