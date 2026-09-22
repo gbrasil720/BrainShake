@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://pxdritz1.github.io/BrainShake/"><img src="logo-transparent.png" alt="BrainShake logo" width="180"></a>
+
 # [BrainShake](https://pxdritz1.github.io/BrainShake/)
 
 ### A local-first, libre, and free canvas website.
@@ -41,7 +43,7 @@ BrainShake includes light, warm, mint, and dark visual themes. The board stays d
 - Autosave to browser storage with `.brainshake.json` export and import
 - Static deployment configured for GitHub Pages
 
-Imported assets are stored as Data URLs so images, videos, and HTML previews remain available after reopening the page. Large files can exceed the browser's `localStorage` quota; when that happens, export the board as a `.brainshake.json` backup.
+Imported assets are stored as Data URLs so images, videos, and HTML previews remain available after reopening the page. Large files can exceed the browser's `localStorage` quota; when that happens, exporting a `.brainshake.json` backup is recommended.
 
 ## Run locally
 
