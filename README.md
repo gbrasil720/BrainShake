@@ -13,6 +13,12 @@ Create notes, connect thoughts, draw freely, and bring assets into one focused w
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![License](https://img.shields.io/github/license/pxdritz1/BrainShake)](LICENSE)
 
+<div align="center">
+
+[![Ko-fi support](https://cdn.modrinth.com/data/cached_images/c4c994ca06f3bc6bbcfdc5f6b98d4af42e397033.png)](https://ko-fi.com/pxdritz1)
+
+</div>
+
 [Open the repository](https://github.com/pxdritz1/BrainShake) · [Support BrainShake](https://ko-fi.com/pxdritz1)
 
 </div>
@@ -63,11 +69,7 @@ npm run preview
 
 If BrainShake helps your workflow, you can support its development:
 
-<div align="center">
 
-[![Ko-fi support](https://cdn.modrinth.com/data/cached_images/c4c994ca06f3bc6bbcfdc5f6b98d4af42e397033.png)](https://ko-fi.com/pxdritz1)
-
-</div>
 
 ## Project status
 
