@@ -4,10 +4,10 @@ import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { CoffeeIcon, GithubIcon } from './AnimatedIcons.jsx'
 import {
-  ArrowUpToLine, BoxSelect, Check, Circle, PaintBucket,
+  ArrowUpToLine, BoxSelect, Check, Circle, Diamond, Hexagon, PaintBucket,
   Copy, Download, FileArchive, FileCode2, FileText, Hand, ImagePlus,
   Link2, Minus, MoreHorizontal, PanelRight, Pencil, Plus,
-  Redo2, Search, Settings2, Shapes, Square, StickyNote, Trash2, Type, Undo2,
+  Redo2, Search, Settings2, Shapes, Square, StickyNote, Trash2, Triangle, Type, Undo2,
   Upload, X, Zap
 } from 'lucide-react'
 
@@ -296,6 +296,7 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange, on
   const resize = selected && <div className="resize-handle" onPointerDown={event => onResize(event, item)} />
   let content
   if (item.type === 'shape') content = <div className={`widget-body shape-card ${item.shape || 'square'} fill-${item.fill || 'solid'}`} style={{ '--shape-fill': item.fillColor || 'var(--accent)' }}>{item.shape === 'circle' ? <Circle /> : <Square />}</div>
+  if (item.type === 'shape') return <div {...common} className={`canvas-object shape-object ${selected ? 'selected' : ''}`} onPointerDown={event => { common.onPointerDown(event); onDrag(event, item) }}><svg className="shape-svg" viewBox="0 0 100 100" aria-label={item.name || item.shape}><rect x="8" y="8" width="84" height="84" rx="4" fill={item.shape === 'square' && item.fill !== 'outline' ? item.fillColor || 'var(--accent)' : 'none'} stroke="var(--accent)" strokeWidth="4" />{item.shape === 'circle' && <circle cx="50" cy="50" r="42" fill={item.fill !== 'outline' ? item.fillColor || 'var(--accent)' : 'none'} stroke="var(--accent)" strokeWidth="4" />}{item.shape === 'triangle' && <polygon points="50,8 92,90 8,90" fill={item.fill !== 'outline' ? item.fillColor || 'var(--accent)' : 'none'} stroke="var(--accent)" strokeWidth="4" strokeLinejoin="round" />}{item.shape === 'diamond' && <polygon points="50,6 94,50 50,94 6,50" fill={item.fill !== 'outline' ? item.fillColor || 'var(--accent)' : 'none'} stroke="var(--accent)" strokeWidth="4" strokeLinejoin="round" />}{item.shape === 'hexagon' && <polygon points="25,8 75,8 96,50 75,92 25,92 4,50" fill={item.fill !== 'outline' ? item.fillColor || 'var(--accent)' : 'none'} stroke="var(--accent)" strokeWidth="4" strokeLinejoin="round" />}</svg>{resize}</div>
   const markdown = DOMPurify.sanitize(marked.parse(item.text || ''))
   const markdownContent = <div className="markdown-content" dangerouslySetInnerHTML={{ __html: markdown }} />
   const markdownEditor = (className, placeholder) => item.editing
@@ -323,7 +324,7 @@ function DockDropZones({ onDrop }) {
 function Toolbar({ dockPosition, onDockDragStart, onDockDragEnd, tool, setTool, strokeWidth, setStrokeWidth, undo, redo, canUndo, canRedo, addObject }) {
   const [shapeOpen, setShapeOpen] = useState(false)
   const [strokeOpen, setStrokeOpen] = useState(false)
-  const shapes = [{ id: 'square', label: 'Square', icon: Square }, { id: 'circle', label: 'Circle', icon: Circle }]
+  const shapes = [{ id: 'square', label: 'Square', icon: Square }, { id: 'circle', label: 'Circle', icon: Circle }, { id: 'triangle', label: 'Triangle', icon: Triangle }, { id: 'hexagon', label: 'Hexagon', icon: Hexagon }, { id: 'diamond', label: 'Diamond', icon: Diamond }]
   return <div className={"toolbar dock-" + dockPosition}><button className="dock-handle" draggable="true" title="Drag to move dock" onDragStart={event => { event.dataTransfer.setData("text/plain", "toolbar-dock"); onDockDragStart() }} onDragEnd={onDockDragEnd}><span aria-hidden="true">::</span></button><button className={`tool-button ${tool === 'select' ? 'active' : ''}`} title="Select (V)" onClick={() => setTool('select')}><BoxSelect size={17} /></button><button className={`tool-button ${tool === 'hand' ? 'active' : ''}`} title="Pan canvas (H)" onClick={() => setTool('hand')}><Hand size={17} /></button><button className={`tool-button ${tool === 'text' ? 'active' : ''}`} title="Text (T)" onClick={() => setTool('text')}><Type size={17} /></button><button className={`tool-button ${tool === 'sticky' ? 'active' : ''}`} title="Sticky note (N)" onClick={() => setTool('sticky')}><StickyNote size={17} /></button><button className={`tool-button ${tool === 'pen' ? 'active' : ''}`} title="Pen (P)" onClick={() => setTool('pen')}><Pencil size={17} /></button><div className="toolbar-menu"><button className="tool-button" title="Shapes" onClick={() => setShapeOpen(value => !value)}><Shapes size={17} /></button>{shapeOpen && <div className="toolbar-menu-panel">{shapes.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => { addObject('shape', { shape: id, fill: 'solid', name: label }); setShapeOpen(false) }}><Icon size={15} /> {label}</button>)}</div>}</div><div className="toolbar-menu"><button className="tool-button" title="Stroke width" onClick={() => setStrokeOpen(value => !value)}><Pencil size={17} /></button>{strokeOpen && <div className="toolbar-menu-panel"><label>Stroke width<select className="menu-select" value={strokeWidth} onChange={event => { setStrokeWidth(Number(event.target.value)); setStrokeOpen(false) }}><option value="2">Fine</option><option value="4">Regular</option><option value="7">Bold</option><option value="11">Heavy</option></select></label></div>}</div><div className="toolbar-divider" /><button className="tool-button" title="Import image, video, or file" onClick={() => setTool('image')}><ImagePlus size={17} /></button><button className="tool-button" title="Undo" disabled={!canUndo} onClick={undo}><Undo2 size={17} /></button><button className="tool-button" title="Redo" disabled={!canRedo} onClick={redo}><Redo2 size={17} /></button></div>
 }
 
