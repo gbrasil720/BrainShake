@@ -9,10 +9,17 @@ const BODY_VARIANTS = {
 const TAIL_VARIANTS = {
   normal: { pathLength: 1, rotate: 0, transition: { duration: 0.3 } },
   draw: { pathLength: [0, 1], rotate: 0, transition: { duration: 0.5 } },
-  wag: { pathLength: 1, rotate: [0, -15, 15, -10, 10, -5, 5], transition: { duration: 2.5, ease: 'easeInOut', repeat: Infinity } }
+  wag: {
+    pathLength: 1,
+    rotate: [0, -15, 15, -10, 10, -5, 5],
+    transition: { duration: 2.5, ease: 'easeInOut', repeat: Infinity }
+  }
 }
 
-export const GithubIcon = forwardRef(function GithubIcon({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) {
+export const GithubIcon = forwardRef(function GithubIcon(
+  { onMouseEnter, onMouseLeave, className, size = 28, ...props },
+  ref
+) {
   const bodyControls = useAnimation()
   const tailControls = useAnimation()
   const isControlledRef = useRef(false)
@@ -32,39 +39,79 @@ export const GithubIcon = forwardRef(function GithubIcon({ onMouseEnter, onMouse
     }
   }, [bodyControls, tailControls])
 
-  const handleMouseEnter = useCallback(async event => {
-    if (isControlledRef.current) {
-      onMouseEnter?.(event)
-      return
-    }
-    bodyControls.start('animate')
-    await tailControls.start('draw')
-    tailControls.start('wag')
-  }, [bodyControls, onMouseEnter, tailControls])
+  const handleMouseEnter = useCallback(
+    async (event) => {
+      if (isControlledRef.current) {
+        onMouseEnter?.(event)
+        return
+      }
+      bodyControls.start('animate')
+      await tailControls.start('draw')
+      tailControls.start('wag')
+    },
+    [bodyControls, onMouseEnter, tailControls]
+  )
 
-  const handleMouseLeave = useCallback(event => {
-    if (isControlledRef.current) {
-      onMouseLeave?.(event)
-      return
-    }
-    bodyControls.start('normal')
-    tailControls.start('normal')
-  }, [bodyControls, onMouseLeave, tailControls])
+  const handleMouseLeave = useCallback(
+    (event) => {
+      if (isControlledRef.current) {
+        onMouseLeave?.(event)
+        return
+      }
+      bodyControls.start('normal')
+      tailControls.start('normal')
+    },
+    [bodyControls, onMouseLeave, tailControls]
+  )
 
-  return <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
-    <svg fill="none" height={size} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width={size} xmlns="http://www.w3.org/2000/svg">
-      <motion.path animate={bodyControls} d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" initial="normal" variants={BODY_VARIANTS} />
-      <motion.path animate={tailControls} d="M9 18c-4.51 2-5-2-7-2" initial="normal" variants={TAIL_VARIANTS} />
-    </svg>
-  </div>
+  return (
+    <div
+      className={className}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      {...props}
+    >
+      <svg
+        fill="none"
+        height={size}
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width={size}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <motion.path
+          animate={bodyControls}
+          d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+          initial="normal"
+          variants={BODY_VARIANTS}
+        />
+        <motion.path
+          animate={tailControls}
+          d="M9 18c-4.51 2-5-2-7-2"
+          initial="normal"
+          variants={TAIL_VARIANTS}
+        />
+      </svg>
+    </div>
+  )
 })
 
 const PATH_VARIANTS = {
   normal: { y: 0, opacity: 1 },
-  animate: custom => ({ y: -3, opacity: [0, 1, 0], transition: { repeat: Infinity, duration: 1.5, ease: 'easeInOut', delay: 0.2 * custom } })
+  animate: (custom) => ({
+    y: -3,
+    opacity: [0, 1, 0],
+    transition: { repeat: Infinity, duration: 1.5, ease: 'easeInOut', delay: 0.2 * custom }
+  })
 }
 
-export const CoffeeIcon = forwardRef(function CoffeeIcon({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) {
+export const CoffeeIcon = forwardRef(function CoffeeIcon(
+  { onMouseEnter, onMouseLeave, className, size = 28, ...props },
+  ref
+) {
   const controls = useAnimation()
   const isControlledRef = useRef(false)
 
@@ -76,28 +123,52 @@ export const CoffeeIcon = forwardRef(function CoffeeIcon({ onMouseEnter, onMouse
     }
   }, [controls])
 
-  const handleMouseEnter = useCallback(event => {
-    if (isControlledRef.current) {
-      onMouseEnter?.(event)
-      return
-    }
-    controls.start('animate')
-  }, [controls, onMouseEnter])
+  const handleMouseEnter = useCallback(
+    (event) => {
+      if (isControlledRef.current) {
+        onMouseEnter?.(event)
+        return
+      }
+      controls.start('animate')
+    },
+    [controls, onMouseEnter]
+  )
 
-  const handleMouseLeave = useCallback(event => {
-    if (isControlledRef.current) {
-      onMouseLeave?.(event)
-      return
-    }
-    controls.start('normal')
-  }, [controls, onMouseLeave])
+  const handleMouseLeave = useCallback(
+    (event) => {
+      if (isControlledRef.current) {
+        onMouseLeave?.(event)
+        return
+      }
+      controls.start('normal')
+    },
+    [controls, onMouseLeave]
+  )
 
-  return <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
-    <svg fill="none" height={size} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" style={{ overflow: 'visible' }} viewBox="0 0 24 24" width={size} xmlns="http://www.w3.org/2000/svg">
-      <motion.path animate={controls} custom={0.2} d="M10 2v2" variants={PATH_VARIANTS} />
-      <motion.path animate={controls} custom={0.4} d="M14 2v2" variants={PATH_VARIANTS} />
-      <motion.path animate={controls} custom={0} d="M6 2v2" variants={PATH_VARIANTS} />
-      <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" />
-    </svg>
-  </div>
+  return (
+    <div
+      className={className}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      {...props}
+    >
+      <svg
+        fill="none"
+        height={size}
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        style={{ overflow: 'visible' }}
+        viewBox="0 0 24 24"
+        width={size}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <motion.path animate={controls} custom={0.2} d="M10 2v2" variants={PATH_VARIANTS} />
+        <motion.path animate={controls} custom={0.4} d="M14 2v2" variants={PATH_VARIANTS} />
+        <motion.path animate={controls} custom={0} d="M6 2v2" variants={PATH_VARIANTS} />
+        <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" />
+      </svg>
+    </div>
+  )
 })
