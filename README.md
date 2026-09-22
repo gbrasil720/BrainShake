@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://pxdritz1.github.io/BrainShake/"><img src="logo-transparent.png" alt="BrainShake logo" width="180"></a>
+<a href="https://pxdritz1.github.io/BrainShake/"><img src="public/logo-transparent.png" alt="BrainShake logo" width="180"></a>
 
 # [BrainShake](https://pxdritz1.github.io/BrainShake/)
 
