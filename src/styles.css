@@ -171,6 +171,21 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .toolbar-menu-panel label { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
 .toolbar-menu-panel button { display: flex; align-items: center; gap: 7px; padding: 7px; color: var(--muted); background: transparent; border-radius: 6px; text-align: left; }
 .toolbar-menu-panel button:hover { color: var(--ink); background: var(--control-hover); }
+.dock-handle { display: grid; place-items: center; width: 22px; height: 22px; color: var(--muted); background: transparent; border-radius: 5px; cursor: grab; font-weight: 700; letter-spacing: -2px; }
+.dock-handle:active { cursor: grabbing; }
+.toolbar.dock-top { top: 14px; bottom: auto; }
+.toolbar.dock-right { top: 50%; right: 14px; bottom: auto; left: auto; transform: translateY(-50%); flex-direction: column; }
+.toolbar.dock-left { top: 50%; right: auto; bottom: auto; left: 14px; transform: translateY(-50%); flex-direction: column; }
+.toolbar.dock-left .toolbar-menu-panel, .toolbar.dock-right .toolbar-menu-panel { top: 50%; bottom: auto; left: calc(100% + 10px); transform: translateY(-50%); }
+.dock-drop-zones { position: absolute; inset: 0; z-index: 80; pointer-events: none; }
+.dock-drop-zone { position: absolute; display: grid; place-items: center; color: var(--accent); border: 2px dashed var(--accent); background: var(--accent-soft); font-size: 12px; font-weight: 700; opacity: .92; pointer-events: auto; }
+.dock-drop-zone:hover { color: var(--ink); background: var(--control-hover); }
+.dock-drop-top, .dock-drop-bottom { left: 16px; right: 16px; height: 54px; }
+.dock-drop-top { top: 14px; }
+.dock-drop-bottom { bottom: 14px; }
+.dock-drop-left, .dock-drop-right { top: 14px; bottom: 14px; width: 54px; }
+.dock-drop-left { left: 14px; }
+.dock-drop-right { right: 14px; }
 .property-pair { display: flex; gap: 4px; }
 .board-item { border: 0; width: 100%; font: inherit; text-align: left; }
 .board-delete { display: grid; place-items: center; color: var(--muted); }
