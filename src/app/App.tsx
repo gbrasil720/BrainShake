@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/hooks/useToast'
 import { Sidebar } from '@/layout/Sidebar'
@@ -11,11 +11,19 @@ import { ZoomControls } from '@/features/canvas/components/ZoomControls'
 import { useCanvasPointer } from '@/features/canvas/hooks/useCanvasPointer'
 import { useKeyboardShortcuts } from '@/features/canvas/hooks/useKeyboardShortcuts'
 import { useViewport } from '@/features/canvas/hooks/useViewport'
+import { AccessibilityTour } from '@/features/accessibility/AccessibilityTour'
 import { ImageUrlDialog } from '@/features/import-export/components/ImageUrlDialog'
 import { useImportExport } from '@/features/import-export/hooks/useImportExport'
 import { usePreferences } from '@/features/preferences/usePreferences'
 import { PropertiesPanel } from '@/features/properties/PropertiesPanel'
 import { Toolbar } from '@/features/toolbar/Toolbar'
+
+const FONT_SCALE = {
+  small: 0.92,
+  default: 1,
+  large: 1.12,
+  'extra-large': 1.24
+} as const
 
 export default function App() {
   const [toast, showToast] = useToast()
@@ -26,6 +34,7 @@ export default function App() {
   const transfer = useImportExport({ editor, showToast })
   const [context, setContext] = useState<{ x: number; y: number } | null>(null)
   const [showPanel, setShowPanel] = useState(true)
+  const [tourOpen, setTourOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
@@ -46,83 +55,145 @@ export default function App() {
     setTool: editor.setTool
   })
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return
+      if (tourOpen) {
+        setTourOpen(false)
+        return
+      }
+      if (transfer.urlOpen) {
+        transfer.closeUrlDialog()
+        return
+      }
+      if (context) {
+        setContext(null)
+        return
+      }
+      if (showPanel) {
+        setShowPanel(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [context, showPanel, tourOpen, transfer])
+
+  const appClassName = [
+    'app',
+    `theme-${preferences.theme}`,
+    preferences.highContrast ? 'accessibility-high-contrast' : '',
+    preferences.reduceMotion ? 'reduce-motion' : '',
+    preferences.enhancedFocus ? 'enhanced-focus' : '',
+    preferences.colorVision !== 'none' ? `color-vision-${preferences.colorVision}` : '',
+    `font-size-${preferences.fontSize}`
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div
-      className={`app theme-${preferences.theme}`}
-      style={{ '--primary': preferences.accent } as React.CSSProperties}
-      onClick={() => setContext(null)}
-    >
-      <Topbar
-        editor={editor}
-        transfer={transfer}
-        onImportBoard={() => boardFileRef.current?.click()}
-        onToggleSettings={() => setShowPanel((value) => !value)}
+    <>
+      <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute' }}>
+        <filter id="protanopia">
+          <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0" />
+        </filter>
+        <filter id="deuteranopia">
+          <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0" />
+        </filter>
+        <filter id="tritanopia">
+          <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0" />
+        </filter>
+        <filter id="achromatopsia">
+          <feColorMatrix type="matrix" values="0.299,0.587,0.114,0,0 0.299,0.587,0.114,0,0 0.299,0.587,0.114,0,0 0,0,0,1,0" />
+        </filter>
+      </svg>
+      <div
+        className={appClassName}
+        style={{
+          '--primary': preferences.accent,
+          '--font-scale': FONT_SCALE[preferences.fontSize as keyof typeof FONT_SCALE] ?? 1
+        } as React.CSSProperties}
+        onClick={() => setContext(null)}
+      >
+        <Topbar
+          editor={editor}
+          transfer={transfer}
+          onImportBoard={() => boardFileRef.current?.click()}
+          onToggleSettings={() => setShowPanel((value) => !value)}
+          onOpenAccessibilityTour={() => setTourOpen(true)}
+        />
+        <Sidebar editor={editor} transfer={transfer} onImportFiles={openFilePicker} />
+        <main className="workspace">
+          <Canvas
+            editor={editor}
+            viewport={viewport}
+            pointer={pointer}
+            grid={preferences.grid}
+            onImportFiles={transfer.importFiles}
+            onContextMenu={setContext}
+          />
+          <Toolbar
+            editor={editor}
+            dockPosition={preferences.dockPosition}
+            onDockChange={preferences.setDockPosition}
+            onImportFiles={openFilePicker}
+          />
+          <ZoomControls
+            zoom={viewport.zoom}
+            onZoomIn={viewport.zoomIn}
+            onZoomOut={viewport.zoomOut}
+            onFit={() => viewport.fitContent(board.objects.length > 0)}
+          />
+          {showPanel && (
+            <PropertiesPanel
+              item={board.objects.find((item) => item.id === selected[0])}
+              onChange={editor.updateObject}
+              preferences={preferences}
+              onClose={() => setShowPanel(false)}
+              onOpenAccessibilityTour={() => setTourOpen(true)}
+            />
+          )}
+          {context && selected.length > 0 && (
+            <ContextMenu
+              position={context}
+              onDuplicate={editor.duplicateSelection}
+              onDelete={editor.removeSelection}
+              onCopy={editor.copySelection}
+              onFront={editor.bringSelectionToFront}
+            />
+          )}
+          {transfer.urlOpen && (
+            <ImageUrlDialog onClose={transfer.closeUrlDialog} onSubmit={transfer.submitImageUrl} />
+          )}
+          {toast && <Toast message={toast} />}
+          <input
+            ref={fileRef}
+            type="file"
+            hidden
+            multiple
+            accept="image/*,video/*,.html,.md,.txt"
+            onChange={(event) => {
+              transfer.importFiles(event.target.files)
+              event.target.value = ''
+            }}
+          />
+          <input
+            ref={boardFileRef}
+            type="file"
+            hidden
+            accept="application/json,application/zip,.json,.brainshake,.brainshake.json"
+            onChange={(event) => {
+              if (event.target.files?.[0]) transfer.importBoardFile(event.target.files[0])
+              event.target.value = ''
+            }}
+          />
+        </main>
+      </div>
+      <AccessibilityTour
+        isOpen={tourOpen}
+        preferences={preferences}
+        onClose={() => setTourOpen(false)}
       />
-      <Sidebar editor={editor} transfer={transfer} onImportFiles={openFilePicker} />
-      <main className="workspace">
-        <Canvas
-          editor={editor}
-          viewport={viewport}
-          pointer={pointer}
-          grid={preferences.grid}
-          onImportFiles={transfer.importFiles}
-          onContextMenu={setContext}
-        />
-        <Toolbar
-          editor={editor}
-          dockPosition={preferences.dockPosition}
-          onDockChange={preferences.setDockPosition}
-          onImportFiles={openFilePicker}
-        />
-        <ZoomControls
-          zoom={viewport.zoom}
-          onZoomIn={viewport.zoomIn}
-          onZoomOut={viewport.zoomOut}
-          onFit={() => viewport.fitContent(board.objects.length > 0)}
-        />
-        {showPanel && (
-          <PropertiesPanel
-            item={board.objects.find((item) => item.id === selected[0])}
-            onChange={editor.updateObject}
-            preferences={preferences}
-            onClose={() => setShowPanel(false)}
-          />
-        )}
-        {context && selected.length > 0 && (
-          <ContextMenu
-            position={context}
-            onDuplicate={editor.duplicateSelection}
-            onDelete={editor.removeSelection}
-            onCopy={editor.copySelection}
-            onFront={editor.bringSelectionToFront}
-          />
-        )}
-        {transfer.urlOpen && (
-          <ImageUrlDialog onClose={transfer.closeUrlDialog} onSubmit={transfer.submitImageUrl} />
-        )}
-        {toast && <Toast message={toast} />}
-        <input
-          ref={fileRef}
-          type="file"
-          hidden
-          multiple
-          accept="image/*,video/*,.html,.md,.txt"
-          onChange={(event) => {
-            transfer.importFiles(event.target.files)
-            event.target.value = ''
-          }}
-        />
-        <input
-          ref={boardFileRef}
-          type="file"
-          hidden
-          accept="application/json,application/zip,.json,.brainshake,.brainshake.json"
-          onChange={(event) => {
-            if (event.target.files?.[0]) transfer.importBoardFile(event.target.files[0])
-            event.target.value = ''
-          }}
-        />
-      </main>
-    </div>
+    </>
   )
 }

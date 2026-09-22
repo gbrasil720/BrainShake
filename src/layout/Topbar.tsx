@@ -8,12 +8,14 @@ export function Topbar({
   editor,
   transfer,
   onImportBoard,
-  onToggleSettings
+  onToggleSettings,
+  onOpenAccessibilityTour
 }: {
   editor: ReturnType<typeof useBoardEditor>
   transfer: ReturnType<typeof useImportExport>
   onImportBoard: () => void
   onToggleSettings: () => void
+  onOpenAccessibilityTour: () => void
 }) {
   return (
     <header className="topbar">
@@ -32,6 +34,14 @@ export function Topbar({
           onExportJson={transfer.exportAsJson}
           compact
         />
+        <button
+          className="icon-button"
+          title="Accessibility Tour"
+          onClick={onOpenAccessibilityTour}
+          aria-label="Open accessibility tour"
+        >
+          <Settings2 size={17} />
+        </button>
         <button className="icon-button" title="Import board" onClick={onImportBoard}>
           <Upload size={17} />
         </button>

@@ -7,6 +7,13 @@ export const STORAGE_KEYS = {
   theme: 'brainshake-theme',
   accent: 'brainshake-accent',
   dock: 'brainshake-dock',
+  fontSize: 'brainshake-font-size',
+  highContrast: 'brainshake-high-contrast',
+  colorVision: 'brainshake-color-vision',
+  reduceMotion: 'brainshake-reduce-motion',
+  keyboardNavigation: 'brainshake-keyboard-navigation',
+  enhancedFocus: 'brainshake-enhanced-focus',
+  tutorialCompleted: 'brainshake-accessibility-tour-complete',
   clipboard: 'brainshake-copy'
 }
 

@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
 
-// String value persisted under `key`. Empty or missing values fall back to `fallback`.
-export function useLocalStorage(key: string, fallback: string) {
-  const [value, setValue] = useState(() => localStorage.getItem(key) || fallback)
+export function useLocalStorage<T>(key: string, fallback: T) {
+  const [value, setValue] = useState<T>(() => {
+    const raw = localStorage.getItem(key)
+    if (raw === null) return fallback
+    try {
+      return JSON.parse(raw) as T
+    } catch {
+      return fallback
+    }
+  })
+
   useEffect(() => {
-    localStorage.setItem(key, value)
+    localStorage.setItem(key, JSON.stringify(value))
   }, [key, value])
+
   return [value, setValue] as const
 }
