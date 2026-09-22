@@ -59,6 +59,9 @@ npm run build
 npm run preview
 ```
 
+The build checks TypeScript before Vite bundles the app. Run `npm run typecheck`,
+`npm run lint`, and `npm run format:check` separately when working on the code.
+
 ## Project status
 
 BrainShake is an actively evolving browser canvas. The project is intentionally small, local-first, and easy to run, inspect, and deploy.
