@@ -17,12 +17,6 @@ Create notes, connect thoughts, draw freely, and bring assets into one focused w
 
 [![Ko-fi support](https://cdn.modrinth.com/data/cached_images/c4c994ca06f3bc6bbcfdc5f6b98d4af42e397033.png)](https://ko-fi.com/pxdritz1)
 
-</div>
-
-[Open the repository](https://github.com/pxdritz1/BrainShake) · [Support BrainShake](https://ko-fi.com/pxdritz1)
-
-</div>
-
 ## See it in action
 
 BrainShake includes light, warm, mint, and dark visual themes. The board stays dense and practical while the canvas remains yours to shape.
