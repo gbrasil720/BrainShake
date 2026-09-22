@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { makeId } from '@/lib/id.js'
+import { defaultSize } from '@/features/canvas/objects/registry.js'
 import { STORAGE_KEYS } from '../lib/storage.js'
 import {
   addObjects,
@@ -49,7 +50,8 @@ export function useBoardEditor({ viewport, showToast }) {
   }
 
   function addObject(type, data = {}, position) {
-    const item = createObject(type, data, position || viewport.viewportCenter())
+    const point = position || viewport.viewportCenter()
+    const item = createObject(type, { ...defaultSize(type), ...data }, point)
     commit((current) => addObjects(current, [item]))
     setSelected([item.id])
     setTool('select')

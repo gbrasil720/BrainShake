@@ -22,7 +22,7 @@ export function useImportExport({ editor, showToast }) {
       showToast('Enter a valid image URL')
       return
     }
-    editor.addObject('image', { src: url, name: 'Web image', w: 280, h: 200 })
+    editor.addObject('image', { src: url, name: 'Web image' })
     setUrlOpen(false)
   }
 

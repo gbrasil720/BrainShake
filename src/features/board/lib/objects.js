@@ -1,13 +1,12 @@
 import { makeId } from '@/lib/id.js'
 
+// `data` must include the size (w/h); see defaultSize in the canvas object registry.
 export function createObject(type, data, point) {
   return {
     id: makeId(type),
     type,
     x: point.x - 130,
     y: point.y - 90,
-    w: type === 'text' ? 280 : 250,
-    h: type === 'text' ? 145 : 180,
     color: 'yellow',
     text: '',
     ...data
