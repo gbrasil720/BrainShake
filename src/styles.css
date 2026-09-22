@@ -85,19 +85,6 @@ textarea:focus-visible {
 .brand-logo:hover {
   animation: logo-shake 0.7s ease-in-out;
 }
-.brand-mark {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  color: white;
-  background: var(--ink);
-  border-radius: 10px 10px 10px 3px;
-  transform: rotate(-7deg);
-}
-.brand-mark svg {
-  transform: rotate(7deg);
-}
 .brand-name {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 18px;
@@ -183,9 +170,6 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-.sidebar-section:nth-child(3) {
-  display: none;
 }
 .section-label {
   padding: 0 11px;
@@ -668,27 +652,6 @@ textarea:focus-visible {
   height: 24px;
   margin: 0 4px;
   background: var(--line);
-}
-.stroke-control {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 38px;
-  padding: 0 7px;
-  color: var(--muted);
-  border-radius: 8px;
-}
-.stroke-control:hover {
-  background: var(--accent-soft);
-  color: var(--ink);
-}
-.stroke-control select {
-  max-width: 72px;
-  padding: 3px 2px;
-  color: inherit;
-  border: 0;
-  background: transparent;
-  font-size: 11px;
 }
 .tool-button {
   position: relative;
@@ -1378,8 +1341,7 @@ textarea:focus-visible {
   .brand {
     gap: 7px;
   }
-  .brand-logo,
-  .brand-mark {
+  .brand-logo {
     width: 28px;
     height: 28px;
     flex-basis: 28px;
@@ -1416,9 +1378,6 @@ textarea:focus-visible {
   .toolbar {
     bottom: 8px;
     padding: 5px;
-  }
-  .stroke-control {
-    height: 34px;
   }
   .tool-button {
     width: 34px;

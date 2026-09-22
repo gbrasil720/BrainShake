@@ -19,13 +19,13 @@ import {
   Hand,
   ImagePlus,
   Link2,
+  Maximize,
   Minus,
   MoreHorizontal,
   PanelRight,
   Pencil,
   Plus,
   Redo2,
-  Search,
   Settings2,
   Shapes,
   Square,
@@ -39,7 +39,6 @@ import {
   Zap
 } from 'lucide-react'
 
-const STORAGE_KEY = 'brainshake-board-v1'
 const colors = {
   yellow: '#fff0ad',
   pink: '#ffd9d1',
@@ -113,15 +112,14 @@ function App() {
   const boardFileRef = useRef(null)
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(board))
-    } catch {
-      setToast('Storage limit reached. Export your board to keep a backup.')
-    }
     setBoards((current) => current.map((item) => (item.id === board.id ? board : item)))
   }, [board])
   useEffect(() => {
-    localStorage.setItem('brainshake-boards-v1', JSON.stringify(boards))
+    try {
+      localStorage.setItem('brainshake-boards-v1', JSON.stringify(boards))
+    } catch {
+      setToast('Storage limit reached. Export your board to keep a backup.')
+    }
   }, [boards])
 
   function switchBoard(id) {
@@ -208,19 +206,6 @@ function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-
-  function loadBoard() {
-    try {
-      return (
-        JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-          name: 'My first idea',
-          objects: seedObjects
-        }
-      )
-    } catch {
-      return { name: 'My first idea', objects: seedObjects }
-    }
-  }
 
   function updateBoard(mutator, saveHistory = true) {
     setBoard((current) => {
@@ -697,9 +682,6 @@ function App() {
           <span className="save-state">
             <i className="save-dot" /> Saved locally
           </span>
-          <button className="icon-button" title="Search">
-            <Search size={17} />
-          </button>
           <ExportMenu onExport={exportBrainshake} onExportJson={exportJson} compact />
           <button
             className="icon-button"
@@ -770,17 +752,6 @@ function App() {
               </button>
             ))}
           </div>
-        </div>
-        <div className="sidebar-section">
-          <div className="section-label">View</div>
-          <button className="nav-item" onClick={() => setGrid((value) => !value)}>
-            <Shapes size={16} />
-            <span>{grid ? 'Hide grid' : 'Show grid'}</span>
-          </button>
-          <button className="nav-item" onClick={() => setShowPanel((value) => !value)}>
-            <PanelRight size={16} />
-            <span>Properties</span>
-          </button>
         </div>
         <div className="sidebar-foot">
           <div className="sidebar-foot-copy">
@@ -960,13 +931,11 @@ function App() {
             <Plus size={15} />
           </button>
           <button className="icon-button" title="Fit content" onClick={fitContent}>
-            <MaximizeIcon />
+            <Maximize size={15} />
           </button>
         </div>
         {showPanel && (
           <Properties
-            dockPosition={dockPosition}
-            setDockPosition={setDockPosition}
             item={selectedItem}
             accent={accent}
             setAccent={setAccent}
@@ -1042,15 +1011,6 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange, on
     <div className="resize-handle" onPointerDown={(event) => onResize(event, item)} />
   )
   let content
-  if (item.type === 'shape')
-    content = (
-      <div
-        className={`widget-body shape-card ${item.shape || 'square'} fill-${item.fill || 'solid'}`}
-        style={{ '--shape-fill': item.fillColor || 'var(--accent)' }}
-      >
-        {item.shape === 'circle' ? <Circle /> : <Square />}
-      </div>
-    )
   if (item.type === 'shape')
     return (
       <div
@@ -1225,66 +1185,6 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange, on
         {content}
       </div>
       {resize}
-    </div>
-  )
-}
-
-function LegacyToolbar({
-  tool,
-  setTool,
-  strokeWidth,
-  setStrokeWidth,
-  undo,
-  redo,
-  canUndo,
-  canRedo
-}) {
-  const tools = [
-    { id: 'select', icon: BoxSelect, label: 'Select (V)' },
-    { id: 'hand', icon: Hand, label: 'Pan canvas (H)' },
-    { id: 'text', icon: Type, label: 'Text (T)' },
-    { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' },
-    { id: 'pen', icon: Pencil, label: 'Pen (P)' },
-    { id: 'connector', icon: Link2, label: 'Connect (L)' }
-  ]
-  return (
-    <div className="toolbar">
-      {tools.map(({ id, icon: Icon, label }) => (
-        <button
-          key={id}
-          className={`tool-button ${tool === id ? 'active' : ''}`}
-          title={label}
-          onClick={() => setTool(id)}
-        >
-          <Icon size={17} />
-        </button>
-      ))}
-      <label className="stroke-control" title="Stroke width">
-        <Pencil size={14} />
-        <select
-          value={strokeWidth}
-          onChange={(event) => setStrokeWidth(Number(event.target.value))}
-        >
-          <option value="2">Fine</option>
-          <option value="4">Regular</option>
-          <option value="7">Bold</option>
-          <option value="11">Heavy</option>
-        </select>
-      </label>
-      <div className="toolbar-divider" />
-      <button
-        className="tool-button"
-        title="Import image, video, or file"
-        onClick={() => setTool('image')}
-      >
-        <ImagePlus size={17} />
-      </button>
-      <button className="tool-button" title="Undo" disabled={!canUndo} onClick={undo}>
-        <Undo2 size={17} />
-      </button>
-      <button className="tool-button" title="Redo" disabled={!canRedo} onClick={redo}>
-        <Redo2 size={17} />
-      </button>
     </div>
   )
 }
@@ -1528,129 +1428,6 @@ function ExportMenu({ onExport, onExportJson, compact = false }) {
   )
 }
 
-function LegacyProperties({
-  item,
-  accent,
-  setAccent,
-  theme,
-  setTheme,
-  grid,
-  setGrid,
-  onClose,
-  onChange
-}) {
-  return (
-    <div className="floating-panel">
-      <div className="panel-heading">
-        <span>
-          <PanelRight size={14} /> Properties
-        </span>
-        <button className="icon-button" title="Close properties" onClick={onClose}>
-          <X size={14} />
-        </button>
-      </div>
-      {item ? (
-        <>
-          <div className="panel-row">
-            <span>Type</span>
-            <strong>{item.type}</strong>
-          </div>
-          <div className="panel-row">
-            <span>Position</span>
-            <span>
-              {Math.round(item.x)} × {Math.round(item.y)}
-            </span>
-          </div>
-          <div className="panel-row">
-            <span>Size</span>
-            <span>
-              {Math.round(item.w)} × {Math.round(item.h)}
-            </span>
-          </div>
-          {item.type === 'sticky' && (
-            <div className="panel-row">
-              <span>Note color</span>
-              <div className="color-row">
-                {Object.keys(colors).map((color) => (
-                  <button
-                    key={color}
-                    className={`color-swatch ${item.color === color ? 'active' : ''}`}
-                    style={{ background: colors[color] }}
-                    onClick={() => onChange(item.id, { color })}
-                    aria-label={`${color} color`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          <button
-            className="nav-item"
-            style={{ padding: 0, marginTop: 8, color: 'var(--accent)' }}
-            onClick={() => onChange(item.id, { locked: !item.locked })}
-          >
-            {item.locked ? 'Unlock object' : 'Lock object'}
-          </button>
-        </>
-      ) : (
-        <p style={{ color: 'var(--muted)', fontSize: 12, lineHeight: 1.5 }}>
-          Select an item to edit its properties.
-        </p>
-      )}
-      <div className="panel-row">
-        <span>Dock position</span>
-        <select
-          className="menu-select"
-          value={dockPosition}
-          onChange={(event) => setDockPosition(event.target.value)}
-        >
-          <option value="top">Top</option>
-          <option value="right">Right</option>
-          <option value="bottom">Bottom</option>
-          <option value="left">Left</option>
-        </select>
-      </div>
-      <div className="panel-row" style={{ marginTop: 8 }}>
-        <span>Grid</span>
-        <button
-          className="nav-item"
-          style={{
-            padding: '0 7px',
-            minHeight: 25,
-            background: grid ? 'var(--accent-soft)' : 'var(--line)'
-          }}
-          onClick={() => setGrid((value) => !value)}
-        >
-          {grid ? 'On' : 'Off'}
-        </button>
-      </div>
-      <div className="panel-row">
-        <span>Theme</span>
-        <select value={theme} onChange={(event) => setTheme(event.target.value)}>
-          <option value="light">Light</option>
-          <option value="warm">Warm</option>
-          <option value="mint">Mint</option>
-          <option value="dark">Dark</option>
-          <option value="oled">OLED</option>
-        </select>
-      </div>
-      <div className="panel-row">
-        <span>Accent</span>
-        <div className="color-row">
-          {['#d86e50', '#577d6a', '#50739a', '#8a6b9f', '#c58a44'].map((color) => (
-            <button
-              key={color}
-              className={`color-swatch ${accent === color ? 'active' : ''}`}
-              style={{ background: color }}
-              onClick={() => setAccent(color)}
-              aria-label="Choose accent color"
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function Properties({
   item,
   accent,
@@ -1659,8 +1436,6 @@ function Properties({
   setTheme,
   grid,
   setGrid,
-  dockPosition,
-  setDockPosition,
   onClose,
   onChange
 }) {
@@ -1875,10 +1650,6 @@ function ContextMenu({ position, hasSelection, onDuplicate, onDelete, onCopy, on
       </button>
     </div>
   )
-}
-
-function MaximizeIcon() {
-  return <span style={{ fontSize: 15, lineHeight: 1 }}>⛶</span>
 }
 
 export default App
