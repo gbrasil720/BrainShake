@@ -19,22 +19,22 @@ Create notes, connect thoughts, draw freely, and bring assets into one focused w
 
 ## See it in action
 
-BrainShake includes light, warm, mint, and dark visual themes. The board stays dense and practical while the canvas remains yours to shape.
+BrainShake includes light, warm, mint, dark, and OLED visual themes. The board stays dense and practical while the canvas remains yours to shape.
 
 | Light | Dark |
 | --- | --- |
 | ![BrainShake light theme](screenshots/white.png) | ![BrainShake dark theme](screenshots/dark.png) |
 
-| Warm | Mint |
-| --- | --- |
-| ![BrainShake warm theme](screenshots/warm.png) | ![BrainShake mint theme](screenshots/mint.png) |
+| Warm | Mint | OLED |
+| --- | --- | --- |
+| ![BrainShake warm theme](screenshots/warm.png) | ![BrainShake mint theme](screenshots/mint.png) | ![BrainShake OLED theme](screenshots/OLED.png) |
 
 ## Highlights
 
 - Infinite-feeling canvas with scroll zoom, pan, grid controls, multi-selection, movement, and resizing
 - Sticky notes, text widgets, images, videos, sandboxed HTML previews, and connectors
 - Draggable widget titlebars with accent colors and one-click close controls
-- Light, warm, mint, and dark themes with persistent accent customization
+- Light, warm, mint, dark, and OLED themes with persistent accent customization
 - Pen tool for mouse, touch, and stylus input, with strokes preserved after reload
 - Import local assets by file picker or drag and drop
 - Import web images directly from a URL
