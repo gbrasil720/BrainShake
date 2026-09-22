@@ -1,16 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
-import JSZip from 'jszip'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { CoffeeIcon, GithubIcon } from './AnimatedIcons.jsx'
+import { makeId } from '@/lib/id.js'
+import {
+  ACCENTS,
+  SHAPES,
+  STICKY_COLORS,
+  STROKE_WIDTHS,
+  THEMES,
+  TOOL_SHORTCUTS
+} from '@/features/board/lib/constants.js'
+import {
+  addObjects,
+  bringToFront,
+  createObject,
+  duplicateObjects,
+  finishStroke,
+  moveObjects,
+  patchObject,
+  removeObjects
+} from '@/features/board/lib/objects.js'
+import { loadBoards, saveBoards, STORAGE_KEYS } from '@/features/board/lib/storage.js'
+import { exportBrainshake, exportJson, importBoard } from '@/features/import-export/lib/archive.js'
+import { fileToObject } from '@/features/import-export/lib/files.js'
 import {
   ArrowUpToLine,
   BoxSelect,
   Check,
-  Circle,
-  Diamond,
-  Hexagon,
-  PaintBucket,
   Copy,
   Download,
   FileArchive,
@@ -21,17 +38,14 @@ import {
   Link2,
   Maximize,
   Minus,
-  MoreHorizontal,
   PanelRight,
   Pencil,
   Plus,
   Redo2,
   Settings2,
   Shapes,
-  Square,
   StickyNote,
   Trash2,
-  Triangle,
   Type,
   Undo2,
   Upload,
@@ -39,53 +53,9 @@ import {
   Zap
 } from 'lucide-react'
 
-const colors = {
-  yellow: '#fff0ad',
-  pink: '#ffd9d1',
-  blue: '#cfe9eb',
-  green: '#d8ebc9',
-  white: '#ffffff'
-}
-
-const seedObjects = [
-  {
-    id: 'welcome',
-    type: 'sticky',
-    x: 190,
-    y: 145,
-    w: 250,
-    h: 190,
-    color: 'yellow',
-    title: 'Start here',
-    text: 'Write an idea, drop in a file, or use the toolbar to shape your thinking.'
-  },
-  {
-    id: 'prompt',
-    type: 'text',
-    x: 535,
-    y: 175,
-    w: 280,
-    h: 150,
-    text: 'What are we trying to discover?\n\nStart with an open question and let the connections appear.'
-  }
-]
-
-function makeId(prefix = 'item') {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-}
-
-function loadBoards() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('brainshake-boards-v1'))
-    if (Array.isArray(saved) && saved.length) return saved
-  } catch {}
-  const current = { name: 'My first idea', objects: seedObjects }
-  return [{ ...current, id: 'board-main' }]
-}
-
 function App() {
-  const [boards, setBoards] = useState(() => loadBoards())
-  const [board, setBoard] = useState(() => loadBoards()[0])
+  const [boards, setBoards] = useState(loadBoards)
+  const [board, setBoard] = useState(() => boards[0])
   const [past, setPast] = useState([])
   const [future, setFuture] = useState([])
   const [tool, setTool] = useState('select')
@@ -101,12 +71,12 @@ function App() {
   const [showPanel, setShowPanel] = useState(true)
   const [urlOpen, setUrlOpen] = useState(false)
   const [dockPosition, setDockPosition] = useState(
-    () => localStorage.getItem('brainshake-dock') || 'bottom'
+    () => localStorage.getItem(STORAGE_KEYS.dock) || 'bottom'
   )
   const [dockDragging, setDockDragging] = useState(false)
   const [grid, setGrid] = useState(true)
-  const [accent, setAccent] = useState(() => localStorage.getItem('brainshake-accent') || '#d86e50')
-  const [theme, setTheme] = useState(() => localStorage.getItem('brainshake-theme') || 'light')
+  const [accent, setAccent] = useState(() => localStorage.getItem(STORAGE_KEYS.accent) || '#d86e50')
+  const [theme, setTheme] = useState(() => localStorage.getItem(STORAGE_KEYS.theme) || 'light')
   const canvasRef = useRef(null)
   const fileRef = useRef(null)
   const boardFileRef = useRef(null)
@@ -116,7 +86,7 @@ function App() {
   }, [board])
   useEffect(() => {
     try {
-      localStorage.setItem('brainshake-boards-v1', JSON.stringify(boards))
+      saveBoards(boards)
     } catch {
       setToast('Storage limit reached. Export your board to keep a backup.')
     }
@@ -149,13 +119,13 @@ function App() {
   }
 
   useEffect(() => {
-    localStorage.setItem('brainshake-theme', theme)
+    localStorage.setItem(STORAGE_KEYS.theme, theme)
   }, [theme])
   useEffect(() => {
-    localStorage.setItem('brainshake-accent', accent)
+    localStorage.setItem(STORAGE_KEYS.accent, accent)
   }, [accent])
   useEffect(() => {
-    localStorage.setItem('brainshake-dock', dockPosition)
+    localStorage.setItem(STORAGE_KEYS.dock, dockPosition)
   }, [dockPosition])
 
   useEffect(() => {
@@ -200,8 +170,8 @@ function App() {
         setTool('select')
         setContext(null)
       }
-      const shortcuts = { v: 'select', h: 'hand', t: 'text', n: 'sticky', p: 'pen', l: 'connector' }
-      if (shortcuts[event.key.toLowerCase()]) setTool(shortcuts[event.key.toLowerCase()])
+      const shortcut = TOOL_SHORTCUTS[event.key.toLowerCase()]
+      if (shortcut) setTool(shortcut)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -244,159 +214,61 @@ function App() {
     const point =
       position ||
       screenPoint({ clientX: window.innerWidth * 0.52, clientY: window.innerHeight * 0.48 })
-    const item = {
-      id: makeId(type),
-      type,
-      x: point.x - 130,
-      y: point.y - 90,
-      w: type === 'text' ? 280 : 250,
-      h: type === 'text' ? 145 : 180,
-      color: 'yellow',
-      text: '',
-      ...data
-    }
-    updateBoard((current) => ({ ...current, objects: [...current.objects, item] }))
+    const item = createObject(type, data, point)
+    updateBoard((current) => addObjects(current, [item]))
     setSelected([item.id])
     setTool('select')
   }
 
   function updateObject(id, patch, history = true) {
-    updateBoard(
-      (current) => ({
-        ...current,
-        objects: current.objects.map((item) => (item.id === id ? { ...item, ...patch } : item))
-      }),
-      history
-    )
+    updateBoard((current) => patchObject(current, id, patch), history)
   }
   function removeSelection() {
     if (!selected.length) return
-    updateBoard((current) => ({
-      ...current,
-      objects: current.objects.filter((item) => !selected.includes(item.id))
-    }))
+    updateBoard((current) => removeObjects(current, selected))
     setSelected([])
     setToast('Item removed')
   }
   function duplicateSelection() {
-    const copies = board.objects
-      .filter((item) => selected.includes(item.id))
-      .map((item) => ({ ...item, id: makeId(item.type), x: item.x + 24, y: item.y + 24 }))
+    const copies = duplicateObjects(
+      board.objects.filter((item) => selected.includes(item.id)),
+      24
+    )
     if (!copies.length) return
-    updateBoard((current) => ({ ...current, objects: [...current.objects, ...copies] }))
+    updateBoard((current) => addObjects(current, copies))
     setSelected(copies.map((item) => item.id))
   }
   function copySelection() {
     const items = board.objects.filter((item) => selected.includes(item.id))
     if (!items.length) return
     navigator.clipboard?.writeText(JSON.stringify(items))
-    sessionStorage.setItem('brainshake-copy', JSON.stringify(items))
+    sessionStorage.setItem(STORAGE_KEYS.clipboard, JSON.stringify(items))
     setToast('Copied to clipboard')
   }
   function pasteSelection() {
     try {
-      const items = JSON.parse(sessionStorage.getItem('brainshake-copy') || '[]').map((item) => ({
-        ...item,
-        id: makeId(item.type),
-        x: item.x + 32,
-        y: item.y + 32
-      }))
+      const items = duplicateObjects(
+        JSON.parse(sessionStorage.getItem(STORAGE_KEYS.clipboard) || '[]'),
+        32
+      )
       if (!items.length) return
-      updateBoard((current) => ({ ...current, objects: [...current.objects, ...items] }))
+      updateBoard((current) => addObjects(current, items))
       setSelected(items.map((item) => item.id))
     } catch {
       setToast('Could not paste')
     }
   }
-  function boardFilename(extension) {
-    return `${
-      board.name
-        .replace(/[^a-z0-9]+/gi, '-')
-        .replace(/^-|-$/g, '')
-        .toLowerCase() || 'brainshake-board'
-    }.${extension}`
-  }
-  function downloadBlob(blob, filename) {
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = filename
-    link.click()
-    setTimeout(() => URL.revokeObjectURL(link.href), 0)
-  }
-  function dataUrlInfo(src, id) {
-    const match = /^data:([^;,]+)?((?:;[^,]*)?),([ -]*)$/s.exec(src)
-    if (!match) return null
-    const mediaType = match[1] || 'application/octet-stream'
-    const metadata = match[2] || ''
-    const extension =
-      {
-        'image/jpeg': 'jpg',
-        'image/svg+xml': 'svg',
-        'image/png': 'png',
-        'image/gif': 'gif',
-        'image/webp': 'webp',
-        'video/mp4': 'mp4',
-        'video/webm': 'webm',
-        'text/html': 'html'
-      }[mediaType] || 'bin'
-    return {
-      mediaType,
-      extension,
-      data: match[3],
-      base64: metadata.includes(';base64'),
-      id: id.replace(/[^a-z0-9_-]/gi, '-')
-    }
-  }
-  async function exportBrainshake() {
-    const zip = new JSZip()
-    const media = []
-    const objects = board.objects.map((item) => {
-      if (!['image', 'video', 'html'].includes(item.type) || !item.src?.startsWith('data:'))
-        return { ...item }
-      const info = dataUrlInfo(item.src, item.id)
-      if (!info) return { ...item }
-      const path = `media/${info.id}.${info.extension}`
-      const content = info.base64 ? info.data : decodeURIComponent(info.data)
-      media.push({ path, content, base64: info.base64 })
-      return { ...item, src: path, mediaType: info.mediaType }
-    })
-    zip.file('board.json', JSON.stringify({ name: board.name, objects }, null, 2))
-    media.forEach((item) => zip.file(item.path, item.content, { base64: item.base64 }))
-    downloadBlob(await zip.generateAsync({ type: 'blob' }), boardFilename('brainshake'))
+  async function handleExportBrainshake() {
+    await exportBrainshake(board)
     setToast('Board exported')
   }
-  function exportJson() {
-    const objects = board.objects.map((item) => {
-      if (!['image', 'video', 'html'].includes(item.type)) return { ...item }
-      const { src, ...withoutSrc } = item
-      return { ...withoutSrc, mediaOmitted: true }
-    })
-    downloadBlob(
-      new Blob([JSON.stringify({ name: board.name, objects }, null, 2)], {
-        type: 'application/json'
-      }),
-      boardFilename('json')
-    )
+  function handleExportJson() {
+    exportJson(board)
     setToast('Board exported')
   }
-  async function importBoard(file) {
+  async function handleImportBoard(file) {
     try {
-      const buffer = await file.arrayBuffer()
-      const bytes = new Uint8Array(buffer)
-      let data
-      if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
-        const zip = await JSZip.loadAsync(buffer)
-        const manifest = zip.file('board.json')
-        if (!manifest) throw Error()
-        data = JSON.parse(await manifest.async('text'))
-        for (const item of data.objects || []) {
-          if (!item.src?.startsWith('media/')) continue
-          const mediaFile = zip.file(item.src.replace(/^\.\//, ''))
-          if (!mediaFile || !item.mediaType) throw Error()
-          item.src = `data:${item.mediaType};base64,${await mediaFile.async('base64')}`
-        }
-      } else data = JSON.parse(new TextDecoder().decode(bytes))
-      if (!data || typeof data.name !== 'string' || !Array.isArray(data.objects)) throw Error()
+      const data = await importBoard(file)
       updateBoard(() => data)
       setSelected([])
       setToast('Board imported')
@@ -469,50 +341,19 @@ function App() {
       )
     if (dragging.type === 'move')
       updateBoard(
-        (current) => ({
-          ...current,
-          objects: current.objects.map((item) => {
-            const origin = dragging.origins.find((value) => value.id === item.id)
-            return origin
-              ? {
-                  ...item,
-                  x: origin.x + point.x - dragging.start.x,
-                  y: origin.y + point.y - dragging.start.y
-                }
-              : item
-          })
-        }),
+        (current) =>
+          moveObjects(
+            current,
+            dragging.origins,
+            point.x - dragging.start.x,
+            point.y - dragging.start.y
+          ),
         false
       )
   }
-  function finishStroke(stroke) {
-    const padding = (stroke.strokeWidth || 4) / 2
-    const bounds = stroke.points.reduce(
-      (result, point) => ({
-        minX: Math.min(result.minX, point.x),
-        minY: Math.min(result.minY, point.y),
-        maxX: Math.max(result.maxX, point.x),
-        maxY: Math.max(result.maxY, point.y)
-      }),
-      { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
-    )
-    const minX = bounds.minX - padding
-    const minY = bounds.minY - padding
-    return {
-      ...stroke,
-      x: stroke.x + minX,
-      y: stroke.y + minY,
-      w: Math.max(stroke.strokeWidth || 4, bounds.maxX - minX + padding),
-      h: Math.max(stroke.strokeWidth || 4, bounds.maxY - minY + padding),
-      points: stroke.points.map((point) => ({ x: point.x - minX, y: point.y - minY }))
-    }
-  }
   function endPointer(event) {
     if (drawing) {
-      updateBoard((current) => ({
-        ...current,
-        objects: [...current.objects, finishStroke(drawing)]
-      }))
+      updateBoard((current) => addObjects(current, [finishStroke(drawing)]))
       setDrawing(null)
     }
     if (event?.currentTarget?.hasPointerCapture?.(event.pointerId))
@@ -541,13 +382,11 @@ function App() {
       if (!selected.length) setSelected([item.id])
       else if (selected[0] !== item.id) {
         const first = board.objects.find((object) => object.id === selected[0])
-        updateBoard((current) => ({
-          ...current,
-          objects: [
-            ...current.objects,
+        updateBoard((current) =>
+          addObjects(current, [
             { id: makeId('connector'), type: 'connector', from: first.id, to: item.id }
-          ]
-        }))
+          ])
+        )
         setSelected([])
         setTool('select')
       }
@@ -560,38 +399,12 @@ function App() {
     else if (!selected.includes(item.id)) setSelected([item.id])
   }
 
-  function readFileAsDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-  }
   async function importFiles(files) {
     for (const file of Array.from(files)) {
       try {
-        if (file.type.startsWith('image/'))
-          addObject('image', {
-            src: await readFileAsDataUrl(file),
-            name: file.name,
-            w: 280,
-            h: 200
-          })
-        else if (file.type.startsWith('video/'))
-          addObject('video', {
-            src: await readFileAsDataUrl(file),
-            name: file.name,
-            w: 320,
-            h: 220
-          })
-        else if (file.name.toLowerCase().endsWith('.html'))
-          addObject('html', { src: await readFileAsDataUrl(file), name: file.name, w: 350, h: 240 })
-        else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.md')) {
-          const reader = new FileReader()
-          reader.onload = () => addObject('text', { text: reader.result, name: file.name })
-          reader.readAsText(file)
-        } else setToast(`Unsupported format: ${file.name}`)
+        const object = await fileToObject(file)
+        if (object) addObject(object.type, object.data)
+        else setToast(`Unsupported format: ${file.name}`)
       } catch {
         setToast(`Could not import ${file.name}`)
       }
@@ -682,7 +495,7 @@ function App() {
           <span className="save-state">
             <i className="save-dot" /> Saved locally
           </span>
-          <ExportMenu onExport={exportBrainshake} onExportJson={exportJson} compact />
+          <ExportMenu onExport={handleExportBrainshake} onExportJson={handleExportJson} compact />
           <button
             className="icon-button"
             title="Import board"
@@ -714,7 +527,7 @@ function App() {
             <Link2 size={16} />
             <span>Import image URL</span>
           </button>
-          <ExportMenu onExport={exportBrainshake} onExportJson={exportJson} />
+          <ExportMenu onExport={handleExportBrainshake} onExportJson={handleExportJson} />
         </div>
         <div className="sidebar-section">
           <div className="section-label">
@@ -842,10 +655,7 @@ function App() {
                 onResize={beginResize}
                 onChange={(id, patch) => updateObject(id, patch, false)}
                 onRemove={(id) => {
-                  updateBoard((current) => ({
-                    ...current,
-                    objects: current.objects.filter((object) => object.id !== id)
-                  }))
+                  updateBoard((current) => removeObjects(current, [id]))
                   setSelected((current) => current.filter((value) => value !== id))
                 }}
               />
@@ -954,15 +764,7 @@ function App() {
             onDuplicate={duplicateSelection}
             onDelete={removeSelection}
             onCopy={copySelection}
-            onFront={() =>
-              updateBoard((current) => ({
-                ...current,
-                objects: [
-                  ...current.objects.filter((item) => !selected.includes(item.id)),
-                  ...current.objects.filter((item) => selected.includes(item.id))
-                ]
-              }))
-            }
+            onFront={() => updateBoard((current) => bringToFront(current, selected))}
           />
         )}
         {urlOpen && <UrlDialog onClose={() => setUrlOpen(false)} onSubmit={submitImageUrl} />}
@@ -988,7 +790,7 @@ function App() {
           hidden
           accept="application/json,application/zip,.json,.brainshake,.brainshake.json"
           onChange={(event) => {
-            if (event.target.files[0]) importBoard(event.target.files[0])
+            if (event.target.files[0]) handleImportBoard(event.target.files[0])
             event.target.value = ''
           }}
         />
@@ -1104,7 +906,7 @@ function CanvasObject({ item, selected, onSelect, onDrag, onResize, onChange, on
     content = (
       <div
         className={`widget-body sticky ${item.color || 'yellow'}`}
-        style={{ background: colors[item.color] }}
+        style={{ background: STICKY_COLORS[item.color] }}
       >
         <h3>{item.title || 'Note'}</h3>
         {markdownEditor('sticky-text', 'Write a note in Markdown...')}
@@ -1244,13 +1046,6 @@ function Toolbar({
 }) {
   const [shapeOpen, setShapeOpen] = useState(false)
   const [strokeOpen, setStrokeOpen] = useState(false)
-  const shapes = [
-    { id: 'square', label: 'Square', icon: Square },
-    { id: 'circle', label: 'Circle', icon: Circle },
-    { id: 'triangle', label: 'Triangle', icon: Triangle },
-    { id: 'hexagon', label: 'Hexagon', icon: Hexagon },
-    { id: 'diamond', label: 'Diamond', icon: Diamond }
-  ]
   return (
     <div className={'toolbar dock-' + dockPosition}>
       <button
@@ -1310,7 +1105,7 @@ function Toolbar({
         </button>
         {shapeOpen && (
           <div className="toolbar-menu-panel">
-            {shapes.map(({ id, label, icon: Icon }) => (
+            {SHAPES.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => {
@@ -1344,10 +1139,11 @@ function Toolbar({
                   setStrokeOpen(false)
                 }}
               >
-                <option value="2">Fine</option>
-                <option value="4">Regular</option>
-                <option value="7">Bold</option>
-                <option value="11">Heavy</option>
+                {STROKE_WIDTHS.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -1439,18 +1235,6 @@ function Properties({
   onClose,
   onChange
 }) {
-  const accents = [
-    '#d86e50',
-    '#577d6a',
-    '#50739a',
-    '#8a6b9f',
-    '#c58a44',
-    '#d1495b',
-    '#2a9d8f',
-    '#e76f51',
-    '#264653',
-    '#6c757d'
-  ]
   const updateNumber = (key, event) => onChange(item.id, { [key]: Number(event.target.value) || 0 })
   return (
     <div className="floating-panel">
@@ -1510,11 +1294,11 @@ function Properties({
             <div className="panel-row">
               <span>Note color</span>
               <div className="color-row">
-                {Object.keys(colors).map((color) => (
+                {Object.keys(STICKY_COLORS).map((color) => (
                   <button
                     key={color}
                     className={`color-swatch ${item.color === color ? 'active' : ''}`}
-                    style={{ background: colors[color] }}
+                    style={{ background: STICKY_COLORS[color] }}
                     onClick={() => onChange(item.id, { color })}
                     aria-label={`${color} color`}
                   />
@@ -1569,17 +1353,17 @@ function Properties({
           value={theme}
           onChange={(event) => setTheme(event.target.value)}
         >
-          <option value="light">Light</option>
-          <option value="warm">Warm</option>
-          <option value="mint">Mint</option>
-          <option value="dark">Dark</option>
-          <option value="oled">OLED</option>
+          {THEMES.map(({ id, label }) => (
+            <option key={id} value={id}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
       <div className="panel-row">
         <span>Accent</span>
         <div className="color-row accent-colors">
-          {accents.map((color) => (
+          {ACCENTS.map((color) => (
             <button
               key={color}
               className={`color-swatch ${accent === color ? 'active' : ''}`}
