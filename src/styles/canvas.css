@@ -3,8 +3,18 @@
   inset: 0;
   overflow: hidden;
   background-color: var(--canvas-custom, #f4f6f2);
-  background-image: radial-gradient(#cdd5ce 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--line, #cdd5ce) 28%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--line, #cdd5ce) 28%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 32px 32px;
 }
 .canvas-shell {
   touch-action: none;

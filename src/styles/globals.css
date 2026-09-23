@@ -1183,7 +1183,6 @@ a:focus-visible,
 }
 .theme-warm .canvas-shell {
   background-color: #f8eee1;
-  background-image: radial-gradient(#ddcdbb 1px, transparent 1px);
 }
 .theme-mint {
   --paper: #f4fffa;
@@ -1200,7 +1199,6 @@ a:focus-visible,
 }
 .theme-mint .canvas-shell {
   background-color: #e9f6ef;
-  background-image: radial-gradient(#bdd9c9 1px, transparent 1px);
 }
 .theme-dark {
   --paper: #17191b;
@@ -1220,7 +1218,6 @@ a:focus-visible,
 }
 .theme-dark .canvas-shell {
   background-color: #14171a;
-  background-image: radial-gradient(#2c3138 1px, transparent 1px);
 }
 .theme-dark .board-item:hover,
 .theme-dark .board-item.active,
@@ -1295,7 +1292,6 @@ a:focus-visible,
 }
 .theme-oled .canvas-shell {
   background-color: #000;
-  background-image: radial-gradient(#202020 1px, transparent 1px);
 }
 .theme-oled .text-card,
 .theme-oled .image-card,
@@ -2018,8 +2014,23 @@ a:focus-visible,
     padding: 5px;
   }
   .tool-button {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (hover: none) and (pointer: coarse) {
+  .icon-button,
+  .tool-button {
+    width: 44px;
+    height: 44px;
+  }
+  .toolbar {
+    gap: 6px;
+    padding: 8px;
+  }
+  .zoom-controls {
+    padding: 6px;
+    gap: 6px;
   }
 }
 @media (max-height: 420px) {
@@ -2616,11 +2627,9 @@ kbd {
 .theme-catppuccin .canvas-shell,
 .theme-nord .canvas-shell {
   background-color: var(--surface);
-  background-image: radial-gradient(var(--line) 1px, transparent 1px);
 }
 .theme-gruvbox .canvas-shell {
   background-color: #ebddb3;
-  background-image: radial-gradient(#c9b384 1px, transparent 1px);
 }
 .theme-dracula .topbar,
 .theme-dracula .sidebar,
@@ -2632,7 +2641,6 @@ kbd {
 }
 .theme-dracula .canvas-shell {
   background-color: #21222c;
-  background-image: radial-gradient(#44475a 1px, transparent 1px);
 }
 
 @theme inline {
@@ -2658,4 +2666,98 @@ kbd {
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-xl: 13px;
+}
+
+/* A quieter, glass-like workspace chrome with short, springy feedback. */
+.app .topbar {
+  border-bottom-color: color-mix(in srgb, var(--line) 68%, transparent);
+  background: color-mix(in srgb, var(--header-custom, var(--paper)) 82%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(24px) saturate(1.35);
+}
+.app .toolbar,
+.app .zoom-controls,
+.app .floating-panel {
+  border-color: color-mix(in srgb, var(--line) 70%, transparent);
+  background: color-mix(in srgb, var(--panel-custom, var(--paper)) 86%, transparent);
+  box-shadow:
+    0 18px 44px rgba(25, 36, 30, 0.1),
+    0 2px 8px rgba(25, 36, 30, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  backdrop-filter: blur(24px) saturate(1.35);
+}
+.app .toolbar {
+  gap: 3px;
+  padding: 7px;
+  border-radius: 17px;
+  animation: chrome-enter 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.app .zoom-controls {
+  gap: 3px;
+  border-radius: 14px;
+  animation: chrome-enter 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.app .floating-panel {
+  border-radius: 17px;
+  animation: panel-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.app .tool-button,
+.app .icon-button {
+  border-radius: 11px;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 180ms ease,
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.app .tool-button:hover:not(:disabled),
+.app .icon-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.app .tool-button:active:not(:disabled),
+.app .icon-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.app .tool-button.active {
+  box-shadow:
+    0 4px 10px color-mix(in srgb, var(--primary) 24%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.app .canvas-object .object-card {
+  transition:
+    box-shadow 180ms ease,
+    outline-color 180ms ease;
+}
+.app .canvas-object.selected .object-card {
+  animation: selection-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.accessibility-high-contrast .app .toolbar,
+.accessibility-high-contrast .app .zoom-controls,
+.accessibility-high-contrast .app .floating-panel {
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--line);
+  backdrop-filter: none;
+}
+.accessibility-high-contrast .app .topbar {
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--line);
+  backdrop-filter: none;
+}
+@keyframes chrome-enter {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes selection-enter {
+  from {
+    outline-offset: 5px;
+  }
+  to {
+    outline-offset: 3px;
+  }
 }

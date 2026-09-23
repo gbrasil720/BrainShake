@@ -13,6 +13,7 @@ import type { CanvasItem, Point } from '@/features/board/types'
 import { isCanvasItem, isConnectorItem } from '@/features/board/types'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useViewport } from './useViewport'
+import { MAX_ZOOM, MIN_ZOOM } from './useViewport'
 import { canBeginCanvasPan, shouldPanWithSpace } from '@/features/toolbar/toolNavigation'
 import { recognize, UNATTENDED, type Recognition } from '@/features/pen/lib/recognize'
 import { arrowLink } from '@/features/pen/lib/arrowLink'
@@ -49,6 +50,7 @@ type Dragging =
       points?: Point[]
       fontSize?: number
     }
+  | { type: 'pinch' }
   | { type: 'pan'; pointerId: number; start: Point; origin: Point }
 
 export type Drawing = CanvasItem & {
@@ -79,6 +81,12 @@ export function useCanvasPointer({
   const [drawing, setDrawing] = useState<Drawing | null>(null)
   const spacePressed = useRef(false)
   const hold = useRef<{ timer: number; anchor: Point } | null>(null)
+  const touchPoints = useRef(new Map<number, Point>())
+  const pinch = useRef<{
+    distance: number
+    zoom: number
+    anchor: Point
+  } | null>(null)
   const { board, commit, selected, setSelected, tool, setTool, strokeWidth } = editor
   const { screenPoint, pan, setPan } = viewport
 
@@ -240,6 +248,74 @@ export function useCanvasPointer({
     })
   }
 
+  function startPinch() {
+    const points = [...touchPoints.current.values()].slice(0, 2)
+    if (points.length < 2) return
+    const center = { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 }
+    const rect = viewport.canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
+    pinch.current = {
+      distance: Math.max(1, Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y)),
+      zoom: viewport.zoom,
+      anchor: {
+        x: (center.x - rect.left - pan.x) / viewport.zoom,
+        y: (center.y - rect.top - pan.y) / viewport.zoom
+      }
+    }
+  }
+
+  function onTouchPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'touch') return
+    touchPoints.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+    if (touchPoints.current.size < 2) return
+    event.preventDefault()
+    event.stopPropagation()
+    cancelHold()
+    setDrawing(null)
+    setDragging({ type: 'pinch' })
+    startPinch()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
+
+  function onTouchPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'touch' || !touchPoints.current.has(event.pointerId)) return
+    touchPoints.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+    if (!pinch.current) return
+    event.preventDefault()
+    event.stopPropagation()
+    const points = [...touchPoints.current.values()].slice(0, 2)
+    if (points.length < 2) return
+    const gesture = pinch.current
+    const center = { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 }
+    const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y)
+    const nextZoom = Math.min(
+      MAX_ZOOM,
+      Math.max(MIN_ZOOM, gesture.zoom * (distance / gesture.distance))
+    )
+    const rect = viewport.canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
+    viewport.setZoom(nextZoom)
+    setPan({
+      x: center.x - rect.left - gesture.anchor.x * nextZoom,
+      y: center.y - rect.top - gesture.anchor.y * nextZoom
+    })
+  }
+
+  function onTouchPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'touch' || !touchPoints.current.has(event.pointerId)) return
+    const wasPinching = Boolean(pinch.current)
+    touchPoints.current.delete(event.pointerId)
+    if (!wasPinching) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (touchPoints.current.size >= 2) startPinch()
+    else {
+      pinch.current = null
+      setDragging(null)
+      setDrawing(null)
+    }
+  }
+
   function beginDrawing(event: React.PointerEvent<HTMLDivElement>) {
     if (tool !== 'pen' || event.button !== 0) return
     setSelected([])
@@ -295,6 +371,7 @@ export function useCanvasPointer({
       return
     }
     if (!dragging) return
+    if (dragging.type === 'pinch') return
     if (event.pointerId !== dragging.pointerId) return
     if (dragging.type === 'pan') {
       setPan({
@@ -380,7 +457,7 @@ export function useCanvasPointer({
   }
 
   function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-    if (dragging && event.pointerId !== dragging.pointerId) return
+    if (dragging && dragging.type !== 'pinch' && event.pointerId !== dragging.pointerId) return
     if (drawing) {
       cancelHold()
       const { gesture, snapped: held, ...stroke } = drawing
@@ -432,11 +509,15 @@ export function useCanvasPointer({
     dragging,
     drawing,
     isPanning: dragging?.type === 'pan',
+    isPinching: dragging?.type === 'pinch',
     selectObject,
     beginDrag,
     beginResize,
     beginDrawing,
     beginPan,
+    onTouchPointerDown,
+    onTouchPointerMove,
+    onTouchPointerUp,
     onPointerDown,
     onPointerMove,
     onPointerUp

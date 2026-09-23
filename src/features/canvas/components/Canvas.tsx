@@ -86,6 +86,7 @@ export function Canvas({
             presenting
               ? undefined
               : (event) => {
+                  pointer.onTouchPointerDown(event)
                   if (event.button === 1) pointer.beginPan(event)
                 }
           }
@@ -108,8 +109,11 @@ export function Canvas({
                   pointer.onPointerDown(event)
                 }
           }
+          onPointerMoveCapture={pointer.onTouchPointerMove}
           onPointerMove={pointer.onPointerMove}
+          onPointerUpCapture={pointer.onTouchPointerUp}
           onPointerUp={pointer.onPointerUp}
+          onPointerCancelCapture={pointer.onTouchPointerUp}
           onPointerCancel={pointer.onPointerUp}
           onDragOver={(event) => {
             event.preventDefault()
@@ -126,11 +130,12 @@ export function Canvas({
             className="canvas-world"
             style={{
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transition: pointer.isPanning
-                ? 'none'
-                : presenting
-                  ? 'transform 460ms cubic-bezier(.2,.75,.25,1)'
-                  : 'transform 140ms cubic-bezier(.2,.75,.25,1)'
+              transition:
+                pointer.isPanning || pointer.isPinching
+                  ? 'none'
+                  : presenting
+                    ? 'transform 460ms cubic-bezier(.2,.75,.25,1)'
+                    : 'transform 140ms cubic-bezier(.2,.75,.25,1)'
             }}
           >
             <ConnectorLayer objects={board.objects} />
