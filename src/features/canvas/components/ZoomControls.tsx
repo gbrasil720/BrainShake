@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { Maximize, Minus, Plus } from 'lucide-react'
 
 export function ZoomControls({
@@ -13,16 +14,16 @@ export function ZoomControls({
 }) {
   return (
     <div className="zoom-controls">
-      <button className="icon-button" title="Zoom out" onClick={onZoomOut}>
+      <Button variant="ghost" className="icon-button" title="Zoom out" onClick={onZoomOut}>
         <Minus size={15} />
-      </button>
+      </Button>
       <span className="zoom-value">{Math.round(zoom * 100)}%</span>
-      <button className="icon-button" title="Zoom in" onClick={onZoomIn}>
+      <Button variant="ghost" className="icon-button" title="Zoom in" onClick={onZoomIn}>
         <Plus size={15} />
-      </button>
-      <button className="icon-button" title="Fit content" onClick={onFit}>
+      </Button>
+      <Button variant="ghost" className="icon-button" title="Fit content" onClick={onFit}>
         <Maximize size={15} />
-      </button>
+      </Button>
     </div>
   )
 }

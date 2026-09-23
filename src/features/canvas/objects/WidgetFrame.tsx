@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type React from 'react'
 import type { CanvasItem } from '@/features/board/types'
 import type { ReactNode } from 'react'
@@ -26,7 +27,8 @@ export function WidgetFrame({
             </b>
           )}
         </span>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           aria-label="Close widget"
           title="Close widget"
@@ -37,7 +39,7 @@ export function WidgetFrame({
           }}
         >
           <X size={13} />
-        </button>
+        </Button>
       </div>
       {children}
     </div>

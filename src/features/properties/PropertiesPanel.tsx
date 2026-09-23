@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { BoardPatch, BoardItem } from '@/features/board/types'
 import { PanelRight, X } from 'lucide-react'
 import { ObjectProperties } from './ObjectProperties'
@@ -17,9 +18,9 @@ export function PropertiesPanel({
         <span>
           <PanelRight size={14} /> Properties
         </span>
-        <button className="icon-button" title="Close properties" onClick={onClose}>
+        <Button variant="ghost" className="icon-button" title="Close properties" onClick={onClose}>
           <X size={14} />
-        </button>
+        </Button>
       </div>
       <ObjectProperties item={item} onChange={onChange} />
     </div>

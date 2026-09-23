@@ -1,3 +1,12 @@
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { STICKY_COLORS } from '@/features/board/lib/constants'
 import type { BoardItem, BoardPatch, CanvasItem } from '@/features/board/types'
 import { isCanvasItem } from '@/features/board/types'
@@ -18,7 +27,7 @@ function NumberPair({
   return (
     <div className="property-pair">
       {keys.map((key, index) => (
-        <input
+        <Input
           key={key}
           className="property-input"
           type="number"
@@ -67,7 +76,8 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
           <span>Note color</span>
           <div className="color-row">
             {Object.keys(STICKY_COLORS).map((color) => (
-              <button
+              <Button
+                variant="ghost"
                 key={color}
                 className={`color-swatch ${item.color === color ? 'active' : ''}`}
                 style={{ background: (STICKY_COLORS as Record<string, string>)[color] }}
@@ -81,23 +91,28 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
       {item.type === 'shape' && (
         <div className="panel-row">
           <span>Fill</span>
-          <select
-            className="menu-select"
+          <Select
             value={item.fill || 'solid'}
-            onChange={(event) => onChange(item.id, { fill: event.target.value })}
+            onValueChange={(fill) => onChange(item.id, { fill })}
           >
-            <option value="solid">Solid</option>
-            <option value="outline">Outline</option>
-          </select>
+            <SelectTrigger className="menu-select" aria-label="Fill">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="solid">Solid</SelectItem>
+              <SelectItem value="outline">Outline</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
-      <button
+      <Button
+        variant="ghost"
         className="nav-item"
         style={{ padding: 0, marginTop: 8, color: 'var(--primary)' }}
         onClick={() => onChange(item.id, { locked: !item.locked })}
       >
         {item.locked ? 'Unlock object' : 'Lock object'}
-      </button>
+      </Button>
     </>
   )
 }

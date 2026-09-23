@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useImportExport } from '@/features/import-export/hooks/useImportExport'
 import { Presentation, Settings2, Upload } from 'lucide-react'
@@ -37,18 +38,33 @@ export function Topbar({
           onExportJson={transfer.exportAsJson}
           compact
         />
-        <button className="icon-button" title="Import board" onClick={onImportBoard}>
+        <Button
+          variant="ghost"
+          className="icon-button"
+          title="Import board"
+          onClick={onImportBoard}
+        >
           <Upload size={17} />
-        </button>
-        <button className="icon-button" title="Accessibility Tour" onClick={onOpenTour}>
+        </Button>
+        <Button
+          variant="ghost"
+          className="icon-button"
+          title="Accessibility Tour"
+          onClick={onOpenTour}
+        >
           <BalloonIcon />
-        </button>
-        <button className="icon-button" title="Presentation mode" onClick={onOpenPresentation}>
+        </Button>
+        <Button
+          variant="ghost"
+          className="icon-button"
+          title="Presentation mode"
+          onClick={onOpenPresentation}
+        >
           <Presentation size={17} />
-        </button>
-        <button className="icon-button" title="Settings" onClick={onToggleSettings}>
+        </Button>
+        <Button variant="ghost" className="icon-button" title="Settings" onClick={onToggleSettings}>
           <Settings2 size={17} />
-        </button>
+        </Button>
       </div>
     </header>
   )

@@ -341,11 +341,11 @@ a:focus-visible,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 11px;
+  min-height: 38px;
+  padding: 0 4px 0 11px;
   color: var(--muted);
   font-size: 13px;
   border-radius: 8px;
-  cursor: pointer;
 }
 .board-item:hover,
 .board-item.active {
@@ -355,13 +355,21 @@ a:focus-visible,
 .board-item.active {
   font-weight: 600;
 }
-.board-item button {
-  display: none;
-  color: #8b938d;
-  background: none;
+.board-switch {
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font-size: inherit;
+  font-weight: inherit;
 }
-.board-item:hover button {
-  display: block;
+.board-delete {
+  visibility: hidden;
+}
+.board-item:is(:hover, :focus-within) .board-delete {
+  visibility: visible;
 }
 .sidebar-foot {
   margin-top: auto;
@@ -674,6 +682,7 @@ a:focus-visible,
   width: min(100%, 150px);
 }
 .accent-colors .color-swatch {
+  padding: 0;
   width: 21px;
   max-width: 100%;
 }
@@ -780,11 +789,13 @@ a:focus-visible,
 .toast svg {
   color: var(--success-ink);
 }
-.floating-panel select {
+.floating-panel [data-slot='select-trigger'] {
   padding: 4px 6px;
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 6px;
+  height: 26px;
+  padding: 4px 6px;
   background: var(--paper);
 }
 .menu-select {
@@ -792,6 +803,7 @@ a:focus-visible,
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 7px;
+  height: 26px;
   background: var(--paper);
 }
 .property-input {
@@ -1091,7 +1103,7 @@ a:focus-visible,
   background: var(--accent);
   color: var(--ink);
 }
-.theme-dark .floating-panel select {
+.theme-dark .floating-panel [data-slot='select-trigger'] {
   color: var(--ink);
   background: var(--paper);
 }

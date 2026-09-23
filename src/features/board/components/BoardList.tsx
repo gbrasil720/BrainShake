@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { Board } from '@/features/board/types'
 import { Plus, X } from 'lucide-react'
 
@@ -18,37 +19,33 @@ export function BoardList({
     <div className="sidebar-section">
       <div className="section-label">
         Boards{' '}
-        <button
+        <Button
+          variant="ghost"
           className="icon-button"
           style={{ display: 'inline-grid', width: 20, height: 20 }}
           title="New board"
           onClick={onCreate}
         >
           <Plus size={14} />
-        </button>
+        </Button>
       </div>
       <div className="board-list">
         {boards.map((item) => (
-          <button
-            key={item.id}
-            className={'board-item ' + (item.id === activeId ? 'active' : '')}
-            onClick={() => onSwitch(item.id)}
-          >
-            <span>{item.name}</span>
+          <div key={item.id} className={'board-item ' + (item.id === activeId ? 'active' : '')}>
+            <Button variant="ghost" className="board-switch" onClick={() => onSwitch(item.id)}>
+              {item.name}
+            </Button>
             {boards.length > 1 && (
-              <span
+              <Button
+                variant="ghost"
                 className="board-delete"
-                role="button"
                 aria-label="Delete board"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onDelete(item.id)
-                }}
+                onClick={() => onDelete(item.id)}
               >
                 <X size={13} />
-              </span>
+              </Button>
             )}
-          </button>
+          </div>
         ))}
       </div>
     </div>
