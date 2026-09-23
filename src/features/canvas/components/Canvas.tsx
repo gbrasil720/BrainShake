@@ -95,9 +95,13 @@ export function Canvas({
               : (event) => {
                   if (event.target !== event.currentTarget) {
                     const target = event.target
+                    // A note's rendered text is a button that opens the editor; with the
+                    // pen it is just a surface to draw on, e.g. an arrow to another note.
                     const isInteractiveTarget =
                       target instanceof Element &&
-                      target.closest('button, input, textarea, select, [contenteditable="true"]')
+                      target.closest(
+                        'button:not(.markdown-preview), input, textarea, select, [contenteditable="true"]'
+                      )
                     if (editor.tool === 'pen' && !isInteractiveTarget) pointer.beginDrawing(event)
                     return
                   }
@@ -164,6 +168,11 @@ export function Canvas({
                 selected={selected.includes(item.id)}
                 activeTool={editor.tool}
                 presentingActive={presenting && item.id === presentingItemId}
+                gesture={
+                  pointer.drawing?.gesture?.ids.includes(item.id)
+                    ? pointer.drawing.gesture.type
+                    : undefined
+                }
                 onSelect={selectObject}
                 onDrag={beginDrag}
                 onResize={beginResize}

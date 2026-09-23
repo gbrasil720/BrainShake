@@ -12,6 +12,7 @@ export const CanvasObject = memo(function CanvasObject({
   selected,
   activeTool,
   presentingActive,
+  gesture,
   onSelect,
   onDrag,
   onResize,
@@ -22,6 +23,8 @@ export const CanvasObject = memo(function CanvasObject({
   selected: boolean
   activeTool: string
   presentingActive: boolean
+  // Pen gesture about to act on this object, shown while the pen is held.
+  gesture?: 'erase' | 'select'
   onSelect: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
   onDrag: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
   onResize: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
@@ -36,7 +39,8 @@ export const CanvasObject = memo(function CanvasObject({
         'canvas-object',
         className,
         selected && activeTool !== 'pen' ? 'selected' : '',
-        presentingActive ? 'is-presenting-active' : ''
+        presentingActive ? 'is-presenting-active' : '',
+        gesture ? `gesture-${gesture}` : ''
       ]
         .filter(Boolean)
         .join(' ')}

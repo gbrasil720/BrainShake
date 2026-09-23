@@ -28,7 +28,8 @@ export const STORAGE_KEYS = {
   canvasColor: 'brainshake-canvas-color',
   panelColor: 'brainshake-panel-color',
   propertiesAutoHide: 'brainshake-properties-auto-hide',
-  propertiesPanelWidth: 'brainshake-properties-panel-width'
+  propertiesPanelWidth: 'brainshake-properties-panel-width',
+  autoSnapShapes: 'brainshake-shape-correction'
 }
 
 export function loadBoards(): Board[] {

@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings=0",
-    "test": "node --experimental-strip-types --test src/features/board/types.test.ts src/features/accessibility/accessibility.test.ts && vitest run src/features/workspace src/features/board/lib/objects.test.ts src/features/canvas/objects/CanvasObject.test.tsx src/features/toolbar/toolNavigation.test.ts src/features/preferences/dockPosition.test.ts",
+    "test": "node --experimental-strip-types --test src/features/board/types.test.ts src/features/accessibility/accessibility.test.ts && vitest run src/features/workspace src/features/board/lib/objects.test.ts src/features/pen src/features/canvas/objects/CanvasObject.test.tsx src/features/toolbar/toolNavigation.test.ts src/features/preferences/dockPosition.test.ts",
     "format": "prettier --write src eslint.config.ts vite.config.ts tsconfig.json",
     "format:check": "prettier --check src eslint.config.ts vite.config.ts tsconfig.json"
   },

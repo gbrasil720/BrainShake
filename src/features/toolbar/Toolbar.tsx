@@ -33,7 +33,9 @@ export function Toolbar({
   onDockChange,
   onImportFiles,
   onToggleSlides,
-  keyboardNavigation
+  keyboardNavigation,
+  autoSnapShapes,
+  onAutoSnapShapesChange
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
@@ -41,6 +43,8 @@ export function Toolbar({
   onImportFiles: () => void
   onToggleSlides: () => void
   keyboardNavigation: boolean
+  autoSnapShapes: boolean
+  onAutoSnapShapesChange: (value: boolean) => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
@@ -107,6 +111,8 @@ export function Toolbar({
         <StrokeMenu
           value={editor.strokeWidth}
           onChange={editor.setStrokeWidth}
+          autoSnap={autoSnapShapes}
+          onAutoSnapChange={onAutoSnapShapesChange}
           dockPosition={dockPosition}
           open={openMenu === 'stroke'}
           onOpenChange={(open) => setOpenMenu(open ? 'stroke' : null)}
