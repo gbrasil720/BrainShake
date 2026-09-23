@@ -17,6 +17,7 @@ import { canBeginCanvasPan, shouldPanWithSpace } from '@/features/toolbar/toolNa
 import { recognize, UNATTENDED, type Recognition } from '@/features/pen/lib/recognize'
 import { arrowLink } from '@/features/pen/lib/arrowLink'
 import { recognizeGesture, type Gesture } from '@/features/pen/lib/gestures'
+import { tidyStroke } from '@/features/pen/lib/geometry'
 
 const MIN_WIDTH = 100
 const MIN_HEIGHT = 80
@@ -389,7 +390,9 @@ export function useCanvasPointer({
         return
       }
       const snapped = held ?? (autoSnap ? recognize(stroke.points, UNATTENDED) : null)
-      const drawn = finishStroke(stroke)
+      // The freehand version is what stays when nothing snaps, and what undo
+      // brings back when something does.
+      const drawn = finishStroke({ ...stroke, points: tidyStroke(stroke.points) })
       commit((current) => addObjects(current, [drawn]))
       // A separate history entry, so undo brings back the stroke as it was drawn.
       if (snapped && event.type !== 'pointercancel') {

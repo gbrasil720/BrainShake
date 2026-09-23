@@ -9,7 +9,8 @@ import {
   resample,
   rotate,
   simplify,
-  smooth
+  smooth,
+  tidyStroke
 } from './geometry'
 
 const square = [
@@ -124,15 +125,39 @@ describe('rotate', () => {
 })
 
 describe('smooth', () => {
-  it('cuts corners and keeps the ends in place', () => {
-    const path = [
-      { x: 0, y: 0 },
-      { x: 100, y: 0 },
-      { x: 100, y: 100 }
+  it('evens out jitter and keeps the ends in place', () => {
+    const jittery = Array.from({ length: 20 }, (_, index) => ({
+      x: index * 5,
+      y: index % 2 ? 2 : -2
+    }))
+    const result = smooth(jittery)
+    expect(result[0]).toEqual(jittery[0])
+    expect(result[19]).toEqual(jittery[19])
+    for (const point of result.slice(1, -1)) expect(Math.abs(point.y)).toBeLessThan(1)
+  })
+
+  it('moves a sharp corner by less than the spacing between samples', () => {
+    const corner = [
+      ...Array.from({ length: 10 }, (_, index) => ({ x: index * 10, y: 0 })),
+      ...Array.from({ length: 10 }, (_, index) => ({ x: 100, y: index * 10 }))
     ]
-    const result = smooth(path, 1)
-    expect(result[0]).toEqual(path[0])
-    expect(result[result.length - 1]).toEqual(path[2])
-    expect(result).not.toContainEqual({ x: 100, y: 0 })
+    const result = smooth(corner)
+    const nearest = Math.min(...result.map((point) => distance(point, { x: 100, y: 0 })))
+    expect(nearest).toBeLessThan(10)
+  })
+})
+
+describe('tidyStroke', () => {
+  it('drops points that add nothing', () => {
+    const resting = [
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+      ...Array.from({ length: 30 }, (_, index) => ({ x: index * 4, y: 0 }))
+    ]
+    expect(tidyStroke(resting)).toEqual([
+      { x: 0, y: 0 },
+      { x: 116, y: 0 }
+    ])
   })
 })

@@ -130,22 +130,24 @@ export function rotate(points: Point[], radians: number, origin: Point): Point[]
   })
 }
 
-// Chaikin corner cutting: each pass replaces every segment with points at 1/4 and 3/4.
-// Rounds off jitter without moving the stroke's ends.
+// Pulls each point toward the average of its neighbors, which removes pixel-level
+// jitter from pointer input without rounding off real corners. The ends stay put.
 export function smooth(points: Point[], passes = 2): Point[] {
   let result = points
-  for (let pass = 0; pass < passes && result.length > 2; pass++) {
-    const next: Point[] = [result[0]]
-    for (let index = 0; index < result.length - 1; index++) {
-      const a = result[index]
-      const b = result[index + 1]
-      next.push(
-        { x: 0.75 * a.x + 0.25 * b.x, y: 0.75 * a.y + 0.25 * b.y },
-        { x: 0.25 * a.x + 0.75 * b.x, y: 0.25 * a.y + 0.75 * b.y }
-      )
-    }
-    next.push(result[result.length - 1])
-    result = next
-  }
+  for (let pass = 0; pass < passes && result.length > 2; pass++)
+    result = result.map((point, index) =>
+      index === 0 || index === result.length - 1
+        ? point
+        : {
+            x: (result[index - 1].x + 2 * point.x + result[index + 1].x) / 4,
+            y: (result[index - 1].y + 2 * point.y + result[index + 1].y) / 4
+          }
+    )
   return result
+}
+
+// A freehand stroke as it should be stored: jitter smoothed out and points that
+// add nothing (repeats while the pointer rests, samples along straight runs) dropped.
+export function tidyStroke(points: Point[]): Point[] {
+  return simplify(smooth(points), 0.5)
 }
