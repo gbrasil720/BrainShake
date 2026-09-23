@@ -66,7 +66,7 @@ export function resample(points: Point[], count: number): Point[] {
   return result
 }
 
-function distanceToSegment(point: Point, start: Point, end: Point) {
+export function distanceToSegment(point: Point, start: Point, end: Point) {
   const length = distance(start, end)
   if (length === 0) return distance(point, start)
   const t = Math.max(
