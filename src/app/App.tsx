@@ -16,11 +16,7 @@ import { useImportExport } from '@/features/import-export/hooks/useImportExport'
 import { usePreferences } from '@/features/preferences/usePreferences'
 import { PropertiesPanel } from '@/features/properties/PropertiesPanel'
 import { Toolbar } from '@/features/toolbar/Toolbar'
-import {
-  getFontScale,
-  normalizeColorVision,
-  normalizeFontSize
-} from '@/features/accessibility/accessibility'
+import { getFontScale, normalizeFontSize } from '@/features/accessibility/accessibility'
 import { AccessibilityTour } from '@/features/accessibility/AccessibilityTour'
 
 export default function App() {
@@ -55,40 +51,10 @@ export default function App() {
   })
 
   const fontScale = getFontScale(preferences.fontSize)
-  const colorVision = normalizeColorVision(preferences.colorVision)
-
   return (
     <>
-      <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute' }}>
-        <defs>
-          <filter id="protanopia" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="0.567 0.433 0 0 0 0.558 0.442 0 0 0 0 0.242 0.758 0 0 0 0 0 1 0"
-            />
-          </filter>
-          <filter id="deuteranopia" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="0.625 0.375 0 0 0 0.7 0.3 0 0 0 0 0.3 0.7 0 0 0 0 0 1 0"
-            />
-          </filter>
-          <filter id="tritanopia" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="0.95 0.05 0 0 0 0 0.433 0.567 0 0 0 0.475 0.525 0 0 0 0 0 1 0"
-            />
-          </filter>
-          <filter id="achromatopsia" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="0.299 0.587 0.114 0 0 0.299 0.587 0.114 0 0 0.299 0.587 0.114 0 0 0 0 0 1 0"
-            />
-          </filter>
-        </defs>
-      </svg>
       <div
-        className={`app theme-${preferences.theme} font-size-${normalizeFontSize(preferences.fontSize)} ${preferences.highContrast ? 'accessibility-high-contrast' : ''} ${preferences.reduceMotion ? 'reduce-motion' : ''} ${preferences.enhancedFocus ? 'enhanced-focus' : ''} color-vision-${colorVision}`}
+        className={`app theme-${preferences.theme} font-size-${normalizeFontSize(preferences.fontSize)} ${preferences.highContrast ? 'accessibility-high-contrast' : ''} ${preferences.reduceMotion ? 'reduce-motion' : ''} ${preferences.enhancedFocus ? 'enhanced-focus' : ''}`}
         style={
           { '--primary': preferences.accent, '--font-scale': fontScale } as React.CSSProperties
         }
@@ -101,7 +67,12 @@ export default function App() {
           onToggleSettings={() => setShowPanel((value) => !value)}
           onOpenTour={() => setTourOpen(true)}
         />
-        <Sidebar editor={editor} transfer={transfer} onImportFiles={openFilePicker} />
+        <Sidebar
+          editor={editor}
+          transfer={transfer}
+          onImportFiles={openFilePicker}
+          autoHide={preferences.sidebarAutoHide}
+        />
         <main className="workspace">
           <Canvas
             editor={editor}
@@ -115,6 +86,7 @@ export default function App() {
             editor={editor}
             dockPosition={preferences.dockPosition}
             onDockChange={preferences.setDockPosition}
+            autoHide={preferences.dockAutoHide}
             onImportFiles={openFilePicker}
           />
           <ZoomControls

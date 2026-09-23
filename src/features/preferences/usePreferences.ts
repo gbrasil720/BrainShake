@@ -8,7 +8,6 @@ export function usePreferences() {
   const [dockPosition, setDockPosition] = useLocalStorage(STORAGE_KEYS.dock, 'bottom')
   const [fontSize, setFontSize] = useLocalStorage(STORAGE_KEYS.fontSize, 'default')
   const [highContrast, setHighContrast] = useLocalStorage(STORAGE_KEYS.highContrast, false)
-  const [colorVision, setColorVision] = useLocalStorage(STORAGE_KEYS.colorVision, 'none')
   const [reduceMotion, setReduceMotion] = useLocalStorage(STORAGE_KEYS.reduceMotion, false)
   const [keyboardNavigation, setKeyboardNavigation] = useLocalStorage(
     STORAGE_KEYS.keyboardNavigation,
@@ -19,6 +18,8 @@ export function usePreferences() {
     STORAGE_KEYS.tutorialCompleted,
     false
   )
+  const [dockAutoHide, setDockAutoHide] = useLocalStorage(STORAGE_KEYS.dockAutoHide, false)
+  const [sidebarAutoHide, setSidebarAutoHide] = useLocalStorage(STORAGE_KEYS.sidebarAutoHide, false)
   const [grid, setGrid] = useState(true)
   return {
     theme,
@@ -31,8 +32,6 @@ export function usePreferences() {
     setFontSize,
     highContrast,
     setHighContrast,
-    colorVision,
-    setColorVision,
     reduceMotion,
     setReduceMotion,
     keyboardNavigation,
@@ -41,6 +40,10 @@ export function usePreferences() {
     setEnhancedFocus,
     tutorialCompleted,
     setTutorialCompleted,
+    dockAutoHide,
+    setDockAutoHide,
+    sidebarAutoHide,
+    setSidebarAutoHide,
     grid,
     setGrid
   }

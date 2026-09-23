@@ -10,11 +10,12 @@ export const STORAGE_KEYS = {
   clipboard: 'brainshake-copy',
   fontSize: 'brainshake-font-size',
   highContrast: 'brainshake-high-contrast',
-  colorVision: 'brainshake-color-vision',
   reduceMotion: 'brainshake-reduce-motion',
   keyboardNavigation: 'brainshake-keyboard-navigation',
   enhancedFocus: 'brainshake-enhanced-focus',
-  tutorialCompleted: 'brainshake-accessibility-tour-complete'
+  tutorialCompleted: 'brainshake-accessibility-tour-complete',
+  dockAutoHide: 'brainshake-dock-auto-hide',
+  sidebarAutoHide: 'brainshake-sidebar-auto-hide'
 }
 
 export function loadBoards(): Board[] {

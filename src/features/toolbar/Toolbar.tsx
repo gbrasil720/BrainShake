@@ -17,12 +17,14 @@ export function Toolbar({
   editor,
   dockPosition,
   onDockChange,
-  onImportFiles
+  onImportFiles,
+  autoHide
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
   onImportFiles: () => void
+  autoHide: boolean
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const { tool, setTool } = editor
@@ -36,7 +38,7 @@ export function Toolbar({
           }}
         />
       )}
-      <div className={'toolbar dock-' + dockPosition}>
+      <div className={`toolbar dock-${dockPosition} ${autoHide ? 'toolbar-auto-hide' : ''}`}>
         <button
           className="dock-handle"
           draggable="true"

@@ -2,7 +2,7 @@ import type { usePreferences } from '@/features/preferences/usePreferences'
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 
-const STEPS = ['Font Size', 'High Contrast', 'Color Vision', 'Reduce Motion', 'Keyboard Navigation']
+const STEPS = ['Font Size', 'High Contrast', 'Reduce Motion', 'Keyboard Navigation']
 
 export function AccessibilityTour({
   isOpen,
@@ -75,9 +75,8 @@ export function AccessibilityTour({
         <div className="tour-content">
           {step === 0 && <FontStep preferences={preferences} />}
           {step === 1 && <ContrastStep preferences={preferences} />}
-          {step === 2 && <ColorStep preferences={preferences} />}
-          {step === 3 && <MotionStep preferences={preferences} />}
-          {step === 4 && <KeyboardStep preferences={preferences} />}
+          {step === 2 && <MotionStep preferences={preferences} />}
+          {step === 3 && <KeyboardStep preferences={preferences} />}
         </div>
         <div className="tour-actions">
           <button
@@ -137,29 +136,6 @@ function ContrastStep({ preferences }: { preferences: ReturnType<typeof usePrefe
       <div className="tour-contrast-sample">
         <span>Selected item</span>
         <span>Secondary label</span>
-      </div>
-    </div>
-  )
-}
-
-function ColorStep({ preferences }: { preferences: ReturnType<typeof usePreferences> }) {
-  return (
-    <div className="tour-demo-card">
-      <p>Color filters preview common color-vision differences. Labels keep meaning clear.</p>
-      <select
-        className="menu-select"
-        value={preferences.colorVision}
-        onChange={(event) => preferences.setColorVision(event.target.value)}
-      >
-        <option value="none">Off</option>
-        <option value="protanopia">Protanopia</option>
-        <option value="deuteranopia">Deuteranopia</option>
-        <option value="tritanopia">Tritanopia</option>
-        <option value="achromatopsia">Achromatopsia</option>
-      </select>
-      <div className="status-samples">
-        <span className="status-sample success">✓ Saved</span>
-        <span className="status-sample danger">! Error</span>
       </div>
     </div>
   )

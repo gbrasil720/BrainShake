@@ -84,18 +84,6 @@ a:focus-visible,
   --success-ink: color-mix(in srgb, var(--success-ink) 30%, black 70%);
   --danger-ink: color-mix(in srgb, var(--danger-ink) 30%, black 70%);
 }
-.color-vision-protanopia * {
-  filter: url('#protanopia');
-}
-.color-vision-deuteranopia * {
-  filter: url('#deuteranopia');
-}
-.color-vision-tritanopia * {
-  filter: url('#tritanopia');
-}
-.color-vision-achromatopsia * {
-  filter: url('#achromatopsia');
-}
 .reduce-motion *,
 .reduce-motion *::before,
 .reduce-motion *::after {
@@ -232,6 +220,15 @@ a:focus-visible,
   flex-direction: column;
   gap: 24px;
   overflow: auto;
+}
+.sidebar.sidebar-auto-hide {
+  transform: translateX(calc(-100% + 24px));
+  transition: transform 0.24s ease;
+  z-index: 25;
+}
+.sidebar.sidebar-auto-hide:hover,
+.sidebar.sidebar-auto-hide:focus-within {
+  transform: translateX(0);
 }
 .sidebar-section {
   display: flex;
@@ -434,6 +431,47 @@ a:focus-visible,
   width: 24px;
   height: 1px;
   margin: 4px 0;
+}
+.toolbar.toolbar-auto-hide {
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+.toolbar.toolbar-auto-hide:hover,
+.toolbar.toolbar-auto-hide:focus-within {
+  opacity: 1;
+}
+.toolbar.dock-bottom.toolbar-auto-hide {
+  opacity: 0.16;
+  transform: translateX(-50%) translateY(calc(100% - 18px));
+}
+.toolbar.dock-bottom.toolbar-auto-hide:hover,
+.toolbar.dock-bottom.toolbar-auto-hide:focus-within {
+  transform: translateX(-50%);
+}
+.toolbar.dock-top.toolbar-auto-hide {
+  opacity: 0.16;
+  transform: translateX(50%) translateY(calc(-100% + 18px));
+}
+.toolbar.dock-top.toolbar-auto-hide:hover,
+.toolbar.dock-top.toolbar-auto-hide:focus-within {
+  transform: translateX(50%);
+}
+.toolbar.dock-right.toolbar-auto-hide {
+  opacity: 0.16;
+  transform: translateY(-50%) translateX(calc(100% - 18px));
+}
+.toolbar.dock-right.toolbar-auto-hide:hover,
+.toolbar.dock-right.toolbar-auto-hide:focus-within {
+  transform: translateY(-50%);
+}
+.toolbar.dock-left.toolbar-auto-hide {
+  opacity: 0.16;
+  transform: translateY(-50%) translateX(calc(-100% + 18px));
+}
+.toolbar.dock-left.toolbar-auto-hide:hover,
+.toolbar.dock-left.toolbar-auto-hide:focus-within {
+  transform: translateY(-50%);
 }
 .toolbar-divider {
   width: 1px;
@@ -1860,32 +1898,6 @@ kbd {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-.color-vision-protanopia {
-  filter: url('#protanopia');
-}
-.color-vision-deuteranopia {
-  filter: url('#deuteranopia');
-}
-.color-vision-tritanopia {
-  filter: url('#tritanopia');
-}
-.color-vision-achromatopsia {
-  filter: grayscale(1);
-}
-
-.color-vision-protanopia,
-.color-vision-deuteranopia,
-.color-vision-tritanopia {
-  isolation: isolate;
-  filter: url('#protanopia');
-}
-.color-vision-deuteranopia {
-  filter: url('#deuteranopia');
-}
-.color-vision-tritanopia {
-  filter: url('#tritanopia');
 }
 
 .font-size-small {

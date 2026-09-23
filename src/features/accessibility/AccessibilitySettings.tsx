@@ -1,6 +1,6 @@
 import type { usePreferences } from '@/features/preferences/usePreferences'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
-import { FONT_SIZES, normalizeColorVision, normalizeFontSize } from './accessibility'
+import { FONT_SIZES, normalizeFontSize } from './accessibility'
 
 const fontLabels = {
   small: 'Small',
@@ -74,26 +74,6 @@ export function AccessibilitySettings({
           value={preferences.highContrast}
           onChange={() => preferences.setHighContrast((value) => !value)}
         />
-        <div className="accessibility-row">
-          <div>
-            <strong>Color Vision</strong>
-            <span>Preview color differences more clearly.</span>
-          </div>
-          <select
-            className="menu-select"
-            aria-label="Color vision mode"
-            value={normalizeColorVision(preferences.colorVision)}
-            onChange={(event) =>
-              preferences.setColorVision(normalizeColorVision(event.target.value))
-            }
-          >
-            <option value="none">Off</option>
-            <option value="protanopia">Protanopia</option>
-            <option value="deuteranopia">Deuteranopia</option>
-            <option value="tritanopia">Tritanopia</option>
-            <option value="achromatopsia">Achromatopsia</option>
-          </select>
-        </div>
         <ToggleRow
           label="Reduce Motion"
           description="Reduce animation and transition intensity."

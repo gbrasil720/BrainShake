@@ -8,14 +8,16 @@ import { SidebarFooter } from './SidebarFooter'
 export function Sidebar({
   editor,
   transfer,
-  onImportFiles
+  onImportFiles,
+  autoHide
 }: {
   editor: ReturnType<typeof useBoardEditor>
   transfer: ReturnType<typeof useImportExport>
   onImportFiles: () => void
+  autoHide: boolean
 }) {
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${autoHide ? 'sidebar-auto-hide' : ''}`}>
       <div className="sidebar-section">
         <div className="section-label">Workspace</div>
         <button className="nav-item active">

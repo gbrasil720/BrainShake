@@ -37,6 +37,34 @@ export function AppearanceSettings({
         </select>
       </div>
       <div className="panel-row">
+        <span>Dock auto-hide</span>
+        <button
+          className="nav-item"
+          style={{
+            padding: '0 7px',
+            minHeight: 25,
+            background: preferences.dockAutoHide ? 'var(--primary-soft)' : 'var(--line)'
+          }}
+          onClick={() => preferences.setDockAutoHide((value) => !value)}
+        >
+          {preferences.dockAutoHide ? 'On' : 'Off'}
+        </button>
+      </div>
+      <div className="panel-row">
+        <span>Sidebar auto-hide</span>
+        <button
+          className="nav-item"
+          style={{
+            padding: '0 7px',
+            minHeight: 25,
+            background: preferences.sidebarAutoHide ? 'var(--primary-soft)' : 'var(--line)'
+          }}
+          onClick={() => preferences.setSidebarAutoHide((value) => !value)}
+        >
+          {preferences.sidebarAutoHide ? 'On' : 'Off'}
+        </button>
+      </div>
+      <div className="panel-row">
         <span>Theme</span>
         <select
           className="menu-select"
