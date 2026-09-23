@@ -16,7 +16,11 @@ import { useImportExport } from '@/features/import-export/hooks/useImportExport'
 import { usePreferences } from '@/features/preferences/usePreferences'
 import { PropertiesPanel } from '@/features/properties/PropertiesPanel'
 import { Toolbar } from '@/features/toolbar/Toolbar'
-import { normalizeColorVision, normalizeFontSize } from '@/features/accessibility/accessibility'
+import {
+  getFontScale,
+  normalizeColorVision,
+  normalizeFontSize
+} from '@/features/accessibility/accessibility'
 import { AccessibilityTour } from '@/features/accessibility/AccessibilityTour'
 
 export default function App() {
@@ -51,12 +55,7 @@ export default function App() {
     vimBindings: preferences.vimBindings
   })
 
-  const fontScale = {
-    small: 0.92,
-    default: 1,
-    large: 1.12,
-    'extra-large': 1.24
-  }[normalizeFontSize(preferences.fontSize)]
+  const fontScale = getFontScale(preferences.fontSize)
   const colorVision = normalizeColorVision(preferences.colorVision)
 
   return (
