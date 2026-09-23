@@ -2,60 +2,48 @@ import JSZip from 'jszip'
 import { boardFilename, downloadBlob } from './download'
 import type { Board } from '@/features/board/types'
 import { isBoardData } from '@/features/board/types'
+import type { WorkspaceDocument } from '@/features/workspace/model'
+import { isWorkspaceDocument } from '@/features/workspace/model'
+import { extractMedia, referencedMediaPaths, restoreMedia } from '@/features/workspace/media'
 
-const MEDIA_OBJECT_TYPES = ['image', 'video', 'html']
+export type BrainshakeImport =
+  | { kind: 'workspace'; data: WorkspaceDocument; assets: Map<string, Blob> }
+  | { kind: 'board'; data: Pick<Board, 'name' | 'objects'> }
 
-const MEDIA_EXTENSIONS: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/svg+xml': 'svg',
-  'image/png': 'png',
-  'image/gif': 'gif',
-  'image/webp': 'webp',
-  'video/mp4': 'mp4',
-  'video/webm': 'webm',
-  'text/html': 'html'
-}
-
-export function dataUrlInfo(src: string, id: string) {
-  // eslint-disable-next-line no-control-regex
-  const match = /^data:([^;,]+)?((?:;[^,]*)?),([\x00-\x7f]*)$/s.exec(src)
-  if (!match) return null
-  const mediaType = match[1] || 'application/octet-stream'
-  const metadata = match[2] || ''
-  return {
-    mediaType,
-    extension: MEDIA_EXTENSIONS[mediaType] || 'bin',
-    data: match[3],
-    base64: metadata.includes(';base64'),
-    id: id.replace(/[^a-z0-9_-]/gi, '-')
-  }
-}
-
-export async function exportBrainshake(board: Board) {
+export async function createWorkspaceArchive(
+  document: WorkspaceDocument,
+  savedAssets = new Map<string, Blob>()
+): Promise<Blob> {
+  if (!isWorkspaceDocument(document)) throw Error('Invalid workspace')
+  const assets = new Map(savedAssets)
+  const cache = new Map<string, Promise<string>>()
+  const boards = await extractMedia(document.boards, assets, cache)
+  const snapshots = await Promise.all(
+    document.snapshots.map(async (snapshot) => ({
+      ...snapshot,
+      boards: await extractMedia(snapshot.boards, assets, cache)
+    }))
+  )
+  for (const path of referencedMediaPaths([...boards, ...snapshots.flatMap((item) => item.boards)]))
+    if (!assets.has(path)) throw Error('Missing workspace media asset')
   const zip = new JSZip()
-  const media: { path: string; content: string; base64: boolean }[] = []
-  const objects = board.objects.map((item) => {
-    if (
-      !MEDIA_OBJECT_TYPES.includes(item.type) ||
-      !('src' in item) ||
-      !item.src?.startsWith('data:')
-    )
-      return { ...item }
-    const info = dataUrlInfo(item.src, item.id)
-    if (!info) return { ...item }
-    const path = `media/${info.id}.${info.extension}`
-    const content = info.base64 ? info.data : decodeURIComponent(info.data)
-    media.push({ path, content, base64: info.base64 })
-    return { ...item, src: path, mediaType: info.mediaType }
+  zip.file('manifest.json', JSON.stringify({ ...document, boards, snapshots }, null, 2))
+  for (const [path, blob] of assets) zip.file(path, blob, { compression: 'STORE' })
+  return zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 }
   })
-  zip.file('board.json', JSON.stringify({ name: board.name, objects }, null, 2))
-  media.forEach((item) => zip.file(item.path, item.content, { base64: item.base64 }))
-  downloadBlob(await zip.generateAsync({ type: 'blob' }), boardFilename(board.name, 'brainshake'))
+}
+
+export async function exportBrainshake(document: WorkspaceDocument, assets?: Map<string, Blob>) {
+  const blob = await createWorkspaceArchive(document, assets)
+  downloadBlob(blob, boardFilename(document.name, 'brainshake'))
 }
 
 export function exportJson(board: Board) {
   const objects = board.objects.map((item) => {
-    if (!MEDIA_OBJECT_TYPES.includes(item.type) || !('src' in item)) return { ...item }
+    if (!['image', 'video', 'html'].includes(item.type) || !('src' in item)) return { ...item }
     const { src, ...withoutSrc } = item
     return { ...withoutSrc, mediaOmitted: true }
   })
@@ -67,24 +55,49 @@ export function exportJson(board: Board) {
   )
 }
 
-// Reads a .brainshake (zip) or .json file. Throws when the file is not a valid board.
-export async function importBoard(file: File): Promise<Pick<Board, 'name' | 'objects'>> {
+export async function importBrainshake(file: Blob): Promise<BrainshakeImport> {
   const buffer = await file.arrayBuffer()
   const bytes = new Uint8Array(buffer)
-  let data: unknown
-  if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
-    const zip = await JSZip.loadAsync(buffer)
-    const manifest = zip.file('board.json')
-    if (!manifest) throw Error()
-    data = JSON.parse(await manifest.async('text'))
-    if (!isBoardData(data)) throw Error()
-    for (const item of data.objects) {
-      if (!('src' in item) || !item.src?.startsWith('media/')) continue
-      const mediaFile = zip.file(item.src.replace(/^\.\//, ''))
-      if (!mediaFile || !item.mediaType) throw Error()
-      item.src = `data:${item.mediaType};base64,${await mediaFile.async('base64')}`
-    }
-  } else data = JSON.parse(new TextDecoder().decode(bytes))
-  if (!isBoardData(data)) throw Error()
-  return data
+  if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
+    const data: unknown = JSON.parse(new TextDecoder().decode(bytes))
+    if (!isBoardData(data)) throw Error('Invalid board')
+    return { kind: 'board', data }
+  }
+
+  const zip = await JSZip.loadAsync(buffer)
+  const manifest = zip.file('manifest.json')
+  if (manifest) {
+    const data: unknown = JSON.parse(await manifest.async('text'))
+    if (!isWorkspaceDocument(data)) throw Error('Unsupported workspace format')
+    const paths = referencedMediaPaths([
+      ...data.boards,
+      ...data.snapshots.flatMap((snapshot) => snapshot.boards)
+    ])
+    const assets = new Map<string, Blob>()
+    await Promise.all(
+      paths.map(async (path) => {
+        const blob = await zip.file(path)?.async('blob')
+        if (!blob) throw Error('Missing media asset')
+        assets.set(path, blob)
+      })
+    )
+    const getAsset = async (path: string) => assets.get(path)
+    const boards = await restoreMedia(data.boards, getAsset)
+    return { kind: 'workspace', data: { ...data, boards }, assets }
+  }
+
+  // The first .brainshake files held exactly one board in board.json.
+  const legacyFile = zip.file('board.json')
+  if (!legacyFile) throw Error('Missing board')
+  const data: unknown = JSON.parse(await legacyFile.async('text'))
+  if (!isBoardData(data)) throw Error('Invalid board')
+  const legacyBoard: Board = {
+    id: data.id || 'legacy-board',
+    name: data.name,
+    objects: data.objects
+  }
+  const [restored] = await restoreMedia([legacyBoard], async (path) =>
+    zip.file(path)?.async('blob')
+  )
+  return { kind: 'board', data: { name: restored.name, objects: restored.objects } }
 }

@@ -40,10 +40,10 @@ BrainShake includes light, warm, mint, dark, and OLED visual themes. The board s
 - Import web images directly from a URL
 - Duplicate, delete, copy, paste, bring to front, and undo or redo changes
 - Keyboard shortcuts, context menu, properties panel, and responsive layout
-- Autosave to browser storage with `.brainshake.json` export and import
+- Autosave to browser storage, named workspace snapshots, and `.brainshake` export and import
 - Static deployment configured for GitHub Pages
 
-Imported assets are stored as Data URLs so images, videos, and HTML previews remain available after reopening the page. Large files can exceed the browser's `localStorage` quota; when that happens, exporting a `.brainshake.json` backup is recommended.
+Imported assets are stored as Data URLs so images, videos, and HTML previews remain available after reopening the page. A `.brainshake` file includes every board, named snapshots, and local assets; the separate `.json` export contains only the current board and omits media. Large files can exceed the browser's `localStorage` quota; when that happens, the header reports a save failure and exporting a `.brainshake` backup is recommended. See [the workspace format](docs/brainshake-format.md) for the archive layout and compatibility details.
 
 ## Run locally
 

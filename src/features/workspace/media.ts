@@ -1,0 +1,112 @@
+import type { Board } from '@/features/board/types'
+
+const MEDIA_OBJECT_TYPES = new Set(['image', 'video', 'html'])
+const MEDIA_EXTENSIONS: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/svg+xml': 'svg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'text/html': 'html'
+}
+
+export type MediaAsset = { path: string; blob: Blob }
+
+function mediaReference(item: Board['objects'][number]): string | null {
+  if (!MEDIA_OBJECT_TYPES.has(item.type) || !('src' in item) || !item.src?.startsWith('media/'))
+    return null
+  if (!/^media\/[a-z0-9_-]+\.[a-z0-9]+$/i.test(item.src) || !item.mediaType)
+    throw Error('Invalid media reference')
+  return item.src
+}
+
+export function referencedMediaPaths(boards: Board[]): string[] {
+  const paths = new Set<string>()
+  for (const board of boards) {
+    for (const item of board.objects) {
+      const path = mediaReference(item)
+      if (path) paths.add(path)
+    }
+  }
+  return [...paths]
+}
+
+// The same asset path is reused by the working copy and every snapshot.
+export async function extractMedia(
+  boards: Board[],
+  assets: Map<string, Blob>,
+  cache = new Map<string, Promise<string>>()
+): Promise<Board[]> {
+  return Promise.all(
+    boards.map(async (board) => ({
+      ...board,
+      objects: await Promise.all(
+        board.objects.map(async (item) => {
+          if (
+            !MEDIA_OBJECT_TYPES.has(item.type) ||
+            !('src' in item) ||
+            !item.src?.startsWith('data:')
+          )
+            return { ...item }
+
+          const source = item.src
+          const mediaType = /^data:([^;,]+)/.exec(source)?.[1] || 'application/octet-stream'
+          let path = cache.get(source)
+          if (!path) {
+            path = (async () => {
+              const blob = await (await fetch(source)).blob()
+              const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
+              const hash = Array.from(new Uint8Array(digest), (byte) =>
+                byte.toString(16).padStart(2, '0')
+              ).join('')
+              const assetPath = `media/${hash}.${MEDIA_EXTENSIONS[mediaType] || 'bin'}`
+              assets.set(assetPath, blob)
+              return assetPath
+            })()
+            cache.set(source, path)
+          }
+          return { ...item, src: await path, mediaType }
+        })
+      )
+    }))
+  )
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+export async function restoreMedia(
+  boards: Board[],
+  getAsset: (path: string) => Promise<Blob | undefined>
+): Promise<Board[]> {
+  const cache = new Map<string, Promise<string>>()
+  return Promise.all(
+    boards.map(async (board) => ({
+      ...board,
+      objects: await Promise.all(
+        board.objects.map(async (item) => {
+          const path = mediaReference(item)
+          if (!path || !('mediaType' in item)) return { ...item }
+          const cacheKey = `${path}:${item.mediaType}`
+          let loaded = cache.get(cacheKey)
+          if (!loaded) {
+            loaded = getAsset(path).then((blob) => {
+              if (!blob) throw Error('Missing media asset')
+              return blobToDataUrl(new Blob([blob], { type: item.mediaType }))
+            })
+            cache.set(cacheKey, loaded)
+          }
+          return { ...item, src: await loaded }
+        })
+      )
+    }))
+  )
+}

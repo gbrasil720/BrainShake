@@ -18,6 +18,7 @@ import { Toolbar } from '@/features/toolbar/Toolbar'
 import { getFontScale, normalizeFontSize } from '@/features/accessibility/accessibility'
 import { AccessibilityTour } from '@/features/accessibility/AccessibilityTour'
 import { PresentationMode } from '@/features/presentation/PresentationMode'
+import { useSnapshots } from '@/features/workspace/useSnapshots'
 
 export default function App() {
   const [toast, showToast] = useToast()
@@ -25,7 +26,8 @@ export default function App() {
   const viewport = useViewport()
   const editor = useBoardEditor({ viewport, showToast })
   const pointer = useCanvasPointer({ editor, viewport })
-  const transfer = useImportExport({ editor, showToast })
+  const snapshots = useSnapshots({ editor, showToast })
+  const transfer = useImportExport({ editor, snapshots, showToast })
   const [showPanel, setShowPanel] = useState(true)
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
@@ -89,6 +91,11 @@ export default function App() {
           } as React.CSSProperties
         }
       >
+        {transfer.importing && (
+          <div className="workspace-importing" role="status" aria-live="polite">
+            Importing workspace…
+          </div>
+        )}
         <Topbar
           editor={editor}
           transfer={transfer}
@@ -100,6 +107,7 @@ export default function App() {
         <Sidebar
           editor={editor}
           transfer={transfer}
+          snapshots={snapshots}
           onImportFiles={openFilePicker}
           autoHide={preferences.sidebarAutoHide}
           preferences={preferences}

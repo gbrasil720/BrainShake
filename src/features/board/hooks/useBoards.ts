@@ -1,21 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 import { makeId } from '@/lib/id'
-import { loadBoards, saveBoards } from '../lib/storage'
+import { loadBoards, loadWorkspaceIdentity, saveBoards, STORAGE_KEYS } from '../lib/storage'
 import type { Board } from '../types'
 
 export function useBoards({ onSaveError }: { onSaveError: () => void }) {
   const [boards, setBoards] = useState(loadBoards)
-  const [board, setBoard] = useState(() => boards[0])
+  const [board, setBoard] = useState(
+    () =>
+      boards.find((item) => item.id === localStorage.getItem(STORAGE_KEYS.activeBoard)) || boards[0]
+  )
+  const [workspace, setWorkspace] = useState(loadWorkspaceIdentity)
+  const [saveState, setSaveState] = useState<'saved' | 'error'>('saved')
   // Latest board, readable synchronously between renders (async imports, pointer moves).
   const boardRef = useRef(board)
 
   useEffect(() => {
+    let cancelled = false
+    let state: 'saved' | 'error' = 'saved'
     try {
       saveBoards(boards)
+      localStorage.setItem(STORAGE_KEYS.activeBoard, board.id)
+      localStorage.setItem(STORAGE_KEYS.workspaceId, workspace.id)
+      localStorage.setItem(STORAGE_KEYS.workspaceName, workspace.name)
     } catch {
+      state = 'error'
       onSaveError()
     }
-  }, [boards]) // eslint-disable-line react-hooks/exhaustive-deps
+    queueMicrotask(() => {
+      if (!cancelled) setSaveState(state)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [boards, board.id, workspace]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function getBoard() {
     return boardRef.current
@@ -82,15 +99,27 @@ export function useBoards({ onSaveError }: { onSaveError: () => void }) {
     )
   }
 
+  function replaceWorkspace(nextBoards: Board[], activeBoardId: string, id: string, name: string) {
+    const active = nextBoards.find((item) => item.id === activeBoardId)
+    if (!active || !nextBoards.length) throw Error('Invalid workspace')
+    boardRef.current = active
+    setBoards(nextBoards)
+    setBoard(active)
+    setWorkspace({ id, name })
+  }
+
   return {
     boards,
     board,
+    workspace,
+    saveState,
     getBoard,
     replaceBoard,
     renameBoard,
     createBoard,
     switchBoard,
     deleteBoard,
-    toggleBoardLink
+    toggleBoardLink,
+    replaceWorkspace
   }
 }

@@ -12,7 +12,7 @@ import {
 } from '../lib/objects'
 import { useBoards } from './useBoards'
 import { useHistory } from './useHistory'
-import type { BoardPatch, CanvasItem, Point } from '../types'
+import type { Board, BoardPatch, CanvasItem, Point } from '../types'
 import { isBoardItem, isConnectorItem } from '../types'
 import type { useViewport } from '@/features/canvas/hooks/useViewport'
 
@@ -37,6 +37,7 @@ export function useBoardEditor({
   function switchBoard(id: string) {
     if (!boards.switchBoard(id)) return
     setSelected([])
+    history.reset()
     viewport.reset()
   }
 
@@ -47,7 +48,17 @@ export function useBoardEditor({
   }
 
   function deleteBoard(id: string) {
-    if (boards.deleteBoard(id)) setSelected([])
+    if (boards.deleteBoard(id)) {
+      setSelected([])
+      history.reset()
+    }
+  }
+
+  function replaceWorkspace(nextBoards: Board[], activeBoardId: string, id: string, name: string) {
+    boards.replaceWorkspace(nextBoards, activeBoardId, id, name)
+    history.reset()
+    setSelected([])
+    viewport.reset()
   }
 
   function undo() {
@@ -145,10 +156,13 @@ export function useBoardEditor({
   return {
     boards: boards.boards,
     board,
+    workspace: boards.workspace,
+    saveState: boards.saveState,
     renameBoard: boards.renameBoard,
     switchBoard,
     createBoard,
     deleteBoard,
+    replaceWorkspace,
     commit,
     undo,
     redo,
