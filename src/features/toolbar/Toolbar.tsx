@@ -5,6 +5,7 @@ import {
   BoxSelect,
   Hand,
   ImagePlus,
+  Link2,
   Pencil,
   Presentation,
   Redo2,
@@ -21,7 +22,8 @@ const TOOLS = [
   { id: 'hand', icon: Hand, label: 'Pan canvas (H)' },
   { id: 'text', icon: Type, label: 'Text (T)' },
   { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' },
-  { id: 'pen', icon: Pencil, label: 'Pen (P)' }
+  { id: 'pen', icon: Pencil, label: 'Pen (P)' },
+  { id: 'connector', icon: Link2, label: 'Link elements (L)' }
 ]
 
 export function Toolbar({
@@ -29,14 +31,12 @@ export function Toolbar({
   dockPosition,
   onDockChange,
   onImportFiles,
-  autoHide,
   onToggleSlides
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
   onImportFiles: () => void
-  autoHide: boolean
   onToggleSlides: () => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
@@ -51,7 +51,7 @@ export function Toolbar({
           }}
         />
       )}
-      <div className={`toolbar dock-${dockPosition} ${autoHide ? 'toolbar-auto-hide' : ''}`}>
+      <div className={`toolbar dock-${dockPosition}`}>
         <Button
           variant="ghost"
           className="dock-handle"

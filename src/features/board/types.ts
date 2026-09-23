@@ -16,6 +16,7 @@ export type CanvasItem = {
   mediaOmitted?: boolean
   locked?: boolean
   slide?: boolean
+  slideOrder?: number
   editing?: boolean
   fill?: string
   fillColor?: string
@@ -45,6 +46,7 @@ export function isBoardItem(value: unknown): value is BoardItem {
     ['locked', 'editing', 'mediaOmitted', 'slide'].every(
       (key) => value[key] === undefined || typeof value[key] === 'boolean'
     ) &&
+    (value.slideOrder === undefined || typeof value.slideOrder === 'number') &&
     (value.strokeWidth === undefined || typeof value.strokeWidth === 'number') &&
     (value.points === undefined ||
       (Array.isArray(value.points) &&

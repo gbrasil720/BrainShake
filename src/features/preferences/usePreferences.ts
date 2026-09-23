@@ -18,7 +18,6 @@ export function usePreferences() {
     STORAGE_KEYS.tutorialCompleted,
     false
   )
-  const [dockAutoHide, setDockAutoHide] = useLocalStorage(STORAGE_KEYS.dockAutoHide, false)
   const [sidebarAutoHide, setSidebarAutoHide] = useLocalStorage(STORAGE_KEYS.sidebarAutoHide, false)
   const [headerColor, setHeaderColor] = useLocalStorage(STORAGE_KEYS.headerColor, '')
   const [sidebarColor, setSidebarColor] = useLocalStorage(STORAGE_KEYS.sidebarColor, '')
@@ -44,8 +43,6 @@ export function usePreferences() {
     setEnhancedFocus,
     tutorialCompleted,
     setTutorialCompleted,
-    dockAutoHide,
-    setDockAutoHide,
     sidebarAutoHide,
     setSidebarAutoHide,
     headerColor,

@@ -47,21 +47,6 @@ export function AppearanceSettings({
         </Select>
       </div>
       <div className="panel-row">
-        <span>Dock auto-hide</span>
-        <Button
-          variant="ghost"
-          className="nav-item"
-          style={{
-            padding: '0 7px',
-            minHeight: 25,
-            background: preferences.dockAutoHide ? 'var(--primary-soft)' : 'var(--line)'
-          }}
-          onClick={() => preferences.setDockAutoHide((value) => !value)}
-        >
-          {preferences.dockAutoHide ? 'On' : 'Off'}
-        </Button>
-      </div>
-      <div className="panel-row">
         <span>Sidebar auto-hide</span>
         <Button
           variant="ghost"

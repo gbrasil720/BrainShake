@@ -14,7 +14,6 @@ export const STORAGE_KEYS = {
   keyboardNavigation: 'brainshake-keyboard-navigation',
   enhancedFocus: 'brainshake-enhanced-focus',
   tutorialCompleted: 'brainshake-accessibility-tour-complete',
-  dockAutoHide: 'brainshake-dock-auto-hide',
   sidebarAutoHide: 'brainshake-sidebar-auto-hide',
   headerColor: 'brainshake-header-color',
   sidebarColor: 'brainshake-sidebar-color',

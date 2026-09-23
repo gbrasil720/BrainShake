@@ -527,47 +527,6 @@ a:focus-visible,
   height: 1px;
   margin: 4px 0;
 }
-.toolbar.toolbar-auto-hide {
-  transition:
-    opacity 0.24s ease,
-    transform 0.24s ease;
-}
-.toolbar.toolbar-auto-hide:hover,
-.toolbar.toolbar-auto-hide:focus-within {
-  opacity: 1;
-}
-.toolbar.dock-bottom.toolbar-auto-hide {
-  opacity: 0;
-  transform: translateX(-50%) translateY(calc(100% - 18px));
-}
-.toolbar.dock-bottom.toolbar-auto-hide:hover,
-.toolbar.dock-bottom.toolbar-auto-hide:focus-within {
-  transform: translateX(-50%);
-}
-.toolbar.dock-top.toolbar-auto-hide {
-  opacity: 0;
-  transform: translateX(50%) translateY(calc(-100% + 18px));
-}
-.toolbar.dock-top.toolbar-auto-hide:hover,
-.toolbar.dock-top.toolbar-auto-hide:focus-within {
-  transform: translateX(50%);
-}
-.toolbar.dock-right.toolbar-auto-hide {
-  opacity: 0;
-  transform: translateY(-50%) translateX(calc(100% - 18px));
-}
-.toolbar.dock-right.toolbar-auto-hide:hover,
-.toolbar.dock-right.toolbar-auto-hide:focus-within {
-  transform: translateY(-50%);
-}
-.toolbar.dock-left.toolbar-auto-hide {
-  opacity: 0;
-  transform: translateY(-50%) translateX(calc(-100% + 18px));
-}
-.toolbar.dock-left.toolbar-auto-hide:hover,
-.toolbar.dock-left.toolbar-auto-hide:focus-within {
-  transform: translateY(-50%);
-}
 .slide-marker {
   position: absolute;
   top: 5px;

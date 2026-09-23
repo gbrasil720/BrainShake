@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import type { BoardItem, CanvasItem } from '@/features/board/types'
-import { isCanvasItem } from '@/features/board/types'
+import { isCanvasItem, isConnectorItem } from '@/features/board/types'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClose: () => void }) {
-  const slides = items.filter((item): item is CanvasItem => isCanvasItem(item) && !!item.slide)
+  const slides = orderSlides(items)
   const [index, setIndex] = useState(0)
   const current = slides[index]
 
@@ -82,6 +82,48 @@ export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClo
         </footer>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function orderSlides(items: BoardItem[]) {
+  const slides = items
+    .filter((item): item is CanvasItem => isCanvasItem(item) && !!item.slide)
+    .sort(byClickOrder)
+  const slideIds = new Set(slides.map((slide) => slide.id))
+  const outgoing = new Map<string, string[]>()
+  const indegree = new Map(slides.map((slide) => [slide.id, 0]))
+
+  items.filter(isConnectorItem).forEach((connector) => {
+    if (!slideIds.has(connector.from) || !slideIds.has(connector.to)) return
+    outgoing.set(connector.from, [...(outgoing.get(connector.from) || []), connector.to])
+    indegree.set(connector.to, (indegree.get(connector.to) || 0) + 1)
+  })
+
+  const queue = slides.filter((slide) => indegree.get(slide.id) === 0)
+  const ordered: CanvasItem[] = []
+  while (queue.length) {
+    const current = queue.shift()!
+    ordered.push(current)
+    for (const targetId of outgoing.get(current.id) || []) {
+      const remaining = (indegree.get(targetId) || 0) - 1
+      indegree.set(targetId, remaining)
+      if (remaining === 0) {
+        const target = slides.find((slide) => slide.id === targetId)
+        if (target) {
+          queue.push(target)
+          queue.sort(byClickOrder)
+        }
+      }
+    }
+  }
+  return ordered.length === slides.length
+    ? ordered
+    : [...ordered, ...slides.filter((slide) => !ordered.includes(slide))]
+}
+
+function byClickOrder(left: CanvasItem, right: CanvasItem) {
+  return (
+    (left.slideOrder ?? Number.MAX_SAFE_INTEGER) - (right.slideOrder ?? Number.MAX_SAFE_INTEGER)
   )
 }
 

@@ -91,15 +91,57 @@
 }
 .resize-handle {
   position: absolute;
-  right: -7px;
-  bottom: -7px;
   width: 13px;
   height: 13px;
   border: 2px solid white;
   border-radius: 4px;
   background: var(--primary);
-  cursor: nwse-resize;
+  z-index: 4;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.resize-nw {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+.resize-n {
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.resize-ne {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+.resize-e {
+  top: 50%;
+  right: -7px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.resize-se {
+  right: -7px;
+  bottom: -7px;
+  cursor: nwse-resize;
+}
+.resize-s {
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.resize-sw {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+.resize-w {
+  top: 50%;
+  left: -7px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
 }
 .sticky {
   padding: 19px;

@@ -14,7 +14,16 @@ const MIN_HEIGHT = 80
 // Pen strokes in progress live in `drawing`.
 type Dragging =
   | { type: 'move'; ids: string[]; start: Point; origins: (Point & { id: string })[] }
-  | { type: 'resize'; id: string; start: Point; w: number; h: number }
+  | {
+      type: 'resize'
+      id: string
+      start: Point
+      x: number
+      y: number
+      w: number
+      h: number
+      direction: string
+    }
   | { type: 'pan'; start: Point; origin: Point }
 
 export function useCanvasPointer({
@@ -78,7 +87,18 @@ export function useCanvasPointer({
   function beginResize(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
     const point = screenPoint(event)
-    setDragging({ type: 'resize', id: item.id, start: point, w: item.w, h: item.h })
+    const direction =
+      (event.currentTarget.className.match(/resize-(nw|n|ne|e|se|s|sw|w)/) || [])[1] || 'se'
+    setDragging({
+      type: 'resize',
+      id: item.id,
+      start: point,
+      x: item.x,
+      y: item.y,
+      w: item.w,
+      h: item.h,
+      direction
+    })
   }
 
   function beginPan(event: React.PointerEvent<HTMLDivElement>) {
@@ -137,15 +157,30 @@ export function useCanvasPointer({
       return
     }
     const point = screenPoint(event)
-    if (dragging.type === 'resize')
+    if (dragging.type === 'resize') {
+      const dx = point.x - dragging.start.x
+      const dy = point.y - dragging.start.y
+      const left = dragging.direction.includes('w')
+      const top = dragging.direction.includes('n')
+      const nextW = Math.max(
+        MIN_WIDTH,
+        dragging.w + (left ? -dx : dragging.direction.includes('e') ? dx : 0)
+      )
+      const nextH = Math.max(
+        MIN_HEIGHT,
+        dragging.h + (top ? -dy : dragging.direction.includes('s') ? dy : 0)
+      )
       editor.updateObject(
         dragging.id,
         {
-          w: Math.max(MIN_WIDTH, dragging.w + point.x - dragging.start.x),
-          h: Math.max(MIN_HEIGHT, dragging.h + point.y - dragging.start.y)
+          x: left ? dragging.x + dragging.w - nextW : dragging.x,
+          y: top ? dragging.y + dragging.h - nextH : dragging.y,
+          w: nextW,
+          h: nextH
         },
         false
       )
+    }
     if (dragging.type === 'move')
       commit(
         (current) =>

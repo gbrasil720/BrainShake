@@ -38,7 +38,23 @@ export default function App() {
     const selectedItems = board.objects.filter((item) => selected.includes(item.id))
     if (!selectedItems.length) return
     const shouldAdd = selectedItems.some((item) => !('slide' in item) || !item.slide)
-    selectedItems.forEach((item) => editor.updateObject(item.id, { slide: shouldAdd }, false))
+    const highestOrder = board.objects.reduce(
+      (highest, item) =>
+        Math.max(
+          highest,
+          'slideOrder' in item && typeof item.slideOrder === 'number' ? item.slideOrder : 0
+        ),
+      0
+    )
+    selectedItems.forEach((item, index) =>
+      editor.updateObject(
+        item.id,
+        shouldAdd
+          ? { slide: true, slideOrder: highestOrder + index + 1 }
+          : { slide: false, slideOrder: undefined },
+        false
+      )
+    )
   }
 
   useKeyboardShortcuts({
@@ -100,7 +116,6 @@ export default function App() {
             editor={editor}
             dockPosition={preferences.dockPosition}
             onDockChange={preferences.setDockPosition}
-            autoHide={preferences.dockAutoHide}
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
           />

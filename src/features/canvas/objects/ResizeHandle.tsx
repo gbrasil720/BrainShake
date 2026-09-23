@@ -7,5 +7,19 @@ export function ResizeHandle({
   item: CanvasItem
   onResize: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
 }) {
-  return <div className="resize-handle" onPointerDown={(event) => onResize(event, item)} />
+  const directions = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
+  return (
+    <>
+      {directions.map((direction) => (
+        <div
+          key={direction}
+          className={`resize-handle resize-${direction}`}
+          onPointerDown={(event) => {
+            event.stopPropagation()
+            onResize(event, item)
+          }}
+        />
+      ))}
+    </>
+  )
 }
