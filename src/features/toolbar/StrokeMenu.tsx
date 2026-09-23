@@ -9,20 +9,22 @@ import {
 } from '@/components/ui/select'
 import { Pencil } from 'lucide-react'
 import { STROKE_WIDTHS } from '@/features/board/lib/constants'
-import { useState } from 'react'
 
 export function StrokeMenu({
   value,
   onChange,
-  dockPosition
+  dockPosition,
+  open,
+  onOpenChange
 }: {
   value: number
   onChange: (value: number) => void
   dockPosition: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="tool-button" title="Stroke width">
           <Pencil size={17} />
@@ -39,7 +41,7 @@ export function StrokeMenu({
             value={String(value)}
             onValueChange={(next) => {
               onChange(Number(next))
-              setOpen(false)
+              onOpenChange(false)
             }}
           >
             <SelectTrigger className="menu-select" aria-label="Stroke width">

@@ -1,19 +1,21 @@
 import { Button } from '@/components/ui/button'
 import type { Board } from '@/features/board/types'
-import { Plus, X } from 'lucide-react'
+import { Link2, Plus, X } from 'lucide-react'
 
 export function BoardList({
   boards,
   activeId,
   onCreate,
   onSwitch,
-  onDelete
+  onDelete,
+  onToggleLink
 }: {
   boards: Board[]
   activeId: string
   onCreate: () => void
   onSwitch: (id: string) => void
   onDelete: (id: string) => void
+  onToggleLink: (id: string) => void
 }) {
   return (
     <div className="sidebar-section">
@@ -35,6 +37,17 @@ export function BoardList({
             <Button variant="ghost" className="board-switch" onClick={() => onSwitch(item.id)}>
               {item.name}
             </Button>
+            {boards.length > 1 && (
+              <Button
+                variant="ghost"
+                className={`board-link ${item.linkedBoardIds?.length ? 'active' : ''}`}
+                aria-label="Link board"
+                title="Link board to active board"
+                onClick={() => onToggleLink(item.id)}
+              >
+                <Link2 size={13} />
+              </Button>
+            )}
             {boards.length > 1 && (
               <Button
                 variant="ghost"

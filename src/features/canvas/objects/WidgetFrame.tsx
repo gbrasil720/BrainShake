@@ -23,7 +23,7 @@ export function WidgetFrame({
           {item.name || item.title || item.type}
           {item.slide && (
             <b className="slide-marker-inline" title="Included in presentation">
-              *
+              {item.slideOrder}
             </b>
           )}
         </span>

@@ -13,6 +13,7 @@ export const STORAGE_KEYS = {
   reduceMotion: 'brainshake-reduce-motion',
   keyboardNavigation: 'brainshake-keyboard-navigation',
   enhancedFocus: 'brainshake-enhanced-focus',
+  focusColor: 'brainshake-focus-color',
   tutorialCompleted: 'brainshake-accessibility-tour-complete',
   sidebarAutoHide: 'brainshake-sidebar-auto-hide',
   headerColor: 'brainshake-header-color',

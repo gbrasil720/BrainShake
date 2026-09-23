@@ -27,7 +27,7 @@ export type CanvasItem = {
 
 export type ConnectorItem = { id: string; type: 'connector'; from: string; to: string }
 export type BoardItem = CanvasItem | ConnectorItem
-export type Board = { id: string; name: string; objects: BoardItem[] }
+export type Board = { id: string; name: string; objects: BoardItem[]; linkedBoardIds?: string[] }
 export type BoardPatch = Partial<CanvasItem & ConnectorItem>
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -64,6 +64,9 @@ export function isBoardData(
     typeof value.name === 'string' &&
     Array.isArray(value.objects) &&
     value.objects.every(isBoardItem) &&
+    (value.linkedBoardIds === undefined ||
+      (Array.isArray(value.linkedBoardIds) &&
+        value.linkedBoardIds.every((id) => typeof id === 'string'))) &&
     (value.id === undefined || typeof value.id === 'string')
   )
 }

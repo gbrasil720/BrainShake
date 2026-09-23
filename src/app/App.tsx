@@ -84,7 +84,8 @@ export default function App() {
             '--header-custom': preferences.headerColor || 'var(--paper)',
             '--sidebar-custom': preferences.sidebarColor || 'var(--paper)',
             '--canvas-custom': preferences.canvasColor || 'var(--surface)',
-            '--panel-custom': preferences.panelColor || 'var(--paper)'
+            '--panel-custom': preferences.panelColor || 'var(--paper)',
+            '--focus-color': preferences.focusColor
           } as React.CSSProperties
         }
       >
@@ -117,6 +118,7 @@ export default function App() {
             dockPosition={preferences.dockPosition}
             onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
+            onUnlink={editor.unlinkSelection}
             onImportFiles={openFilePicker}
           />
           <ZoomControls

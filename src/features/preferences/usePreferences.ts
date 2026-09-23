@@ -14,6 +14,7 @@ export function usePreferences() {
     true
   )
   const [enhancedFocus, setEnhancedFocus] = useLocalStorage(STORAGE_KEYS.enhancedFocus, true)
+  const [focusColor, setFocusColor] = useLocalStorage(STORAGE_KEYS.focusColor, '#d86e50')
   const [tutorialCompleted, setTutorialCompleted] = useLocalStorage(
     STORAGE_KEYS.tutorialCompleted,
     false
@@ -41,6 +42,8 @@ export function usePreferences() {
     setKeyboardNavigation,
     enhancedFocus,
     setEnhancedFocus,
+    focusColor,
+    setFocusColor,
     tutorialCompleted,
     setTutorialCompleted,
     sidebarAutoHide,

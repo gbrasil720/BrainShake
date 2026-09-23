@@ -55,6 +55,33 @@ export function useBoards({ onSaveError }: { onSaveError: () => void }) {
     return true
   }
 
+  function toggleBoardLink(targetId: string) {
+    const current = boardRef.current
+    if (targetId === current.id) return
+    const target = boards.find((item) => item.id === targetId)
+    if (!target) return
+    const linked = current.linkedBoardIds?.includes(targetId) ?? false
+    const nextCurrent = {
+      ...current,
+      linkedBoardIds: linked
+        ? (current.linkedBoardIds || []).filter((id) => id !== targetId)
+        : [...(current.linkedBoardIds || []), targetId]
+    }
+    const nextTarget = {
+      ...target,
+      linkedBoardIds: linked
+        ? (target.linkedBoardIds || []).filter((id) => id !== current.id)
+        : [...(target.linkedBoardIds || []), current.id]
+    }
+    boardRef.current = nextCurrent
+    setBoard(nextCurrent)
+    setBoards((items) =>
+      items.map((item) =>
+        item.id === current.id ? nextCurrent : item.id === target.id ? nextTarget : item
+      )
+    )
+  }
+
   return {
     boards,
     board,
@@ -63,6 +90,7 @@ export function useBoards({ onSaveError }: { onSaveError: () => void }) {
     renameBoard,
     createBoard,
     switchBoard,
-    deleteBoard
+    deleteBoard,
+    toggleBoardLink
   }
 }

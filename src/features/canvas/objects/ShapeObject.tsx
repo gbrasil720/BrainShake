@@ -12,16 +12,18 @@ export function ShapeObject({ item }: { item: CanvasItem }) {
   const polygon = item.shape && Object.hasOwn(POLYGONS, item.shape) && POLYGONS[item.shape]
   return (
     <svg className="shape-svg" viewBox="0 0 100 100" aria-label={item.name || item.shape}>
-      <rect
-        x="8"
-        y="8"
-        width="84"
-        height="84"
-        rx="4"
-        fill={item.shape === 'square' ? fill : 'none'}
-        stroke={COLOR}
-        strokeWidth="4"
-      />
+      {item.shape === 'square' && (
+        <rect
+          x="8"
+          y="8"
+          width="84"
+          height="84"
+          rx="4"
+          fill={fill}
+          stroke={COLOR}
+          strokeWidth="4"
+        />
+      )}
       {item.shape === 'circle' && (
         <circle cx="50" cy="50" r="42" fill={fill} stroke={COLOR} strokeWidth="4" />
       )}

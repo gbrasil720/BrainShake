@@ -23,7 +23,7 @@
   --stroke-color: #536b5d;
   --shadow: 0 20px 50px rgba(33, 46, 40, 0.08);
   --font-scale: 1;
-  --focus-ring: rgba(216, 110, 80, 0.28);
+  --focus-ring: color-mix(in srgb, var(--focus-color, #d86e50) 28%, transparent);
   --success-ink: #1a4f3d;
   --success-bg: rgba(87, 125, 106, 0.12);
   --warning-ink: #6d4d1b;
@@ -365,6 +365,9 @@ a:focus-visible,
 }
 .board-item:is(:hover, :focus-within) .board-delete {
   visibility: visible;
+}
+.board-item .board-link.active {
+  color: var(--primary);
 }
 .sidebar-foot {
   margin-top: auto;
@@ -1828,7 +1831,7 @@ a:focus-visible,
 .enhanced-focus a:focus-visible,
 .enhanced-focus [role='button']:focus-visible,
 .enhanced-focus [tabindex]:focus-visible {
-  outline: 4px solid var(--ink);
+  outline: 4px solid var(--focus-color, var(--ink));
   outline-offset: 3px;
   box-shadow: 0 0 0 7px var(--focus-ring);
 }

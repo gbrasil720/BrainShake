@@ -11,6 +11,7 @@ import {
   Redo2,
   StickyNote,
   Type,
+  Unlink,
   Undo2
 } from 'lucide-react'
 import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
@@ -31,15 +32,18 @@ export function Toolbar({
   dockPosition,
   onDockChange,
   onImportFiles,
-  onToggleSlides
+  onToggleSlides,
+  onUnlink
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
   onImportFiles: () => void
   onToggleSlides: () => void
+  onUnlink: () => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
+  const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
   const { tool, setTool } = editor
   return (
     <>
@@ -79,6 +83,8 @@ export function Toolbar({
         ))}
         <ShapeMenu
           dockPosition={dockPosition}
+          open={openMenu === 'shape'}
+          onOpenChange={(open) => setOpenMenu(open ? 'shape' : null)}
           onPick={(shape, label) =>
             editor.addObject('shape', { shape, fill: 'solid', name: label })
           }
@@ -87,6 +93,8 @@ export function Toolbar({
           value={editor.strokeWidth}
           onChange={editor.setStrokeWidth}
           dockPosition={dockPosition}
+          open={openMenu === 'stroke'}
+          onOpenChange={(open) => setOpenMenu(open ? 'stroke' : null)}
         />
         <Button
           variant="ghost"
@@ -97,6 +105,16 @@ export function Toolbar({
           onClick={onToggleSlides}
         >
           <Presentation size={17} />
+        </Button>
+        <Button
+          variant="ghost"
+          className="tool-button"
+          title="Unlink selected elements"
+          aria-label="Unlink selected elements"
+          disabled={editor.selected.length < 2}
+          onClick={onUnlink}
+        >
+          <Unlink size={17} />
         </Button>
         <div className="toolbar-divider" />
         <Button

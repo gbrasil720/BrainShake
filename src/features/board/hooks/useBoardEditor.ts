@@ -13,7 +13,7 @@ import {
 import { useBoards } from './useBoards'
 import { useHistory } from './useHistory'
 import type { BoardPatch, CanvasItem, Point } from '../types'
-import { isBoardItem } from '../types'
+import { isBoardItem, isConnectorItem } from '../types'
 import type { useViewport } from '@/features/canvas/hooks/useViewport'
 
 // Active board + history + selection + current tool, and the actions that edit them.
@@ -79,6 +79,21 @@ export function useBoardEditor({
     commit((current) =>
       addObjects(current, [{ id: makeId('connector'), type: 'connector', from: fromId, to: toId }])
     )
+  }
+
+  function unlinkSelection() {
+    if (selected.length < 2) return
+    commit((current) => ({
+      ...current,
+      objects: current.objects.filter(
+        (item) =>
+          !isConnectorItem(item) ||
+          !(
+            (item.from === selected[0] && item.to === selected[1]) ||
+            (item.from === selected[1] && item.to === selected[0])
+          )
+      )
+    }))
   }
 
   function selectAll() {
@@ -149,11 +164,13 @@ export function useBoardEditor({
     updateObject,
     removeObject,
     connect,
+    unlinkSelection,
     selectAll,
     removeSelection,
     duplicateSelection,
     copySelection,
     pasteSelection,
-    bringSelectionToFront
+    bringSelectionToFront,
+    toggleBoardLink: boards.toggleBoardLink
   }
 }

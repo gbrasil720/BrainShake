@@ -70,6 +70,7 @@ export function Sidebar({
             onCreate={editor.createBoard}
             onSwitch={editor.switchBoard}
             onDelete={editor.deleteBoard}
+            onToggleLink={editor.toggleBoardLink}
           />
           <SidebarFooter />
         </>

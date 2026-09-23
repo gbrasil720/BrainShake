@@ -10,13 +10,17 @@ import { SHAPES } from '@/features/board/lib/constants'
 
 export function ShapeMenu({
   onPick,
-  dockPosition
+  dockPosition,
+  open,
+  onOpenChange
 }: {
   onPick: (shape: string, label: string) => void
   dockPosition: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }) {
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu modal={false} open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="tool-button" title="Shapes">
           <Shapes size={17} />

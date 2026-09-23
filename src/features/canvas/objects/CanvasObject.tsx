@@ -47,7 +47,7 @@ export function CanvasObject({
           {content}
           {item.slide && (
             <span className="slide-marker" aria-label="Included in presentation">
-              *
+              {item.slideOrder}
             </span>
           )}
         </>

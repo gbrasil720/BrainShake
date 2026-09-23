@@ -99,6 +99,19 @@ export function AccessibilitySettings({
           value={preferences.enhancedFocus}
           onChange={() => preferences.setEnhancedFocus((value) => !value)}
         />
+        <div className="accessibility-row">
+          <div>
+            <strong>Focus Color</strong>
+            <span>Choose the color used by the enhanced focus ring.</span>
+          </div>
+          <input
+            className="focus-color-picker"
+            type="color"
+            value={preferences.focusColor}
+            aria-label="Enhanced focus color"
+            onChange={(event) => preferences.setFocusColor(event.target.value)}
+          />
+        </div>
       </div>
     </section>
   )
