@@ -5,6 +5,7 @@ import {
   BoxSelect,
   Hand,
   ImagePlus,
+  Link2,
   Pencil,
   Presentation,
   Redo2,
@@ -15,13 +16,15 @@ import {
 import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
 import { ShapeMenu } from './ShapeMenu'
 import { StrokeMenu } from './StrokeMenu'
+import { getNextToolFromArrow } from './toolNavigation'
 
 const TOOLS = [
   { id: 'select', icon: BoxSelect, label: 'Select (V)' },
   { id: 'hand', icon: Hand, label: 'Pan canvas (H)' },
   { id: 'text', icon: Type, label: 'Text (T)' },
   { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' },
-  { id: 'pen', icon: Pencil, label: 'Pen (P)' }
+  { id: 'pen', icon: Pencil, label: 'Pen (P)' },
+  { id: 'connector', icon: Link2, label: 'Link elements (L)' }
 ]
 
 export function Toolbar({
@@ -29,13 +32,15 @@ export function Toolbar({
   dockPosition,
   onDockChange,
   onImportFiles,
-  onToggleSlides
+  onToggleSlides,
+  keyboardNavigation
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
   onImportFiles: () => void
   onToggleSlides: () => void
+  keyboardNavigation: boolean
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
@@ -69,9 +74,23 @@ export function Toolbar({
           <Button
             variant="ghost"
             key={id}
+            data-tool-id={id}
             className={`tool-button ${tool === id ? 'active' : ''}`}
             title={label}
+            aria-label={label}
+            aria-pressed={tool === id}
             onClick={() => setTool(id)}
+            onKeyDown={(event) => {
+              if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+              const nextTool = getNextToolFromArrow(id, event.key, dockPosition, keyboardNavigation)
+              if (!nextTool) return
+              event.preventDefault()
+              setTool(nextTool)
+              event.currentTarget
+                .closest('.toolbar')
+                ?.querySelector<HTMLButtonElement>(`[data-tool-id="${nextTool}"]`)
+                ?.focus()
+            }}
           >
             <Icon size={17} />
           </Button>

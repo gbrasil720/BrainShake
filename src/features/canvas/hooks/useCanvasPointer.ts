@@ -1,11 +1,12 @@
 import type React from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { makeId } from '@/lib/id'
 import { addObjects, finishStroke, moveObjects, resizeStroke } from '@/features/board/lib/objects'
 import type { CanvasItem, Point } from '@/features/board/types'
 import { isCanvasItem } from '@/features/board/types'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useViewport } from './useViewport'
+import { shouldPanWithSpace } from '@/features/toolbar/toolNavigation'
 
 const MIN_WIDTH = 100
 const MIN_HEIGHT = 80
@@ -39,11 +40,43 @@ export function useCanvasPointer({
   const [drawing, setDrawing] = useState<
     (CanvasItem & { points: Point[]; strokeWidth: number }) | null
   >(null)
+  const spacePressed = useRef(false)
   const { board, commit, selected, setSelected, tool, setTool, strokeWidth } = editor
   const { screenPoint, pan, setPan } = viewport
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || event.repeat || isSpacePanControl(event.target)) return
+      spacePressed.current = true
+      event.preventDefault()
+    }
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'Space') spacePressed.current = false
+    }
+    const onBlur = () => {
+      spacePressed.current = false
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('blur', onBlur)
+    }
+  }, [])
+
+  function isSpacePan(event: React.PointerEvent<HTMLDivElement>) {
+    return shouldPanWithSpace({
+      spacePressed: spacePressed.current,
+      button: event.button,
+      interactiveTarget: isSpacePanControl(event.target)
+    })
+  }
+
   function selectObject(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
+    if (isSpacePan(event)) return
     if (event.button !== 0) return
     if (tool === 'connector') {
       if (!selected.length) setSelected([item.id])
@@ -63,6 +96,12 @@ export function useCanvasPointer({
   }
 
   function beginDrag(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
+    if (isSpacePan(event)) {
+      event.preventDefault()
+      event.stopPropagation()
+      beginPan(event)
+      return
+    }
     if (tool !== 'select' || ![0, 1, 2].includes(event.button) || item.locked) return
     if (
       (event.target as Element).closest('textarea, .markdown-preview') &&
@@ -89,6 +128,11 @@ export function useCanvasPointer({
 
   function beginResize(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
+    if (isSpacePan(event)) {
+      event.preventDefault()
+      beginPan(event)
+      return
+    }
     if (tool !== 'select' || item.locked) return
     const point = screenPoint(event)
     const direction = event.currentTarget.dataset.direction || 'se'
@@ -107,7 +151,7 @@ export function useCanvasPointer({
   }
 
   function beginPan(event: React.PointerEvent<HTMLDivElement>) {
-    if (tool !== 'hand' || event.button !== 0) return
+    if ((tool !== 'hand' && !spacePressed.current) || event.button !== 0) return
     event.currentTarget.setPointerCapture?.(event.pointerId)
     event.preventDefault()
     setDragging({ type: 'pan', start: { x: event.clientX, y: event.clientY }, origin: pan })
@@ -132,6 +176,11 @@ export function useCanvasPointer({
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (event.target !== event.currentTarget) return
+    if (isSpacePan(event)) {
+      event.preventDefault()
+      beginPan(event)
+      return
+    }
     const point = screenPoint(event)
     if (tool === 'text' || tool === 'sticky') {
       editor.addObject(tool, {}, point)
@@ -241,4 +290,15 @@ export function useCanvasPointer({
     onPointerMove,
     onPointerUp
   }
+}
+
+function isSpacePanControl(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    Boolean(
+      target.closest(
+        'button, input, textarea, select, a[href], [contenteditable], [role="textbox"], [role="button"], .markdown-preview'
+      )
+    )
+  )
 }

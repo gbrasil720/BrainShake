@@ -695,7 +695,7 @@ a:focus-visible,
   width: var(--properties-panel-width, 300px);
   height: 400px;
   max-width: calc(100vw - 32px);
-  max-height: calc(100% - 42px);
+  max-height: min(620px, calc(100% - 105px));
   padding: 15px;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -1723,11 +1723,11 @@ a:focus-visible,
   .floating-panel {
     top: auto;
     right: 8px;
-    bottom: 8px;
+    bottom: calc(132px + env(safe-area-inset-bottom));
     left: 8px;
     width: min(300px, calc(100% - 16px));
-    height: min(400px, calc(100% - 16px));
-    max-height: min(400px, calc(100% - 16px));
+    height: auto;
+    max-height: min(400px, calc(100% - 140px));
     overflow-y: auto;
   }
   .panel-resize-handle {
@@ -1735,18 +1735,19 @@ a:focus-visible,
   }
   .workspace:has(.toolbar.dock-top) .floating-panel {
     top: 64px;
-    height: min(400px, calc(100% - 74px));
-    max-height: calc(100% - 74px);
+    bottom: calc(132px + env(safe-area-inset-bottom));
+    height: auto;
+    max-height: min(400px, calc(100% - 204px));
   }
   .workspace:has(.toolbar.dock-right) .floating-panel {
     top: 10px;
-    bottom: auto;
+    bottom: calc(132px + env(safe-area-inset-bottom));
     right: 64px;
     left: auto;
     width: min(240px, calc(100% - 74px));
     max-width: none;
-    height: min(400px, calc(100% - 20px));
-    max-height: calc(100% - 20px);
+    height: auto;
+    max-height: min(400px, calc(100% - 142px));
   }
   .empty-state {
     width: min(440px, calc(100% - 32px));
@@ -1798,29 +1799,31 @@ a:focus-visible,
   }
   .floating-panel {
     right: 8px;
-    bottom: 8px;
+    bottom: calc(132px + env(safe-area-inset-bottom));
     left: 8px;
     width: calc(100% - 16px);
-    height: min(400px, calc(100% - 16px));
-    max-height: min(400px, calc(100% - 16px));
+    height: auto;
+    max-height: min(400px, calc(100% - 140px));
   }
   .workspace:has(.toolbar.dock-top) .floating-panel {
     top: 62px;
-    height: min(400px, calc(100% - 70px));
-    max-height: calc(100% - 70px);
+    bottom: calc(132px + env(safe-area-inset-bottom));
+    height: auto;
+    max-height: min(400px, calc(100% - 196px));
   }
   .workspace:has(.toolbar.dock-right) .floating-panel {
     top: 8px;
-    bottom: auto;
+    bottom: calc(132px + env(safe-area-inset-bottom));
     right: 56px;
     left: auto;
     width: calc(100% - 64px);
-    height: min(400px, calc(100% - 16px));
-    max-height: calc(100% - 16px);
+    height: auto;
+    max-height: min(400px, calc(100% - 140px));
   }
   .zoom-controls {
     right: 8px;
-    bottom: 72px;
+    right: calc(8px + env(safe-area-inset-right));
+    bottom: calc(72px + env(safe-area-inset-bottom));
   }
   .zoom-value {
     min-width: 42px;
@@ -1832,6 +1835,22 @@ a:focus-visible,
   .tool-button {
     width: 34px;
     height: 34px;
+  }
+}
+@media (hover: none) and (pointer: coarse) {
+  .toolbar .tool-button,
+  .zoom-controls .icon-button,
+  .floating-panel .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+  .toolbar {
+    gap: 6px;
+    padding: 8px;
+  }
+  .zoom-controls {
+    padding: 6px;
+    gap: 6px;
   }
 }
 @media (hover: none) {

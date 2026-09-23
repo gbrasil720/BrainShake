@@ -130,6 +130,7 @@ export default function App() {
             onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
+            keyboardNavigation={preferences.keyboardNavigation}
           />
           <ZoomControls
             zoom={viewport.zoom}
