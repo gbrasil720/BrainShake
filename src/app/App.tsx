@@ -29,7 +29,6 @@ export default function App() {
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
   const [showPanel, setShowPanel] = useState(true)
-  const [dismissedPanelSelection, setDismissedPanelSelection] = useState('')
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
   const [presentationItemId, setPresentationItemId] = useState<string | null>(null)
@@ -37,10 +36,6 @@ export default function App() {
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
   const { board, selected } = editor
-  const selectionKey = selected.join(',')
-  const panelVisible = preferences.propertiesAutoHide
-    ? Boolean(selectionKey) && dismissedPanelSelection !== selectionKey
-    : showPanel
 
   const toggleSlides = () => {
     const selectedItems = board.objects.filter((item) => selected.includes(item.id))
@@ -142,14 +137,11 @@ export default function App() {
             onZoomOut={viewport.zoomOut}
             onFit={() => viewport.fitContent(board.objects.length > 0)}
           />
-          {panelVisible && (
+          {showPanel && (
             <PropertiesPanel
               item={board.objects.find((item) => item.id === selected[0])}
               onChange={editor.updateObject}
-              onClose={() => {
-                if (preferences.propertiesAutoHide) setDismissedPanelSelection(selectionKey)
-                else setShowPanel(false)
-              }}
+              onClose={() => setShowPanel(false)}
             />
           )}
           {transfer.urlOpen && (

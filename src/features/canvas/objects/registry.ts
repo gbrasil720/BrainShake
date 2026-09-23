@@ -15,6 +15,7 @@ type ObjectConfig = {
   Component: ComponentType<{
     item: CanvasItem
     onChange: (id: string, patch: BoardPatch, saveHistory?: boolean) => void
+    selected?: boolean
   }> | null
   framed: boolean
   className?: string
@@ -23,7 +24,12 @@ type ObjectConfig = {
 
 export const objectRegistry: Record<string, ObjectConfig> = {
   sticky: { Component: StickyObject, framed: true, defaultSize: { w: 250, h: 180 } },
-  text: { Component: TextObject, framed: true, defaultSize: { w: 280, h: 145 } },
+  text: {
+    Component: TextObject,
+    framed: false,
+    className: 'text-object',
+    defaultSize: { w: 280, h: 145 }
+  },
   image: { Component: ImageObject, framed: true, defaultSize: { w: 280, h: 200 } },
   video: { Component: VideoObject, framed: true, defaultSize: { w: 320, h: 220 } },
   html: { Component: HtmlObject, framed: true, defaultSize: { w: 350, h: 240 } },

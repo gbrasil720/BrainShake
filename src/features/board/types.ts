@@ -8,6 +8,9 @@ export type CanvasItem = {
   w: number
   h: number
   color?: string
+  textColor?: string
+  fontFamily?: string
+  fontSize?: number
   title?: string
   text?: string
   name?: string
@@ -43,6 +46,8 @@ export function isBoardItem(value: unknown): value is BoardItem {
     ['x', 'y', 'w', 'h'].every((key) => typeof value[key] === 'number') &&
     [
       'color',
+      'textColor',
+      'fontFamily',
       'title',
       'text',
       'name',
@@ -57,6 +62,7 @@ export function isBoardItem(value: unknown): value is BoardItem {
       (key) => value[key] === undefined || typeof value[key] === 'boolean'
     ) &&
     (value.slideOrder === undefined || typeof value.slideOrder === 'number') &&
+    (value.fontSize === undefined || typeof value.fontSize === 'number') &&
     (value.strokeWidth === undefined || typeof value.strokeWidth === 'number') &&
     (value.points === undefined ||
       (Array.isArray(value.points) &&

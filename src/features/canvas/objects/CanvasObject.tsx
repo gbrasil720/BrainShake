@@ -26,7 +26,7 @@ export function CanvasObject({
   onRemove: (id: string) => void
 }) {
   const { Component, framed, className } = getObjectType(item.type)
-  const content = Component && <Component item={item} onChange={onChange} />
+  const content = Component && <Component item={item} onChange={onChange} selected={selected} />
   return (
     <div
       className={[

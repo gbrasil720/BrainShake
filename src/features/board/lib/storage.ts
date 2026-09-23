@@ -25,8 +25,7 @@ export const STORAGE_KEYS = {
   headerColor: 'brainshake-header-color',
   sidebarColor: 'brainshake-sidebar-color',
   canvasColor: 'brainshake-canvas-color',
-  panelColor: 'brainshake-panel-color',
-  propertiesAutoHide: 'brainshake-properties-auto-hide'
+  panelColor: 'brainshake-panel-color'
 }
 
 export function loadBoards(): Board[] {
