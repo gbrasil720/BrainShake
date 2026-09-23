@@ -631,7 +631,9 @@ a:focus-visible,
   color: white;
   background: var(--primary);
 }
-.tool-button[title]:hover::after {
+.tool-button[title]:hover::after,
+.dock-color-picker[title]:hover::after,
+.dock-handle[title]:hover::after {
   content: attr(title);
   position: absolute;
   bottom: calc(100% + 10px);
@@ -644,6 +646,54 @@ a:focus-visible,
   font-size: 10px;
   white-space: nowrap;
   pointer-events: none;
+}
+.dock-color-picker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--muted);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.dock-color-picker:hover {
+  color: var(--ink);
+  background: var(--accent);
+}
+.dock-color-picker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.toolbar.dock-top .tool-button[title]:hover::after,
+.toolbar.dock-top .dock-color-picker[title]:hover::after,
+.toolbar.dock-top .dock-handle[title]:hover::after {
+  top: calc(100% + 10px);
+  bottom: auto;
+  transform: translateX(-50%);
+}
+.toolbar.dock-right .tool-button[title]:hover::after,
+.toolbar.dock-right .dock-color-picker[title]:hover::after,
+.toolbar.dock-right .dock-handle[title]:hover::after {
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: calc(100% + 10px);
+  transform: translateY(-50%);
+}
+.toolbar.dock-left .tool-button[title]:hover::after,
+.toolbar.dock-left .dock-color-picker[title]:hover::after,
+.toolbar.dock-left .dock-handle[title]:hover::after {
+  top: 50%;
+  right: calc(100% + 10px);
+  bottom: auto;
+  left: auto;
+  transform: translateY(-50%);
 }
 .zoom-controls {
   position: absolute;

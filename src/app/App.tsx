@@ -29,6 +29,7 @@ export default function App() {
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
   const [showPanel, setShowPanel] = useState(true)
+  const [dismissedPanelSelection, setDismissedPanelSelection] = useState('')
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
   const [presentationItemId, setPresentationItemId] = useState<string | null>(null)
@@ -36,6 +37,26 @@ export default function App() {
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
   const { board, selected } = editor
+  const selectionKey = selected.join(',')
+  const panelVisible = preferences.propertiesAutoHide
+    ? Boolean(selectionKey) && dismissedPanelSelection !== selectionKey
+    : showPanel
+
+  const applyFillColor = (color: string) => {
+    preferences.setFillColor(color)
+    board.objects
+      .filter(
+        (item) => selected.includes(item.id) && (item.type === 'shape' || item.type === 'sticky')
+      )
+      .forEach((item) => editor.updateObject(item.id, { fillColor: color }, false))
+  }
+
+  const applyStrokeColor = (color: string) => {
+    preferences.setStrokeColor(color)
+    board.objects
+      .filter((item) => selected.includes(item.id) && item.type === 'stroke')
+      .forEach((item) => editor.updateObject(item.id, { strokeColor: color }, false))
+  }
 
   const toggleSlides = () => {
     const selectedItems = board.objects.filter((item) => selected.includes(item.id))
@@ -131,6 +152,10 @@ export default function App() {
             onToggleSlides={toggleSlides}
             onUnlink={editor.unlinkSelection}
             onImportFiles={openFilePicker}
+            fillColor={preferences.fillColor}
+            strokeColor={preferences.strokeColor}
+            onFillColorChange={applyFillColor}
+            onStrokeColorChange={applyStrokeColor}
           />
           <ZoomControls
             zoom={viewport.zoom}
@@ -138,11 +163,14 @@ export default function App() {
             onZoomOut={viewport.zoomOut}
             onFit={() => viewport.fitContent(board.objects.length > 0)}
           />
-          {showPanel && (!preferences.propertiesAutoHide || selected.length > 0) && (
+          {panelVisible && (
             <PropertiesPanel
               item={board.objects.find((item) => item.id === selected[0])}
               onChange={editor.updateObject}
-              onClose={() => setShowPanel(false)}
+              onClose={() => {
+                if (preferences.propertiesAutoHide) setDismissedPanelSelection(selectionKey)
+                else setShowPanel(false)
+              }}
             />
           )}
           {transfer.urlOpen && (

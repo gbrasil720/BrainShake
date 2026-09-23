@@ -7,6 +7,7 @@ import {
   ImagePlus,
   Link2,
   Pencil,
+  PaintBucket,
   Presentation,
   Redo2,
   StickyNote,
@@ -33,7 +34,11 @@ export function Toolbar({
   onDockChange,
   onImportFiles,
   onToggleSlides,
-  onUnlink
+  onUnlink,
+  fillColor,
+  strokeColor,
+  onFillColorChange,
+  onStrokeColorChange
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
@@ -41,6 +46,10 @@ export function Toolbar({
   onImportFiles: () => void
   onToggleSlides: () => void
   onUnlink: () => void
+  fillColor: string
+  strokeColor: string
+  onFillColorChange: (color: string) => void
+  onStrokeColorChange: (color: string) => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
@@ -96,6 +105,24 @@ export function Toolbar({
           open={openMenu === 'stroke'}
           onOpenChange={(open) => setOpenMenu(open ? 'stroke' : null)}
         />
+        <label className="dock-color-picker" title="Stroke color">
+          <Pencil size={15} />
+          <input
+            type="color"
+            value={strokeColor}
+            aria-label="Stroke color"
+            onChange={(event) => onStrokeColorChange(event.target.value)}
+          />
+        </label>
+        <label className="dock-color-picker" title="Bucket fill color">
+          <PaintBucket size={15} />
+          <input
+            type="color"
+            value={fillColor}
+            aria-label="Bucket fill color"
+            onChange={(event) => onFillColorChange(event.target.value)}
+          />
+        </label>
         <Button
           variant="ghost"
           className={`tool-button ${editor.selected.length ? '' : 'disabled'}`}

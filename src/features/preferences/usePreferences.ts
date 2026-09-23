@@ -28,6 +28,8 @@ export function usePreferences() {
     STORAGE_KEYS.propertiesAutoHide,
     false
   )
+  const [strokeColor, setStrokeColor] = useLocalStorage(STORAGE_KEYS.strokeColor, '#536b5d')
+  const [fillColor, setFillColor] = useLocalStorage(STORAGE_KEYS.fillColor, '#d86e50')
   const [grid, setGrid] = useState(true)
   return {
     theme,
@@ -62,6 +64,10 @@ export function usePreferences() {
     setPanelColor,
     propertiesAutoHide,
     setPropertiesAutoHide,
+    strokeColor,
+    setStrokeColor,
+    fillColor,
+    setFillColor,
     grid,
     setGrid
   }

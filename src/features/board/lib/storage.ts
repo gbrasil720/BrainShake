@@ -26,6 +26,8 @@ export const STORAGE_KEYS = {
   sidebarColor: 'brainshake-sidebar-color',
   canvasColor: 'brainshake-canvas-color',
   panelColor: 'brainshake-panel-color',
+  strokeColor: 'brainshake-stroke-color',
+  fillColor: 'brainshake-fill-color',
   propertiesAutoHide: 'brainshake-properties-auto-hide'
 }
 

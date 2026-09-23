@@ -88,28 +88,9 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
           </div>
         </div>
       )}
-      {(item.type === 'shape' || item.type === 'sticky') && (
+      {item.type === 'shape' && (
         <div className="panel-row">
-          <span>{item.type === 'sticky' ? 'Note fill' : 'Fill'}</span>
-          <div className="property-color-control">
-            <input
-              type="color"
-              value={item.fillColor || '#ffffff'}
-              aria-label="Fill HEX color"
-              onChange={(event) => onChange(item.id, { fillColor: event.target.value })}
-            />
-            <Input
-              className="property-color-hex"
-              value={item.fillColor || ''}
-              placeholder="#HEX"
-              pattern="^#[0-9a-fA-F]{6}$"
-              aria-label="Fill HEX color"
-              onChange={(event) => {
-                const value = event.target.value
-                if (/^#[0-9a-fA-F]{0,6}$/.test(value)) onChange(item.id, { fillColor: value })
-              }}
-            />
-          </div>
+          <span>Fill</span>
           {item.type === 'shape' && (
             <Select
               value={item.fill || 'solid'}
@@ -124,30 +105,6 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
               </SelectContent>
             </Select>
           )}
-        </div>
-      )}
-      {item.type === 'stroke' && (
-        <div className="panel-row">
-          <span>Stroke color</span>
-          <div className="property-color-control">
-            <input
-              type="color"
-              value={item.strokeColor || '#536b5d'}
-              aria-label="Stroke HEX color"
-              onChange={(event) => onChange(item.id, { strokeColor: event.target.value })}
-            />
-            <Input
-              className="property-color-hex"
-              value={item.strokeColor || ''}
-              placeholder="#HEX"
-              pattern="^#[0-9a-fA-F]{6}$"
-              aria-label="Stroke HEX color"
-              onChange={(event) => {
-                const value = event.target.value
-                if (/^#[0-9a-fA-F]{0,6}$/.test(value)) onChange(item.id, { strokeColor: value })
-              }}
-            />
-          </div>
         </div>
       )}
       <Button
