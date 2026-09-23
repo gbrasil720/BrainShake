@@ -47,13 +47,22 @@ function TextFormatTooltip({
           onChange={(event) => onChange(item.id, { textColor: event.target.value })}
         />
       </label>
-      <input
+      <select
         className="text-font-input"
-        list={`text-font-options-${item.id}`}
         value={item.fontFamily || 'DM Sans'}
         aria-label="Font family"
         onChange={(event) => onChange(item.id, { fontFamily: event.target.value })}
-      />
+      >
+        <option value="DM Sans">DM Sans</option>
+        <option value="Space Grotesk">Space Grotesk</option>
+        <option value="JetBrains Mono NF">JetBrains Mono NF</option>
+        <option value="Comic Sans MS">Comic Sans MS</option>
+        <option value="Text">Text</option>
+        <option value="Papirus">Papirus</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Arial">Arial</option>
+      </select>
       <input
         className="text-size-input"
         type="number"
@@ -67,13 +76,6 @@ function TextFormatTooltip({
           })
         }
       />
-      <datalist id={`text-font-options-${item.id}`}>
-        <option value="DM Sans" />
-        <option value="Space Grotesk" />
-        <option value="Georgia" />
-        <option value="Courier New" />
-        <option value="Arial" />
-      </datalist>
     </div>
   )
 }

@@ -1031,6 +1031,13 @@ a:focus-visible,
   align-items: center;
   gap: 5px;
 }
+.floating-panel .panel-row:has(.property-color-control) {
+  justify-content: flex-start;
+  gap: 12px;
+}
+.floating-panel .panel-row:has(.property-color-control) .property-color-control {
+  order: -1;
+}
 .property-color-control input[type='color'] {
   width: 26px;
   height: 26px;

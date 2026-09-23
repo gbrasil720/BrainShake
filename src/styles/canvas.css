@@ -304,7 +304,8 @@
   font-size: 11px;
   line-height: 1.3;
 }
-.text-object .text-format-tooltip input {
+.text-object .text-format-tooltip input,
+.text-object .text-format-tooltip select {
   font-family: inherit;
   font-size: inherit;
 }
