@@ -29,11 +29,13 @@ type Dragging =
 export function useCanvasPointer({
   editor,
   viewport,
-  fillColor
+  fillColor,
+  strokeColor
 }: {
   editor: ReturnType<typeof useBoardEditor>
   viewport: ReturnType<typeof useViewport>
   fillColor: string
+  strokeColor: string
 }) {
   const [dragging, setDragging] = useState<Dragging | null>(null)
   const [drawing, setDrawing] = useState<
@@ -134,6 +136,7 @@ export function useCanvasPointer({
       w: 500,
       h: 500,
       strokeWidth,
+      strokeColor,
       points: [{ x: 0, y: 0 }]
     })
   }

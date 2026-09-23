@@ -25,7 +25,12 @@ export default function App() {
   const preferences = usePreferences()
   const viewport = useViewport()
   const editor = useBoardEditor({ viewport, showToast })
-  const pointer = useCanvasPointer({ editor, viewport, fillColor: preferences.fillColor })
+  const pointer = useCanvasPointer({
+    editor,
+    viewport,
+    fillColor: preferences.fillColor,
+    strokeColor: preferences.strokeColor
+  })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
   const [showPanel, setShowPanel] = useState(true)
