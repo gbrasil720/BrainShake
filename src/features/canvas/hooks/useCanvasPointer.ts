@@ -6,14 +6,16 @@ import {
   finishStroke,
   moveObjects,
   patchObject,
+  removeObjects,
   resizeStroke
 } from '@/features/board/lib/objects'
 import type { CanvasItem, Point } from '@/features/board/types'
-import { isCanvasItem } from '@/features/board/types'
+import { isCanvasItem, isConnectorItem } from '@/features/board/types'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useViewport } from './useViewport'
 import { canBeginCanvasPan, shouldPanWithSpace } from '@/features/toolbar/toolNavigation'
 import { recognize, type Recognition } from '@/features/pen/lib/recognize'
+import { arrowLink } from '@/features/pen/lib/arrowLink'
 
 const MIN_WIDTH = 100
 const MIN_HEIGHT = 80
@@ -64,7 +66,8 @@ export function useCanvasPointer({
   viewport: ReturnType<typeof useViewport>
   // Snap every stroke on release, not only the ones held still.
   autoSnap?: boolean
-  onSnap?: (recognition: Recognition) => void
+  // `linked` when an arrow was turned into a connector between two objects.
+  onSnap?: (recognition: Recognition, linked: boolean) => void
 }) {
   const [dragging, setDragging] = useState<Dragging | null>(null)
   const [drawing, setDrawing] = useState<Drawing | null>(null)
@@ -352,11 +355,30 @@ export function useCanvasPointer({
       commit((current) => addObjects(current, [drawn]))
       // A separate history entry, so undo brings back the stroke as it was drawn.
       if (snapped && event.type !== 'pointercancel') {
-        const { x, y, w, h, points } = finishStroke({ ...stroke, points: snapped.points })
-        commit((current) =>
-          patchObject(current, drawn.id, { x, y, w, h, points, recognizedShape: snapped.kind })
-        )
-        onSnap?.(snapped)
+        const [tail, tip] = snapped.points.map((point) => ({
+          x: stroke.x + point.x,
+          y: stroke.y + point.y
+        }))
+        const link = snapped.kind === 'arrow' ? arrowLink(board.objects, tail, tip) : null
+        if (link) {
+          // An arrow between two objects becomes a real connector.
+          const [from, to] = link
+          commit((current) => {
+            const next = removeObjects(current, [drawn.id])
+            const exists = next.objects.some(
+              (item) => isConnectorItem(item) && item.from === from && item.to === to
+            )
+            return exists
+              ? next
+              : addObjects(next, [{ id: makeId('connector'), type: 'connector', from, to }])
+          })
+        } else {
+          const { x, y, w, h, points } = finishStroke({ ...stroke, points: snapped.points })
+          commit((current) =>
+            patchObject(current, drawn.id, { x, y, w, h, points, recognizedShape: snapped.kind })
+          )
+        }
+        onSnap?.(snapped, Boolean(link))
       }
       setDrawing(null)
     }

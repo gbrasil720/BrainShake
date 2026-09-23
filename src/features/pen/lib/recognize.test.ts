@@ -127,6 +127,44 @@ describe('recognize', () => {
     })
   })
 
+  describe('arrows', () => {
+    // Shaft from the origin to `tip`, then the head as extra legs from the tip.
+    function arrow(tip: Point, legs: Point[][], seed = 1) {
+      const next = random(seed)
+      const path = [{ x: 0, y: 0 }, tip, ...legs.flat()]
+      return resample(path, 120).map((point) => ({
+        x: point.x + (next() - 0.5) * 3,
+        y: point.y + (next() - 0.5) * 3
+      }))
+    }
+    const tip = { x: 240, y: 12 }
+    const upper = { x: 205, y: -15 }
+    const lower = { x: 208, y: 38 }
+
+    it('cleans up an arrow drawn with a V head', () => {
+      for (const seed of [1, 2, 3]) {
+        const result = recognize(arrow(tip, [[upper], [tip], [lower]], seed))
+        expect(result?.kind, `seed ${seed}`).toBe('arrow')
+        const [tail, end, left, again, right] = result!.points
+        expect(again).toEqual(end)
+        // The shaft snaps level and the barbs mirror each other.
+        expect(end.y).toBeCloseTo(tail.y)
+        expect(left.x).toBeCloseTo(right.x)
+        expect(left.y - end.y).toBeCloseTo(end.y - right.y)
+        expect(left.x).toBeLessThan(end.x)
+      }
+    })
+
+    it('accepts a head with a single barb', () => {
+      expect(recognize(arrow(tip, [[lower]]))?.kind).toBe('arrow')
+    })
+
+    it('does not mistake a line or a corner for an arrow', () => {
+      expect(recognize(arrow(tip, []))?.kind).toBe('line')
+      expect(recognize(arrow(tip, [[{ x: 240, y: 160 }]]))).toBeNull()
+    })
+  })
+
   describe('rectangles', () => {
     it('turns a crooked square into an even, level square', () => {
       for (const seed of [1, 2, 3, 4, 5]) {

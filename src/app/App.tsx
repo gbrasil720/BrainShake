@@ -30,7 +30,12 @@ export default function App() {
     editor,
     viewport,
     autoSnap: preferences.autoSnapShapes,
-    onSnap: ({ kind }) => showToast(`Snapped to ${kind}. Undo to keep your drawing.`)
+    onSnap: ({ kind }, linked) =>
+      showToast(
+        linked
+          ? 'Linked with an arrow. Undo to keep your drawing.'
+          : `Snapped to ${kind}. Undo to keep your drawing.`
+      )
   })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })

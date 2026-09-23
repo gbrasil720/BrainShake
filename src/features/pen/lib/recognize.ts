@@ -13,10 +13,11 @@ import {
 } from './geometry'
 
 export type ShapeKind =
-  'line' | 'rectangle' | 'square' | 'circle' | 'ellipse' | 'triangle' | 'diamond'
+  'line' | 'arrow' | 'rectangle' | 'square' | 'circle' | 'ellipse' | 'triangle' | 'diamond'
 
 // `points` are the idealized outline in the same coordinates as the input stroke.
-// Closed shapes repeat their first point at the end.
+// Closed shapes repeat their first point at the end. Arrows are drawn as
+// tail, tip, barb, tip, barb, so points[0] and points[1] are where they point from and to.
 export type Recognition = { kind: ShapeKind; confidence: number; points: Point[] }
 
 const SAMPLES = 64
@@ -24,6 +25,8 @@ const SAMPLES = 64
 const MIN_SIZE = 16
 // End-to-end distance over path length above which an open stroke is a line.
 const LINE_STRAIGHTNESS = 0.92
+// Same, for an arrow's shaft, which bends a little more where the head starts.
+const ARROW_STRAIGHTNESS = 0.9
 // Mean distance from the stroke to the fitted outline, as a fraction of the box
 // diagonal, at which a fit stops counting as a match. Ellipses are held to a
 // tighter bound because a rounded-off rectangle still fits one loosely.
@@ -34,6 +37,8 @@ const CORNER_TOLERANCE = 0.07
 const SNAP_ANGLE = (10 * Math.PI) / 180
 // Degrees a hand-drawn corner may be off 90° and still count as a right angle.
 const RIGHT_ANGLE_TOLERANCE = 18
+// Arrow barbs are drawn this far off the shaft, like connector arrowheads.
+const BARB_ANGLE = Math.PI / 6
 // Relative difference under which two sides are treated as equal.
 const EQUAL_SIDES = 0.12
 
@@ -45,6 +50,8 @@ export function recognize(stroke: Point[]): Recognition | null {
   const points = resample(stroke, SAMPLES)
 
   if (!isClosed(stroke)) {
+    const arrow = fitArrow(points)
+    if (arrow) return arrow
     const straightness = distance(points[0], points[points.length - 1]) / pathLength(points)
     if (straightness < LINE_STRAIGHTNESS) return null
     return {
@@ -100,6 +107,68 @@ function snapLine(start: Point, end: Point): Point[] {
     start,
     { x: start.x + length * Math.cos(snapped), y: start.y + length * Math.sin(snapped) }
   ]
+}
+
+// A straight shaft whose far end turns back into one or two short barbs.
+function fitArrow(points: Point[]): Recognition | null {
+  const tail = points[0]
+  // A V head returns to the tip before drawing its second barb, so take the
+  // first time the stroke gets (almost) as far from the tail as it ever does.
+  const reach = Math.max(...points.map((point) => distance(point, tail)))
+  const tipIndex = points.findIndex((point) => distance(point, tail) >= reach * 0.98)
+  // The head needs a few samples after the tip; otherwise this is just a line.
+  if (tipIndex > points.length - 4) return null
+  const tip = points[tipIndex]
+  const length = distance(tail, tip)
+  const straightness = length / pathLength(points.slice(0, tipIndex + 1))
+  const head = points.slice(tipIndex + 1)
+  const headLength = pathLength([tip, ...head])
+  if (straightness < ARROW_STRAIGHTNESS || headLength > length * 1.2) return null
+
+  // Farthest point of the head on each side of the shaft.
+  const back = { x: (tail.x - tip.x) / length, y: (tail.y - tip.y) / length }
+  const barbs: Record<'left' | 'right', { length: number; angle: number } | null> = {
+    left: null,
+    right: null
+  }
+  for (const point of head) {
+    const dx = point.x - tip.x
+    const dy = point.y - tip.y
+    const offset = Math.hypot(dx, dy)
+    if (offset > length * 0.5) return null
+    if (!offset) continue
+    const side = back.x * dy - back.y * dx > 0 ? 'left' : 'right'
+    const angle = Math.acos(Math.max(-1, Math.min(1, (back.x * dx + back.y * dy) / offset)))
+    if (!barbs[side] || offset > barbs[side].length) barbs[side] = { length: offset, angle }
+  }
+  const found = [barbs.left, barbs.right].filter(
+    (barb): barb is { length: number; angle: number } =>
+      barb !== null &&
+      barb.length > length * 0.08 &&
+      barb.angle > degrees(10) &&
+      barb.angle < degrees(80)
+  )
+  if (!found.length) return null
+
+  const [start, end] = snapLine(tail, tip)
+  const barbLength = Math.min(
+    length * 0.4,
+    Math.max(length * 0.1, found.reduce((sum, barb) => sum + barb.length, 0) / found.length)
+  )
+  const direction = Math.atan2(start.y - end.y, start.x - end.x)
+  const barb = (angle: number) => ({
+    x: end.x + barbLength * Math.cos(direction + angle),
+    y: end.y + barbLength * Math.sin(direction + angle)
+  })
+  return {
+    kind: 'arrow',
+    confidence: (straightness - ARROW_STRAIGHTNESS) / (1 - ARROW_STRAIGHTNESS),
+    points: [start, end, barb(BARB_ANGLE), end, barb(-BARB_ANGLE)]
+  }
+}
+
+function degrees(value: number) {
+  return (value * Math.PI) / 180
 }
 
 // Angle folded into (-45°, 45°]: how far a direction is from the nearest axis.
