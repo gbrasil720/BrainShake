@@ -32,7 +32,16 @@ export function AccessibilityTour({
         if (!open) onClose()
       }}
     >
-      <DialogContent className="tour-dialog" showCloseButton={false} aria-describedby={undefined}>
+      <DialogContent
+        className="tour-dialog"
+        showCloseButton={false}
+        aria-describedby={undefined}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+          const content = event.currentTarget as HTMLElement
+          content.focus()
+        }}
+      >
         <div className="tour-heading">
           <div>
             <span className="tour-progress">

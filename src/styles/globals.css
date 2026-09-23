@@ -785,7 +785,8 @@ a:focus-visible,
 .toast svg {
   color: var(--success-ink);
 }
-.floating-panel [data-slot='select-trigger'] {
+.floating-panel [data-slot='select-trigger'],
+.sidebar-settings [data-slot='select-trigger'] {
   padding: 4px 6px;
   color: var(--ink);
   border: 1px solid var(--line);
@@ -1098,7 +1099,8 @@ a:focus-visible,
   background: var(--accent);
   color: var(--ink);
 }
-.theme-dark .floating-panel [data-slot='select-trigger'] {
+.theme-dark .floating-panel [data-slot='select-trigger'],
+.theme-dark .sidebar-settings [data-slot='select-trigger'] {
   color: var(--ink);
   background: var(--paper);
 }
@@ -1688,19 +1690,18 @@ a:focus-visible,
   background: var(--panel-custom, var(--paper));
 }
 
-.presentation-backdrop {
-  position: fixed;
-  inset: 0;
+[data-slot='dialog-overlay']:has(+ .presentation-dialog) {
   z-index: 120;
-  display: grid;
-  place-items: center;
-  padding: 28px;
   background: rgba(15, 18, 17, 0.82);
 }
 .presentation-dialog {
+  z-index: 120;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  width: min(920px, 100%);
+  gap: 0;
+  width: min(920px, calc(100% - 56px));
+  max-width: none;
+  padding: 0;
   min-height: min(620px, 90vh);
   overflow: hidden;
   color: var(--ink);
@@ -1718,6 +1719,9 @@ a:focus-visible,
   border-bottom: 1px solid var(--line);
   font-size: 12px;
   font-weight: 700;
+}
+.presentation-heading [data-slot='dialog-title'] {
+  font: inherit;
 }
 .presentation-actions {
   justify-content: center;
@@ -1782,10 +1786,8 @@ a:focus-visible,
   .save-state {
     display: none;
   }
-  .presentation-backdrop {
-    padding: 10px;
-  }
   .presentation-dialog {
+    width: calc(100% - 20px);
     min-height: calc(100vh - 20px);
   }
 }
