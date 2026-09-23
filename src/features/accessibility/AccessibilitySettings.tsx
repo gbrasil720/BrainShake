@@ -1,13 +1,6 @@
 import type { ReactNode } from 'react'
 import type { usePreferences } from '@/features/preferences/usePreferences'
-import {
-  Accessibility,
-  Eye,
-  Keyboard,
-  MousePointerClick,
-  Sparkles,
-  Type
-} from 'lucide-react'
+import { Accessibility, Eye, Keyboard, MousePointerClick, Sparkles, Type } from 'lucide-react'
 import {
   COLOR_VISION_OPTIONS,
   FONT_SIZE_OPTIONS,
@@ -117,11 +110,7 @@ export function AccessibilitySettings({
             >
               A+
             </button>
-            <button
-              type="button"
-              className="font-reset"
-              onClick={() => setFontSize('default')}
-            >
+            <button type="button" className="font-reset" onClick={() => setFontSize('default')}>
               Reset
             </button>
           </div>

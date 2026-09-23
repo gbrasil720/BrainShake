@@ -61,10 +61,18 @@ a:focus-visible,
   --accessibility-scale: var(--font-scale);
   font-size: calc(13px * var(--font-scale));
 }
-.font-size-small { --font-scale: 0.92; }
-.font-size-default { --font-scale: 1; }
-.font-size-large { --font-scale: 1.12; }
-.font-size-extra-large { --font-scale: 1.24; }
+.font-size-small {
+  --font-scale: 0.92;
+}
+.font-size-default {
+  --font-scale: 1;
+}
+.font-size-large {
+  --font-scale: 1.12;
+}
+.font-size-extra-large {
+  --font-scale: 1.24;
+}
 .accessibility-high-contrast {
   --ink: color-mix(in srgb, var(--ink) 35%, black 65%);
   --muted: color-mix(in srgb, var(--muted) 42%, black 58%);
@@ -97,7 +105,9 @@ a:focus-visible,
   scroll-behavior: auto !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

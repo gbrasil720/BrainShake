@@ -55,10 +55,7 @@ function AccessibilityTourContent({
   const { setTutorialCompleted } = preferences
 
   const currentStep = TOUR_STEPS[stepIndex]
-  const progress = useMemo(
-    () => ((stepIndex + 1) / TOUR_STEPS.length) * 100,
-    [stepIndex]
-  )
+  const progress = useMemo(() => ((stepIndex + 1) / TOUR_STEPS.length) * 100, [stepIndex])
 
   function nextStep() {
     if (stepIndex === TOUR_STEPS.length - 1) {
@@ -101,7 +98,10 @@ function AccessibilityTourContent({
           {currentStep.id === 'font' && (
             <div className="tour-demo-card">
               <div className="tour-demo-toolbar">
-                <button className="tour-mini-button" onClick={() => preferences.setFontSize('small')}>
+                <button
+                  className="tour-mini-button"
+                  onClick={() => preferences.setFontSize('small')}
+                >
                   A−
                 </button>
                 <button
@@ -110,13 +110,18 @@ function AccessibilityTourContent({
                 >
                   Default
                 </button>
-                <button className="tour-mini-button" onClick={() => preferences.setFontSize('large')}>
+                <button
+                  className="tour-mini-button"
+                  onClick={() => preferences.setFontSize('large')}
+                >
                   A+
                 </button>
               </div>
               <div className="tour-font-sample">
                 <strong>BrainShake</strong>
-                <span>{preferences.fontSize === 'default' ? 'Default view' : preferences.fontSize}</span>
+                <span>
+                  {preferences.fontSize === 'default' ? 'Default view' : preferences.fontSize}
+                </span>
               </div>
             </div>
           )}
@@ -213,7 +218,11 @@ function AccessibilityTourContent({
         <p className="tour-copy">{currentStep.description}</p>
 
         <div className="tour-actions">
-          <button className="dialog-button secondary" onClick={previousStep} disabled={stepIndex === 0}>
+          <button
+            className="dialog-button secondary"
+            onClick={previousStep}
+            disabled={stepIndex === 0}
+          >
             <ChevronLeft size={14} /> Back
           </button>
           <button
