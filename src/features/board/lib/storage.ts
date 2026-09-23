@@ -14,7 +14,6 @@ export const STORAGE_KEYS = {
   reduceMotion: 'brainshake-reduce-motion',
   keyboardNavigation: 'brainshake-keyboard-navigation',
   enhancedFocus: 'brainshake-enhanced-focus',
-  vimBindings: 'brainshake-vim-bindings',
   tutorialCompleted: 'brainshake-accessibility-tour-complete'
 }
 

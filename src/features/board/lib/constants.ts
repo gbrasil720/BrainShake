@@ -50,7 +50,11 @@ export const THEMES = [
   { id: 'warm', label: 'Warm' },
   { id: 'mint', label: 'Mint' },
   { id: 'dark', label: 'Dark' },
-  { id: 'oled', label: 'OLED' }
+  { id: 'oled', label: 'OLED' },
+  { id: 'catppuccin', label: 'Catppuccin' },
+  { id: 'gruvbox', label: 'Gruvbox' },
+  { id: 'dracula', label: 'Dracula' },
+  { id: 'nord', label: 'Nord' }
 ]
 
 export const SHAPES = [

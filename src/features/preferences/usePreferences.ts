@@ -15,7 +15,6 @@ export function usePreferences() {
     true
   )
   const [enhancedFocus, setEnhancedFocus] = useLocalStorage(STORAGE_KEYS.enhancedFocus, true)
-  const [vimBindings, setVimBindings] = useLocalStorage(STORAGE_KEYS.vimBindings, false)
   const [tutorialCompleted, setTutorialCompleted] = useLocalStorage(
     STORAGE_KEYS.tutorialCompleted,
     false
@@ -40,8 +39,6 @@ export function usePreferences() {
     setKeyboardNavigation,
     enhancedFocus,
     setEnhancedFocus,
-    vimBindings,
-    setVimBindings,
     tutorialCompleted,
     setTutorialCompleted,
     grid,

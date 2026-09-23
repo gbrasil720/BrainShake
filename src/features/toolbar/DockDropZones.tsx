@@ -19,7 +19,14 @@ export function DockDropZones({ onDrop }: { onDrop: (position: string) => void }
         <div
           key={id}
           className={`dock-drop-zone dock-drop-${id}`}
-          onDragOver={(event) => event.preventDefault()}
+          onDragEnter={(event) => {
+            event.preventDefault()
+            event.dataTransfer.dropEffect = 'move'
+          }}
+          onDragOver={(event) => {
+            event.preventDefault()
+            event.dataTransfer.dropEffect = 'move'
+          }}
           onDrop={drop(id)}
         >
           {label}

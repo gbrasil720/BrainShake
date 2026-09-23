@@ -43,6 +43,7 @@ export function Toolbar({
           title="Drag to move dock"
           onDragStart={(event) => {
             event.dataTransfer.setData('text/plain', DOCK_DRAG_TYPE)
+            event.dataTransfer.effectAllowed = 'move'
             setDockDragging(true)
           }}
           onDragEnd={() => setDockDragging(false)}

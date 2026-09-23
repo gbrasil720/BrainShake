@@ -24,6 +24,19 @@ export function AppearanceSettings({
         </button>
       </div>
       <div className="panel-row">
+        <span>App dock</span>
+        <select
+          className="menu-select"
+          value={preferences.dockPosition}
+          onChange={(event) => preferences.setDockPosition(event.target.value)}
+        >
+          <option value="top">Top</option>
+          <option value="right">Right</option>
+          <option value="bottom">Bottom</option>
+          <option value="left">Left</option>
+        </select>
+      </div>
+      <div className="panel-row">
         <span>Theme</span>
         <select
           className="menu-select"
@@ -49,6 +62,24 @@ export function AppearanceSettings({
               aria-label="Choose accent color"
             />
           ))}
+          <label className="accent-picker" title="Choose custom accent color">
+            <input
+              type="color"
+              value={accent}
+              aria-label="Choose custom accent color"
+              onChange={(event) => setAccent(event.target.value)}
+            />
+          </label>
+          <input
+            className="accent-hex-input"
+            value={accent}
+            aria-label="Accent HEX color"
+            pattern="^#[0-9a-fA-F]{6}$"
+            onChange={(event) => {
+              const value = event.target.value
+              if (/^#[0-9a-fA-F]{0,6}$/.test(value)) setAccent(value)
+            }}
+          />
         </div>
       </div>
     </>

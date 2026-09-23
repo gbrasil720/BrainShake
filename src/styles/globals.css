@@ -402,6 +402,39 @@ a:focus-visible,
   backdrop-filter: blur(18px);
   z-index: 15;
 }
+.toolbar.dock-top {
+  top: 24px;
+  right: 50%;
+  bottom: auto;
+  left: auto;
+  transform: translateX(50%);
+}
+.toolbar.dock-right {
+  top: 50%;
+  right: 24px;
+  bottom: auto;
+  left: auto;
+  flex-direction: column;
+  transform: translateY(-50%);
+}
+.toolbar.dock-left {
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 24px;
+  flex-direction: column;
+  transform: translateY(-50%);
+}
+.toolbar.dock-top,
+.toolbar.dock-bottom {
+  flex-direction: row;
+}
+.toolbar.dock-right .toolbar-divider,
+.toolbar.dock-left .toolbar-divider {
+  width: 24px;
+  height: 1px;
+  margin: 4px 0;
+}
 .toolbar-divider {
   width: 1px;
   height: 24px;
@@ -1839,5 +1872,138 @@ kbd {
   filter: url('#tritanopia');
 }
 .color-vision-achromatopsia {
-  filter: url('#achromatopsia');
+  filter: grayscale(1);
+}
+
+.color-vision-protanopia,
+.color-vision-deuteranopia,
+.color-vision-tritanopia {
+  isolation: isolate;
+  filter: url('#protanopia');
+}
+.color-vision-deuteranopia {
+  filter: url('#deuteranopia');
+}
+.color-vision-tritanopia {
+  filter: url('#tritanopia');
+}
+
+.font-size-small {
+  --font-scale: 1.38;
+}
+.font-size-default {
+  --font-scale: 1.5;
+}
+.font-size-large {
+  --font-scale: 1.68;
+}
+.font-size-extra-large {
+  --font-scale: 1.86;
+}
+
+.accent-picker {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: conic-gradient(#e76f51, #f4a261, #2a9d8f, #457b9d, #9b5de5, #e76f51);
+  cursor: pointer;
+}
+.accent-picker input {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.accent-hex-input {
+  width: 74px;
+  min-height: 26px;
+  padding: 0 6px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  font: 11px monospace;
+  text-transform: uppercase;
+}
+
+.theme-catppuccin {
+  --paper: #f5f2f8;
+  --surface: #f0eaf5;
+  --line: #d5c8df;
+  --ink: #30263d;
+  --muted: #756681;
+  --accent: #e5d9ee;
+  --control-active: #d5c2e2;
+  --stroke-color: #76558f;
+  background: var(--surface);
+}
+.theme-gruvbox {
+  --paper: #fbf1c7;
+  --surface: #f2e5bc;
+  --line: #d5c29a;
+  --ink: #3c3836;
+  --muted: #7c6f64;
+  --accent: #e7d7a1;
+  --control-active: #d9bd83;
+  --stroke-color: #8f3f71;
+  background: var(--surface);
+}
+.theme-dracula {
+  --paper: #282a36;
+  --surface: #1f202b;
+  --line: #44475a;
+  --ink: #f8f8f2;
+  --muted: #b8b8c8;
+  --accent: #44475a;
+  --control-active: #6272a4;
+  --stroke-color: #8be9fd;
+  --primary-soft: color-mix(in srgb, var(--primary) 22%, transparent);
+  background: var(--surface);
+}
+.theme-nord {
+  --paper: #eceff4;
+  --surface: #e5e9f0;
+  --line: #c5ccd8;
+  --ink: #2e3440;
+  --muted: #687385;
+  --accent: #d8dee9;
+  --control-active: #c2cede;
+  --stroke-color: #4c566a;
+  background: var(--surface);
+}
+.theme-catppuccin .topbar,
+.theme-catppuccin .sidebar,
+.theme-gruvbox .topbar,
+.theme-gruvbox .sidebar,
+.theme-nord .topbar,
+.theme-nord .sidebar {
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+.theme-catppuccin .canvas-shell,
+.theme-nord .canvas-shell {
+  background-color: var(--surface);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+}
+.theme-gruvbox .canvas-shell {
+  background-color: #ebddb3;
+  background-image: radial-gradient(#c9b384 1px, transparent 1px);
+}
+.theme-dracula .topbar,
+.theme-dracula .sidebar,
+.theme-dracula .toolbar,
+.theme-dracula .zoom-controls,
+.theme-dracula .floating-panel,
+.theme-dracula .context-menu {
+  background: rgba(40, 42, 54, 0.96);
+}
+.theme-dracula .canvas-shell {
+  background-color: #21222c;
+  background-image: radial-gradient(#44475a 1px, transparent 1px);
 }

@@ -115,12 +115,6 @@ export function AccessibilitySettings({
           value={preferences.enhancedFocus}
           onChange={() => preferences.setEnhancedFocus((value) => !value)}
         />
-        <ToggleRow
-          label="Vim Bindings"
-          description="Use H, J, K and L style navigation where available."
-          value={preferences.vimBindings}
-          onChange={() => preferences.setVimBindings((value) => !value)}
-        />
       </div>
       {preferences.tutorialCompleted && (
         <button className="accessibility-tour-link" onClick={onOpenTour}>
