@@ -42,11 +42,21 @@ const BARB_ANGLE = Math.PI / 6
 // Relative difference under which two sides are treated as equal.
 const EQUAL_SIDES = 0.12
 
-export function recognize(stroke: Point[]): Recognition | null {
+// `minSize` and `minConfidence` let callers be stricter than the defaults, e.g.
+// when snapping strokes nobody asked to snap.
+export function recognize(
+  stroke: Point[],
+  { minSize = MIN_SIZE, minConfidence = 0 }: { minSize?: number; minConfidence?: number } = {}
+): Recognition | null {
   if (stroke.length < 3) return null
   const box = bounds(stroke)
   const diagonal = Math.hypot(box.maxX - box.minX, box.maxY - box.minY)
-  if (diagonal < MIN_SIZE) return null
+  if (diagonal < minSize) return null
+  const result = recognizeShape(stroke, diagonal)
+  return result && result.confidence >= minConfidence ? result : null
+}
+
+function recognizeShape(stroke: Point[], diagonal: number): Recognition | null {
   const points = resample(stroke, SAMPLES)
 
   if (!isClosed(stroke)) {

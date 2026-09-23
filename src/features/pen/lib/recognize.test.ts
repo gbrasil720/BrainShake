@@ -73,6 +73,15 @@ describe('recognize', () => {
     expect(recognize(sketch(rectangle(8, 8)))).toBeNull()
   })
 
+  it('can be made stricter about size and confidence', () => {
+    const small = sketch(rectangle(30, 30))
+    expect(recognize(small)?.kind).toBe('square')
+    expect(recognize(small, { minSize: 60 })).toBeNull()
+    const square = sketch(rectangle(200, 200))
+    const { confidence } = recognize(square)!
+    expect(recognize(square, { minConfidence: confidence + 0.01 })).toBeNull()
+  })
+
   it('leaves freehand scribbles alone', () => {
     const scribble = Array.from({ length: 60 }, (_, index) => ({
       x: index * 5,

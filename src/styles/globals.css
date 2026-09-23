@@ -1325,7 +1325,8 @@ a:focus-visible,
 .theme-oled .sidebar-link:hover {
   background: var(--accent);
 }
-.accessibility-settings {
+.accessibility-settings,
+.drawing-settings {
   display: grid;
   gap: 12px;
   margin-top: 10px;
@@ -2258,7 +2259,8 @@ a:focus-visible,
   scroll-behavior: auto !important;
 }
 
-.accessibility-settings {
+.accessibility-settings,
+.drawing-settings {
   padding: 16px 0 4px;
   border-top: 1px solid var(--line);
 }

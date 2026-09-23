@@ -23,6 +23,9 @@ const MIN_HEIGHT = 80
 const HOLD_DELAY = 500
 // Screen pixels the pointer may drift while held and still count as still.
 const HOLD_TOLERANCE = 6
+// Snapping strokes on release without being asked is held to a higher bar, so
+// handwriting (an "o", an "l") and loose doodles stay as drawn.
+const AUTO_SNAP = { minSize: 40, minConfidence: 0.2 }
 
 // Pointer interactions on the canvas. `dragging.type` is one of: move | resize | pan.
 // Pen strokes in progress live in `drawing`.
@@ -350,7 +353,7 @@ export function useCanvasPointer({
     if (drawing) {
       cancelHold()
       const { snapped: held, ...stroke } = drawing
-      const snapped = held ?? (autoSnap ? recognize(stroke.points) : null)
+      const snapped = held ?? (autoSnap ? recognize(stroke.points, AUTO_SNAP) : null)
       const drawn = finishStroke(stroke)
       commit((current) => addObjects(current, [drawn]))
       // A separate history entry, so undo brings back the stroke as it was drawn.
