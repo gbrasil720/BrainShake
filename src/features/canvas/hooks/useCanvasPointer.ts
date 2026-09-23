@@ -56,10 +56,15 @@ export type Drawing = CanvasItem & {
 
 export function useCanvasPointer({
   editor,
-  viewport
+  viewport,
+  autoSnap = false,
+  onSnap
 }: {
   editor: ReturnType<typeof useBoardEditor>
   viewport: ReturnType<typeof useViewport>
+  // Snap every stroke on release, not only the ones held still.
+  autoSnap?: boolean
+  onSnap?: (recognition: Recognition) => void
 }) {
   const [dragging, setDragging] = useState<Dragging | null>(null)
   const [drawing, setDrawing] = useState<Drawing | null>(null)
@@ -341,7 +346,8 @@ export function useCanvasPointer({
     if (dragging && event.pointerId !== dragging.pointerId) return
     if (drawing) {
       cancelHold()
-      const { snapped, ...stroke } = drawing
+      const { snapped: held, ...stroke } = drawing
+      const snapped = held ?? (autoSnap ? recognize(stroke.points) : null)
       const drawn = finishStroke(stroke)
       commit((current) => addObjects(current, [drawn]))
       // A separate history entry, so undo brings back the stroke as it was drawn.
@@ -350,6 +356,7 @@ export function useCanvasPointer({
         commit((current) =>
           patchObject(current, drawn.id, { x, y, w, h, points, recognizedShape: snapped.kind })
         )
+        onSnap?.(snapped)
       }
       setDrawing(null)
     }

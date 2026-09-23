@@ -26,7 +26,12 @@ export default function App() {
   const preferences = usePreferences()
   const viewport = useViewport()
   const editor = useBoardEditor({ viewport, showToast })
-  const pointer = useCanvasPointer({ editor, viewport })
+  const pointer = useCanvasPointer({
+    editor,
+    viewport,
+    autoSnap: preferences.autoSnapShapes,
+    onSnap: ({ kind }) => showToast(`Snapped to ${kind}. Undo to keep your drawing.`)
+  })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
   const [showPanel, setShowPanel] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
@@ -158,6 +163,8 @@ export default function App() {
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
             keyboardNavigation={preferences.keyboardNavigation}
+            autoSnapShapes={preferences.autoSnapShapes}
+            onAutoSnapShapesChange={preferences.setAutoSnapShapes}
           />
           <ZoomControls
             zoom={viewport.zoom}

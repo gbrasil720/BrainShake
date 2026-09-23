@@ -13,12 +13,16 @@ import { STROKE_WIDTHS } from '@/features/board/lib/constants'
 export function StrokeMenu({
   value,
   onChange,
+  autoSnap,
+  onAutoSnapChange,
   dockPosition,
   open,
   onOpenChange
 }: {
   value: number
   onChange: (value: number) => void
+  autoSnap: boolean
+  onAutoSnapChange: (value: boolean) => void
   dockPosition: string
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -56,6 +60,22 @@ export function StrokeMenu({
             </SelectContent>
           </Select>
         </label>
+        <div className="stroke-menu-toggle">
+          <span>Auto-correct shapes</span>
+          <Button
+            variant="ghost"
+            className={`segmented-toggle ${autoSnap ? 'on' : ''}`}
+            aria-pressed={autoSnap}
+            onClick={() => onAutoSnapChange(!autoSnap)}
+          >
+            {autoSnap ? 'On' : 'Off'}
+          </Button>
+        </div>
+        <p className="stroke-menu-hint">
+          {autoSnap
+            ? 'Strokes that look like a shape are cleaned up.'
+            : 'Hold the pen still at the end of a stroke to clean it up.'}
+        </p>
       </PopoverContent>
     </Popover>
   )
