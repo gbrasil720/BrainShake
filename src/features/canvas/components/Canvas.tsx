@@ -80,6 +80,13 @@ export function Canvas({
           ref={canvasRef}
           className={`canvas-shell ${grid ? '' : 'grid-off'} ${pointer.isPanning ? 'is-panning' : ''} ${presenting ? 'is-presenting' : ''}`}
           onWheel={presenting ? undefined : onWheel}
+          onPointerDownCapture={
+            presenting
+              ? undefined
+              : (event) => {
+                  if (event.button === 1) pointer.beginPan(event)
+                }
+          }
           onPointerDown={
             presenting
               ? undefined

@@ -63,7 +63,7 @@ export function useCanvasPointer({
   }
 
   function beginDrag(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
-    if (tool !== 'select' || ![0, 1, 2].includes(event.button) || item.locked) return
+    if (tool !== 'select' || event.button !== 0 || item.locked) return
     if (
       (event.target as Element).closest('textarea, .markdown-preview') &&
       event.button === 0 &&
@@ -107,9 +107,10 @@ export function useCanvasPointer({
   }
 
   function beginPan(event: React.PointerEvent<HTMLDivElement>) {
-    if (tool !== 'hand' || event.button !== 0) return
+    if (event.button !== 1 && (tool !== 'hand' || event.button !== 0)) return
     event.currentTarget.setPointerCapture?.(event.pointerId)
     event.preventDefault()
+    event.stopPropagation()
     setDragging({ type: 'pan', start: { x: event.clientX, y: event.clientY }, origin: pan })
   }
 
@@ -237,6 +238,7 @@ export function useCanvasPointer({
     beginDrag,
     beginResize,
     beginDrawing,
+    beginPan,
     onPointerDown,
     onPointerMove,
     onPointerUp
