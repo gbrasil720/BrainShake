@@ -1,6 +1,8 @@
 import type { CanvasItem } from '@/features/board/types'
 const COLOR = 'var(--primary)'
 
+// Outlines are authored on a 100x100 grid and stretched to the object's box, so a
+// resized shape fills its bounds instead of shrinking to fit the shorter side.
 const POLYGONS: Record<string, string> = {
   triangle: '50,8 92,90 8,90',
   diamond: '50,6 94,50 50,94 6,50',
@@ -10,35 +12,68 @@ const POLYGONS: Record<string, string> = {
   arrow: '10,38 62,38 62,18 94,50 62,82 62,62 10,62'
 }
 
+function scalePolygon(points: string, sx: number, sy: number) {
+  return points
+    .split(' ')
+    .map((pair) => {
+      const [x, y] = pair.split(',').map(Number)
+      return `${x * sx},${y * sy}`
+    })
+    .join(' ')
+}
+
 export function ShapeObject({ item }: { item: CanvasItem }) {
   const fill = item.fill !== 'outline' ? item.fillColor || COLOR : 'none'
   const polygon = item.shape && Object.hasOwn(POLYGONS, item.shape) && POLYGONS[item.shape]
+  const sx = item.w / 100
+  const sy = item.h / 100
+  // Keeps the stroke as thick as it was when the grid was scaled uniformly.
+  const strokeWidth = 4 * Math.min(sx, sy)
   return (
-    <svg className="shape-svg" viewBox="0 0 100 100" aria-label={item.name || item.shape}>
+    <svg
+      className="shape-svg"
+      viewBox={`0 0 ${item.w} ${item.h}`}
+      aria-label={item.name || item.shape}
+    >
       {item.shape === 'square' && (
         <rect
-          x="8"
-          y="8"
-          width="84"
-          height="84"
-          rx="4"
+          x={8 * sx}
+          y={8 * sy}
+          width={84 * sx}
+          height={84 * sy}
+          rx={4 * Math.min(sx, sy)}
           fill={fill}
           stroke={COLOR}
-          strokeWidth="4"
+          strokeWidth={strokeWidth}
         />
       )}
       {item.shape === 'circle' && (
-        <circle cx="50" cy="50" r="42" fill={fill} stroke={COLOR} strokeWidth="4" />
+        <ellipse
+          cx={50 * sx}
+          cy={50 * sy}
+          rx={42 * sx}
+          ry={42 * sy}
+          fill={fill}
+          stroke={COLOR}
+          strokeWidth={strokeWidth}
+        />
       )}
       {item.shape === 'line' && (
-        <line x1="10" y1="50" x2="90" y2="50" stroke={COLOR} strokeWidth="4" />
+        <line
+          x1={10 * sx}
+          y1={50 * sy}
+          x2={90 * sx}
+          y2={50 * sy}
+          stroke={COLOR}
+          strokeWidth={strokeWidth}
+        />
       )}
       {polygon && (
         <polygon
-          points={polygon}
+          points={scalePolygon(polygon, sx, sy)}
           fill={fill}
           stroke={COLOR}
-          strokeWidth="4"
+          strokeWidth={strokeWidth}
           strokeLinejoin="round"
         />
       )}
