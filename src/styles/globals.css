@@ -1183,7 +1183,6 @@ a:focus-visible,
 }
 .theme-warm .canvas-shell {
   background-color: #f8eee1;
-  background-image: radial-gradient(#ddcdbb 1px, transparent 1px);
 }
 .theme-mint {
   --paper: #f4fffa;
@@ -1200,7 +1199,6 @@ a:focus-visible,
 }
 .theme-mint .canvas-shell {
   background-color: #e9f6ef;
-  background-image: radial-gradient(#bdd9c9 1px, transparent 1px);
 }
 .theme-dark {
   --paper: #17191b;
@@ -1220,7 +1218,6 @@ a:focus-visible,
 }
 .theme-dark .canvas-shell {
   background-color: #14171a;
-  background-image: radial-gradient(#2c3138 1px, transparent 1px);
 }
 .theme-dark .board-item:hover,
 .theme-dark .board-item.active,
@@ -2631,11 +2628,9 @@ kbd {
 .theme-catppuccin .canvas-shell,
 .theme-nord .canvas-shell {
   background-color: var(--surface);
-  background-image: radial-gradient(var(--line) 1px, transparent 1px);
 }
 .theme-gruvbox .canvas-shell {
   background-color: #ebddb3;
-  background-image: radial-gradient(#c9b384 1px, transparent 1px);
 }
 .theme-dracula .topbar,
 .theme-dracula .sidebar,
@@ -2647,7 +2642,6 @@ kbd {
 }
 .theme-dracula .canvas-shell {
   background-color: #21222c;
-  background-image: radial-gradient(#44475a 1px, transparent 1px);
 }
 
 @theme inline {

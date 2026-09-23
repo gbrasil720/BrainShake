@@ -86,6 +86,7 @@ export function Canvas({
             presenting
               ? undefined
               : (event) => {
+                  pointer.onTouchPointerDown(event)
                   if (event.button === 1) pointer.beginPan(event)
                 }
           }
@@ -108,8 +109,11 @@ export function Canvas({
                   pointer.onPointerDown(event)
                 }
           }
+          onPointerMoveCapture={pointer.onTouchPointerMove}
           onPointerMove={pointer.onPointerMove}
+          onPointerUpCapture={pointer.onTouchPointerUp}
           onPointerUp={pointer.onPointerUp}
+          onPointerCancelCapture={pointer.onTouchPointerUp}
           onPointerCancel={pointer.onPointerUp}
           onDragOver={(event) => {
             event.preventDefault()
