@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { STORAGE_KEYS } from '@/features/board/lib/storage'
+import { loadDockPosition } from './dockPosition'
 
 export function usePreferences() {
   const [theme, setTheme] = useLocalStorage(STORAGE_KEYS.theme, 'light')
   const [accent, setAccent] = useLocalStorage(STORAGE_KEYS.accent, '#d86e50')
-  const [dockPosition, setDockPosition] = useLocalStorage(STORAGE_KEYS.dock, 'bottom')
+  const [dockPosition, setDockPosition] = useState(() => loadDockPosition(localStorage))
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.dock, JSON.stringify(dockPosition))
+  }, [dockPosition])
   const [fontSize, setFontSize] = useLocalStorage(STORAGE_KEYS.fontSize, 'default')
   const [highContrast, setHighContrast] = useLocalStorage(STORAGE_KEYS.highContrast, false)
   const [reduceMotion, setReduceMotion] = useLocalStorage(STORAGE_KEYS.reduceMotion, false)
@@ -24,6 +28,7 @@ export function usePreferences() {
   const [sidebarColor, setSidebarColor] = useLocalStorage(STORAGE_KEYS.sidebarColor, '')
   const [canvasColor, setCanvasColor] = useLocalStorage(STORAGE_KEYS.canvasColor, '')
   const [panelColor, setPanelColor] = useLocalStorage(STORAGE_KEYS.panelColor, '')
+  const [autoSnapShapes, setAutoSnapShapes] = useLocalStorage(STORAGE_KEYS.autoSnapShapes, true)
   const [grid, setGrid] = useState(true)
   return {
     theme,
@@ -56,6 +61,8 @@ export function usePreferences() {
     setCanvasColor,
     panelColor,
     setPanelColor,
+    autoSnapShapes,
+    setAutoSnapShapes,
     grid,
     setGrid
   }

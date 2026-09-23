@@ -25,6 +25,8 @@ export type CanvasItem = {
   fillColor?: string
   strokeColor?: string
   shape?: string
+  // Shape a pen stroke was snapped to (see recognize in features/pen).
+  recognizedShape?: string
   strokeWidth?: number
   points?: Point[]
 }
@@ -56,7 +58,8 @@ export function isBoardItem(value: unknown): value is BoardItem {
       'fill',
       'fillColor',
       'strokeColor',
-      'shape'
+      'shape',
+      'recognizedShape'
     ].every((key) => value[key] === undefined || typeof value[key] === 'string') &&
     ['locked', 'editing', 'mediaOmitted', 'slide'].every(
       (key) => value[key] === undefined || typeof value[key] === 'boolean'

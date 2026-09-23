@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import type { usePreferences } from '@/features/preferences/usePreferences'
-import { AccessibilitySettings } from '@/features/accessibility/AccessibilitySettings'
+import { AccessibilitySettings, ToggleRow } from '@/features/accessibility/AccessibilitySettings'
 import { AppearanceSettings } from '@/features/properties/AppearanceSettings'
 
 export function SidebarSettings({
@@ -44,6 +44,19 @@ export function SidebarSettings({
           onChange={preferences.setPanelColor}
         />
       </div>
+      <section className="drawing-settings" aria-labelledby="drawing-heading">
+        <div className="settings-section-heading">
+          <h2 id="drawing-heading">Drawing</h2>
+        </div>
+        <div className="settings-group">
+          <ToggleRow
+            label="Auto-correct Shapes"
+            description="Turn pen strokes that look like shapes or arrows into clean ones. Hold the pen still to correct a stroke when this is off."
+            value={preferences.autoSnapShapes}
+            onChange={() => preferences.setAutoSnapShapes((value) => !value)}
+          />
+        </div>
+      </section>
       <AccessibilitySettings preferences={preferences} onOpenTour={onOpenTour} />
     </div>
   )

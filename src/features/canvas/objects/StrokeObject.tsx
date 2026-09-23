@@ -1,11 +1,21 @@
 import type { CanvasItem, Point } from '@/features/board/types'
 
-export function strokePath(points: Point[]) {
-  return points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')
+// Straight segments between the points, or, when `curved`, a smooth curve through
+// the midpoints of each segment. Freehand strokes are drawn curved; strokes snapped
+// to a shape keep their sharp corners.
+export function strokePath(points: Point[], curved = false) {
+  if (!curved || points.length < 3)
+    return points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ')
+  const last = points[points.length - 1]
+  const curves = points.slice(1, -1).map((point, index) => {
+    const next = points[index + 2]
+    return `Q ${point.x} ${point.y} ${(point.x + next.x) / 2} ${(point.y + next.y) / 2}`
+  })
+  return [`M ${points[0].x} ${points[0].y}`, ...curves, `L ${last.x} ${last.y}`].join(' ')
 }
 
 export function StrokeObject({ item }: { item: CanvasItem }) {
-  const path = strokePath(item.points || [])
+  const path = strokePath(item.points || [], !item.recognizedShape)
   return (
     <svg className="stroke" viewBox={`0 0 ${item.w} ${item.h}`}>
       <path

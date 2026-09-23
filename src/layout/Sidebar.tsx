@@ -1,15 +1,25 @@
 import { Button } from '@/components/ui/button'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useImportExport } from '@/features/import-export/hooks/useImportExport'
-import { BoxSelect, LayoutGrid, Link2, SlidersHorizontal, Upload } from 'lucide-react'
+import { BoxSelect, LayoutGrid, Link2, Menu, SlidersHorizontal, Upload, X } from 'lucide-react'
 import { BoardList } from '@/features/board/components/BoardList'
 import { ExportMenu } from '@/features/import-export/components/ExportMenu'
 import { SidebarFooter } from './SidebarFooter'
 import { SidebarSettings } from './SidebarSettings'
-import { useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import type { usePreferences } from '@/features/preferences/usePreferences'
 import { SnapshotList } from '@/features/workspace/SnapshotList'
 import type { useSnapshots } from '@/features/workspace/useSnapshots'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { STORAGE_KEYS } from '@/features/board/lib/storage'
+
+const MIN_SIDEBAR_WIDTH = 220
+const MAX_SIDEBAR_WIDTH = 560
+const DEFAULT_SIDEBAR_WIDTH = 280
+
+function maxSidebarWidth() {
+  return Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, window.innerWidth - 320))
+}
 
 export function Sidebar({
   editor,
@@ -29,59 +39,154 @@ export function Sidebar({
   onOpenTour: () => void
 }) {
   const [page, setPage] = useState<'workspace' | 'customize'>('workspace')
+  const [expanded, setExpanded] = useState(false)
+  const [width, setWidth] = useLocalStorage(STORAGE_KEYS.sidebarWidth, DEFAULT_SIDEBAR_WIDTH)
+  const savedWidth = Math.min(
+    MAX_SIDEBAR_WIDTH,
+    Math.max(MIN_SIDEBAR_WIDTH, Number(width) || DEFAULT_SIDEBAR_WIDTH)
+  )
+  const visibleWidth = Math.min(maxSidebarWidth(), savedWidth)
+  const resizeTo = (next: number) =>
+    setWidth(Math.min(maxSidebarWidth(), Math.max(MIN_SIDEBAR_WIDTH, next)))
+
+  useEffect(() => {
+    if (!expanded) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [expanded])
+
   return (
-    <aside className={`sidebar ${autoHide ? 'sidebar-auto-hide' : ''}`}>
-      <div className="sidebar-tabs" role="tablist" aria-label="Sidebar pages">
-        <Button
-          variant="ghost"
-          className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
-          onClick={() => setPage('workspace')}
-        >
-          <LayoutGrid size={15} /> <span>Workspace</span>
-        </Button>
-        <Button
-          variant="ghost"
-          className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
-          onClick={() => setPage('customize')}
-        >
-          <SlidersHorizontal size={15} /> <span>Customize</span>
-        </Button>
-      </div>
-      {page === 'workspace' ? (
-        <>
-          <div className="sidebar-section">
-            <div className="section-label">Workspace</div>
-            <Button variant="ghost" className="nav-item active">
-              <BoxSelect size={16} />
-              <span>Canvas</span>
-            </Button>
-            <Button variant="ghost" className="nav-item" onClick={onImportFiles}>
-              <Upload size={16} />
-              <span>Import</span>
-            </Button>
-            <Button variant="ghost" className="nav-item" onClick={transfer.openUrlDialog}>
-              <Link2 size={16} />
-              <span>Import image URL</span>
-            </Button>
-            <ExportMenu
-              onExport={transfer.exportAsBrainshake}
-              onExportJson={transfer.exportAsJson}
-            />
-          </div>
-          <BoardList
-            boards={editor.boards}
-            activeId={editor.board.id}
-            onCreate={editor.createBoard}
-            onSwitch={editor.switchBoard}
-            onDelete={editor.deleteBoard}
-            onToggleLink={editor.toggleBoardLink}
-          />
-          <SnapshotList snapshots={snapshots} />
-          <SidebarFooter />
-        </>
-      ) : (
-        <SidebarSettings preferences={preferences} onOpenTour={onOpenTour} />
+    <>
+      {expanded && (
+        <div className="sidebar-backdrop" onClick={() => setExpanded(false)} aria-hidden="true" />
       )}
-    </aside>
+      <aside
+        className={`sidebar ${autoHide ? 'sidebar-auto-hide' : ''} ${expanded ? 'sidebar-expanded' : ''}`}
+        style={{ '--sidebar-width': `${savedWidth}px` } as CSSProperties}
+      >
+        <Button
+          variant="ghost"
+          className="sidebar-mobile-toggle"
+          title={expanded ? 'Close sidebar' : 'Open sidebar'}
+          aria-label={expanded ? 'Close sidebar' : 'Open sidebar'}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          {expanded ? <X size={18} /> : <Menu size={18} />}
+        </Button>
+        <div
+          className="sidebar-resize-handle"
+          role="separator"
+          aria-label="Resize sidebar"
+          aria-orientation="vertical"
+          aria-valuemin={MIN_SIDEBAR_WIDTH}
+          aria-valuemax={maxSidebarWidth()}
+          aria-valuenow={visibleWidth}
+          tabIndex={0}
+          onPointerDown={(event) => {
+            event.preventDefault()
+            event.currentTarget.setPointerCapture(event.pointerId)
+          }}
+          onPointerMove={(event) => {
+            if (!event.buttons) return
+            const left = event.currentTarget.closest('.app')?.getBoundingClientRect().left
+            if (left !== undefined) resizeTo(event.clientX - left)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+              event.preventDefault()
+              resizeTo(visibleWidth + (event.key === 'ArrowRight' ? 16 : -16))
+            } else if (event.key === 'Home' || event.key === 'End') {
+              event.preventDefault()
+              resizeTo(event.key === 'Home' ? MIN_SIDEBAR_WIDTH : maxSidebarWidth())
+            }
+          }}
+        />
+        <div className="sidebar-tabs" role="tablist" aria-label="Sidebar pages">
+          <Button
+            variant="ghost"
+            className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
+            onClick={() => {
+              setPage('workspace')
+              if (window.innerWidth <= 820) setExpanded(true)
+            }}
+          >
+            <LayoutGrid size={15} /> <span>Workspace</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
+            onClick={() => {
+              setPage('customize')
+              if (window.innerWidth <= 820) setExpanded(true)
+            }}
+          >
+            <SlidersHorizontal size={15} /> <span>Customize</span>
+          </Button>
+        </div>
+        {page === 'workspace' ? (
+          <>
+            <div className="sidebar-section">
+              <div className="section-label">Workspace</div>
+              <Button
+                variant="ghost"
+                className="nav-item active"
+                onClick={() => setExpanded(false)}
+              >
+                <BoxSelect size={16} />
+                <span>Canvas</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="nav-item"
+                onClick={() => {
+                  setExpanded(false)
+                  onImportFiles()
+                }}
+              >
+                <Upload size={16} />
+                <span>Import</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="nav-item"
+                onClick={() => {
+                  setExpanded(false)
+                  transfer.openUrlDialog()
+                }}
+              >
+                <Link2 size={16} />
+                <span>Import image URL</span>
+              </Button>
+              <ExportMenu
+                onExport={transfer.exportAsBrainshake}
+                onExportJson={transfer.exportAsJson}
+              />
+            </div>
+            <BoardList
+              boards={editor.boards}
+              activeId={editor.board.id}
+              onCreate={() => {
+                editor.createBoard()
+                setExpanded(false)
+              }}
+              onSwitch={(id) => {
+                editor.switchBoard(id)
+                setExpanded(false)
+              }}
+              onDelete={editor.deleteBoard}
+              onToggleLink={editor.toggleBoardLink}
+            />
+            <SnapshotList snapshots={snapshots} />
+            <SidebarFooter />
+          </>
+        ) : (
+          <SidebarSettings preferences={preferences} onOpenTour={onOpenTour} />
+        )}
+      </aside>
+    </>
   )
 }

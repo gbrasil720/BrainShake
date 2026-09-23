@@ -22,12 +22,14 @@ export const STORAGE_KEYS = {
   focusColor: 'brainshake-focus-color',
   tutorialCompleted: 'brainshake-accessibility-tour-complete',
   sidebarAutoHide: 'brainshake-sidebar-auto-hide',
+  sidebarWidth: 'brainshake-sidebar-width',
   headerColor: 'brainshake-header-color',
   sidebarColor: 'brainshake-sidebar-color',
   canvasColor: 'brainshake-canvas-color',
   panelColor: 'brainshake-panel-color',
   propertiesAutoHide: 'brainshake-properties-auto-hide',
-  propertiesPanelWidth: 'brainshake-properties-panel-width'
+  propertiesPanelWidth: 'brainshake-properties-panel-width',
+  autoSnapShapes: 'brainshake-shape-correction'
 }
 
 export function loadBoards(): Board[] {

@@ -117,7 +117,7 @@ export function AccessibilitySettings({
   )
 }
 
-function ToggleRow({
+export function ToggleRow({
   label,
   description,
   value,

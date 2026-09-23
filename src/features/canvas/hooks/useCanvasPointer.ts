@@ -1,21 +1,44 @@
 import type React from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { makeId } from '@/lib/id'
-import { addObjects, finishStroke, moveObjects, resizeStroke } from '@/features/board/lib/objects'
+import {
+  addObjects,
+  finishStroke,
+  moveObjects,
+  patchObject,
+  removeObjects,
+  resizeStroke
+} from '@/features/board/lib/objects'
 import type { CanvasItem, Point } from '@/features/board/types'
-import { isCanvasItem } from '@/features/board/types'
+import { isCanvasItem, isConnectorItem } from '@/features/board/types'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useViewport } from './useViewport'
+import { canBeginCanvasPan, shouldPanWithSpace } from '@/features/toolbar/toolNavigation'
+import { recognize, UNATTENDED, type Recognition } from '@/features/pen/lib/recognize'
+import { arrowLink } from '@/features/pen/lib/arrowLink'
+import { recognizeGesture, type Gesture } from '@/features/pen/lib/gestures'
+import { tidyStroke } from '@/features/pen/lib/geometry'
 
 const MIN_WIDTH = 100
 const MIN_HEIGHT = 80
+// Holding the pen still this long at the end of a stroke snaps it to a clean shape.
+const HOLD_DELAY = 500
+// Screen pixels the pointer may drift while held and still count as still.
+const HOLD_TOLERANCE = 6
 
 // Pointer interactions on the canvas. `dragging.type` is one of: move | resize | pan.
 // Pen strokes in progress live in `drawing`.
 type Dragging =
-  | { type: 'move'; ids: string[]; start: Point; origins: (Point & { id: string })[] }
+  | {
+      type: 'move'
+      pointerId: number
+      ids: string[]
+      start: Point
+      origins: (Point & { id: string })[]
+    }
   | {
       type: 'resize'
+      pointerId: number
       id: string
       start: Point
       x: number
@@ -26,24 +49,99 @@ type Dragging =
       points?: Point[]
       fontSize?: number
     }
-  | { type: 'pan'; start: Point; origin: Point }
+  | { type: 'pan'; pointerId: number; start: Point; origin: Point }
+
+export type Drawing = CanvasItem & {
+  points: Point[]
+  strokeWidth: number
+  // What holding the pen still turned the stroke into, applied on release: a
+  // command on other objects, or else a clean shape.
+  gesture?: Gesture | null
+  snapped?: Recognition | null
+}
 
 export function useCanvasPointer({
   editor,
-  viewport
+  viewport,
+  autoSnap = false,
+  onSnap,
+  onGesture
 }: {
   editor: ReturnType<typeof useBoardEditor>
   viewport: ReturnType<typeof useViewport>
+  // Snap every stroke on release, not only the ones held still.
+  autoSnap?: boolean
+  // `linked` when an arrow was turned into a connector between two objects.
+  onSnap?: (recognition: Recognition, linked: boolean) => void
+  onGesture?: (gesture: Gesture) => void
 }) {
   const [dragging, setDragging] = useState<Dragging | null>(null)
-  const [drawing, setDrawing] = useState<
-    (CanvasItem & { points: Point[]; strokeWidth: number }) | null
-  >(null)
+  const [drawing, setDrawing] = useState<Drawing | null>(null)
+  const spacePressed = useRef(false)
+  const hold = useRef<{ timer: number; anchor: Point } | null>(null)
   const { board, commit, selected, setSelected, tool, setTool, strokeWidth } = editor
   const { screenPoint, pan, setPan } = viewport
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || event.repeat || isSpacePanControl(event.target)) return
+      spacePressed.current = true
+      event.preventDefault()
+    }
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'Space') spacePressed.current = false
+    }
+    const onBlur = () => {
+      spacePressed.current = false
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('blur', onBlur)
+    }
+  }, [])
+
+  useEffect(() => () => window.clearTimeout(hold.current?.timer), [])
+
+  function cancelHold() {
+    if (hold.current) window.clearTimeout(hold.current.timer)
+    hold.current = null
+  }
+
+  // (Re)starts the countdown to snapping. The anchor outlives the timer, so jitter
+  // after a snap doesn't undo it; only moving past HOLD_TOLERANCE does.
+  function startHold(event: React.PointerEvent<HTMLDivElement>) {
+    cancelHold()
+    hold.current = {
+      anchor: { x: event.clientX, y: event.clientY },
+      timer: window.setTimeout(() => {
+        setDrawing((current) => {
+          if (!current) return current
+          const points = current.points.map((point) => ({
+            x: current.x + point.x,
+            y: current.y + point.y
+          }))
+          const gesture = recognizeGesture(points, board.objects)
+          return { ...current, gesture, snapped: gesture ? null : recognize(current.points) }
+        })
+      }, HOLD_DELAY)
+    }
+  }
+
+  function isSpacePan(event: React.PointerEvent<HTMLDivElement>) {
+    return shouldPanWithSpace({
+      spacePressed: spacePressed.current,
+      button: event.button,
+      interactiveTarget: isSpacePanControl(event.target)
+    })
+  }
+
   function selectObject(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
+    if (isSpacePan(event)) return
     if (event.button !== 0) return
     if (tool === 'connector') {
       if (!selected.length) setSelected([item.id])
@@ -63,6 +161,12 @@ export function useCanvasPointer({
   }
 
   function beginDrag(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
+    if (isSpacePan(event)) {
+      event.preventDefault()
+      event.stopPropagation()
+      beginPan(event)
+      return
+    }
     if (tool !== 'select' || event.button !== 0 || item.locked) return
     if (
       (event.target as Element).closest('textarea, .markdown-preview') &&
@@ -78,6 +182,7 @@ export function useCanvasPointer({
     if (!selected.includes(item.id)) setSelected([item.id])
     setDragging({
       type: 'move',
+      pointerId: event.pointerId,
       ids,
       start: point,
       origins: board.objects
@@ -89,11 +194,18 @@ export function useCanvasPointer({
 
   function beginResize(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
+    if (isSpacePan(event)) {
+      event.preventDefault()
+      beginPan(event)
+      return
+    }
     if (tool !== 'select' || item.locked) return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     const point = screenPoint(event)
     const direction = event.currentTarget.dataset.direction || 'se'
     setDragging({
       type: 'resize',
+      pointerId: event.pointerId,
       id: item.id,
       start: point,
       x: item.x,
@@ -107,11 +219,25 @@ export function useCanvasPointer({
   }
 
   function beginPan(event: React.PointerEvent<HTMLDivElement>) {
-    if (event.button !== 1 && (tool !== 'hand' || event.button !== 0)) return
+    if (
+      !canBeginCanvasPan({
+        tool,
+        pointerType: event.pointerType,
+        isPrimary: event.isPrimary,
+        spacePressed: spacePressed.current,
+        button: event.button
+      })
+    )
+      return
     event.currentTarget.setPointerCapture?.(event.pointerId)
     event.preventDefault()
     event.stopPropagation()
-    setDragging({ type: 'pan', start: { x: event.clientX, y: event.clientY }, origin: pan })
+    setDragging({
+      type: 'pan',
+      pointerId: event.pointerId,
+      start: { x: event.clientX, y: event.clientY },
+      origin: pan
+    })
   }
 
   function beginDrawing(event: React.PointerEvent<HTMLDivElement>) {
@@ -129,10 +255,16 @@ export function useCanvasPointer({
       strokeWidth,
       points: [{ x: 0, y: 0 }]
     })
+    startHold(event)
   }
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (event.target !== event.currentTarget) return
+    if (isSpacePan(event)) {
+      event.preventDefault()
+      beginPan(event)
+      return
+    }
     const point = screenPoint(event)
     if (tool === 'text' || tool === 'sticky') {
       editor.addObject(tool, {}, point)
@@ -146,16 +278,24 @@ export function useCanvasPointer({
   function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (drawing) {
       const point = screenPoint(event)
+      const anchor = hold.current?.anchor
+      const moved =
+        !anchor || Math.hypot(event.clientX - anchor.x, event.clientY - anchor.y) > HOLD_TOLERANCE
+      // Moving on after a snap goes back to freehand drawing.
+      if (moved) startHold(event)
       setDrawing(
         (current) =>
           current && {
             ...current,
+            gesture: moved ? null : current.gesture,
+            snapped: moved ? null : current.snapped,
             points: [...current.points, { x: point.x - current.x, y: point.y - current.y }]
           }
       )
       return
     }
     if (!dragging) return
+    if (event.pointerId !== dragging.pointerId) return
     if (dragging.type === 'pan') {
       setPan({
         x: dragging.origin.x + event.clientX - dragging.start.x,
@@ -220,9 +360,67 @@ export function useCanvasPointer({
       )
   }
 
+  function runGesture(gesture: Gesture) {
+    if (gesture.type === 'erase') {
+      const ids = new Set(gesture.ids)
+      commit((current) => ({
+        ...current,
+        objects: current.objects.filter(
+          (item) =>
+            !ids.has(item.id) &&
+            !(isConnectorItem(item) && (ids.has(item.from) || ids.has(item.to)))
+        )
+      }))
+      setSelected((current) => current.filter((id) => !ids.has(id)))
+    } else {
+      setSelected(gesture.ids)
+      setTool('select')
+    }
+    onGesture?.(gesture)
+  }
+
   function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (dragging && event.pointerId !== dragging.pointerId) return
     if (drawing) {
-      commit((current) => addObjects(current, [finishStroke(drawing)]))
+      cancelHold()
+      const { gesture, snapped: held, ...stroke } = drawing
+      if (gesture && event.type !== 'pointercancel') {
+        runGesture(gesture)
+        setDrawing(null)
+        return
+      }
+      const snapped = held ?? (autoSnap ? recognize(stroke.points, UNATTENDED) : null)
+      // The freehand version is what stays when nothing snaps, and what undo
+      // brings back when something does.
+      const drawn = finishStroke({ ...stroke, points: tidyStroke(stroke.points) })
+      commit((current) => addObjects(current, [drawn]))
+      // A separate history entry, so undo brings back the stroke as it was drawn.
+      if (snapped && event.type !== 'pointercancel') {
+        const [tail, tip] = snapped.points.map((point) => ({
+          x: stroke.x + point.x,
+          y: stroke.y + point.y
+        }))
+        const link = snapped.kind === 'arrow' ? arrowLink(board.objects, tail, tip) : null
+        if (link) {
+          // An arrow between two objects becomes a real connector.
+          const [from, to] = link
+          commit((current) => {
+            const next = removeObjects(current, [drawn.id])
+            const exists = next.objects.some(
+              (item) => isConnectorItem(item) && item.from === from && item.to === to
+            )
+            return exists
+              ? next
+              : addObjects(next, [{ id: makeId('connector'), type: 'connector', from, to }])
+          })
+        } else {
+          const { x, y, w, h, points } = finishStroke({ ...stroke, points: snapped.points })
+          commit((current) =>
+            patchObject(current, drawn.id, { x, y, w, h, points, recognizedShape: snapped.kind })
+          )
+        }
+        onSnap?.(snapped, Boolean(link))
+      }
       setDrawing(null)
     }
     if (event?.currentTarget?.hasPointerCapture?.(event.pointerId))
@@ -243,4 +441,15 @@ export function useCanvasPointer({
     onPointerMove,
     onPointerUp
   }
+}
+
+function isSpacePanControl(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    Boolean(
+      target.closest(
+        'button, input, textarea, select, a[href], [contenteditable], [role="textbox"], [role="button"], .markdown-preview'
+      )
+    )
+  )
 }

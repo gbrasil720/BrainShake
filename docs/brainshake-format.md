@@ -43,11 +43,13 @@ which it was made; restoring an older checkpoint and saving again creates a
 new branch in that lineage. `headSnapshotId` is the current working copy's
 checkpoint ancestor. The working copy can contain changes made since then.
 
-Local image, video, and HTML Data URLs are replaced in archive JSON with paths
-under `media/`. The filename is the SHA-256 digest of the asset bytes, so
-identical assets used by multiple boards or snapshots appear once. Each object
-also retains its `mediaType`. External URLs remain links and require network
-access when the archive is opened elsewhere.
+Local image, video, and HTML media sources using either a Data URL (Base64 or
+percent-encoded) or a live Blob URL are replaced in archive JSON with paths
+under `media/`. The ZIP stores the original asset bytes directly, so its media
+files do not require Base64 encoding. The filename is the SHA-256 digest of the
+asset bytes, so identical assets used by multiple boards or snapshots appear
+once. Each object also retains its `mediaType`. External URLs remain links and
+require network access when the archive is opened elsewhere.
 
 ## Browser storage
 

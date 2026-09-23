@@ -1,6 +1,7 @@
 import type { Board } from '@/features/board/types'
 
 const MEDIA_OBJECT_TYPES = new Set(['image', 'video', 'html'])
+const PORTABLE_MEDIA_SCHEMES = ['data:', 'blob:']
 const MEDIA_EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/svg+xml': 'svg',
@@ -60,7 +61,7 @@ export function referencedMediaPaths(boards: Board[]): string[] {
 export async function extractMedia(
   boards: Board[],
   assets: Map<string, Blob>,
-  cache = new Map<string, Promise<string>>()
+  cache = new Map<string, Promise<{ path: string; mediaType: string }>>()
 ): Promise<Board[]> {
   return Promise.all(
     boards.map(async (board) => ({
@@ -70,27 +71,36 @@ export async function extractMedia(
           if (
             !MEDIA_OBJECT_TYPES.has(item.type) ||
             !('src' in item) ||
-            !item.src?.startsWith('data:')
+            !item.src ||
+            !PORTABLE_MEDIA_SCHEMES.some((scheme) => item.src?.startsWith(scheme))
           )
             return { ...item }
 
           const source = item.src
-          const mediaType = /^data:([^;,]+)/.exec(source)?.[1] || 'application/octet-stream'
           let path = cache.get(source)
           if (!path) {
             path = (async () => {
               const blob = await (await fetch(source)).blob()
+              const mediaType = (
+                blob.type ||
+                /^data:([^;,]+)/.exec(source)?.[1] ||
+                'application/octet-stream'
+              )
+                .split(';', 1)[0]
+                .trim()
+                .toLowerCase()
               const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
               const hash = Array.from(new Uint8Array(digest), (byte) =>
                 byte.toString(16).padStart(2, '0')
               ).join('')
               const assetPath = `media/${hash}.${MEDIA_EXTENSIONS[mediaType] || 'bin'}`
               assets.set(assetPath, blob)
-              return assetPath
+              return { path: assetPath, mediaType }
             })()
             cache.set(source, path)
           }
-          return { ...item, src: await path, mediaType }
+          const asset = await path
+          return { ...item, src: asset.path, mediaType: asset.mediaType }
         })
       )
     }))

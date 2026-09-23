@@ -17,3 +17,9 @@ test('keeps unknown positioned objects and rejects malformed input', () => {
   assert.equal(isBoardItem({ id: 'bad', type: 'sticky', x: 'wrong', y: 0, w: 1, h: 1 }), false)
   assert.equal(isBoardData({ name: 'Board', objects: [{}] }), false)
 })
+
+test('accepts strokes snapped to a shape', () => {
+  const stroke = { id: 's', type: 'stroke', x: 0, y: 0, w: 10, h: 10, points: [] }
+  assert.equal(isBoardItem({ ...stroke, recognizedShape: 'square' }), true)
+  assert.equal(isBoardItem({ ...stroke, recognizedShape: 4 }), false)
+})

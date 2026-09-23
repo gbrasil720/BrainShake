@@ -1,5 +1,6 @@
 import type React from 'react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { toPng } from 'html-to-image'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/hooks/useToast'
 import { Sidebar } from '@/layout/Sidebar'
@@ -25,13 +26,42 @@ export default function App() {
   const preferences = usePreferences()
   const viewport = useViewport()
   const editor = useBoardEditor({ viewport, showToast })
-  const pointer = useCanvasPointer({ editor, viewport })
+  const pointer = useCanvasPointer({
+    editor,
+    viewport,
+    autoSnap: preferences.autoSnapShapes,
+    onSnap: ({ kind }, linked) =>
+      showToast(
+        linked
+          ? 'Linked with an arrow. Undo to keep your drawing.'
+          : `Snapped to ${kind}. Undo to keep your drawing.`
+      ),
+    onGesture: ({ type, ids }) => {
+      const one = ids.length === 1
+      const items = one ? '1 item' : `${ids.length} items`
+      showToast(
+        type === 'erase'
+          ? `Erased ${items}. Undo to bring ${one ? 'it' : 'them'} back.`
+          : `Selected ${items}.`
+      )
+    }
+  })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
-  const [showPanel, setShowPanel] = useState(true)
+  const [showPanel, setShowPanel] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
   const [presentationItemId, setPresentationItemId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 720px)')
+    const closePanelOnMobile = (event: MediaQueryListEvent) => {
+      if (event.matches) setShowPanel(false)
+    }
+    mobileQuery.addEventListener('change', closePanelOnMobile)
+    return () => mobileQuery.removeEventListener('change', closePanelOnMobile)
+  }, [])
+
   const fileRef = useRef<HTMLInputElement>(null)
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
@@ -58,6 +88,21 @@ export default function App() {
         false
       )
     )
+  }
+
+  async function screenshotWorkspace() {
+    const canvas = viewport.canvasRef.current
+    if (!canvas) return
+    try {
+      const dataUrl = await toPng(canvas, { cacheBust: true, pixelRatio: 2 })
+      const link = document.createElement('a')
+      link.download = `${editor.board.name || 'brainshake-workspace'}.png`
+      link.href = dataUrl
+      link.click()
+      showToast('Workspace screenshot downloaded')
+    } catch {
+      showToast('Could not capture workspace')
+    }
   }
 
   useKeyboardShortcuts({
@@ -121,6 +166,7 @@ export default function App() {
             pointer={pointer}
             grid={preferences.grid}
             onImportFiles={transfer.importFiles}
+            onScreenshot={screenshotWorkspace}
             presenting={presentationOpen}
             presentingItemId={presentationItemId}
           />
@@ -130,6 +176,9 @@ export default function App() {
             onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
+            keyboardNavigation={preferences.keyboardNavigation}
+            autoSnapShapes={preferences.autoSnapShapes}
+            onAutoSnapShapesChange={preferences.setAutoSnapShapes}
           />
           <ZoomControls
             zoom={viewport.zoom}

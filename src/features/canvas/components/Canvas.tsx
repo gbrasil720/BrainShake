@@ -20,6 +20,7 @@ export function Canvas({
   pointer,
   grid,
   onImportFiles,
+  onScreenshot,
   presenting,
   presentingItemId
 }: {
@@ -28,6 +29,7 @@ export function Canvas({
   pointer: ReturnType<typeof useCanvasPointer>
   grid: boolean
   onImportFiles: (files: FileList | File[]) => void
+  onScreenshot: () => void | Promise<void>
   presenting: boolean
   presentingItemId: string | null
 }) {
@@ -75,7 +77,7 @@ export function Canvas({
   const strokeGroups = getStrokeGroups(contentObjects)
   return (
     <ShadcnContextMenu modal={false}>
-      <ContextMenuTrigger asChild disabled={selected.length === 0}>
+      <ContextMenuTrigger asChild>
         <div
           ref={canvasRef}
           className={`canvas-shell ${grid ? '' : 'grid-off'} ${pointer.isPanning ? 'is-panning' : ''} ${presenting ? 'is-presenting' : ''}`}
@@ -93,9 +95,13 @@ export function Canvas({
               : (event) => {
                   if (event.target !== event.currentTarget) {
                     const target = event.target
+                    // A note's rendered text is a button that opens the editor; with the
+                    // pen it is just a surface to draw on, e.g. an arrow to another note.
                     const isInteractiveTarget =
                       target instanceof Element &&
-                      target.closest('button, input, textarea, select, [contenteditable="true"]')
+                      target.closest(
+                        'button:not(.markdown-preview), input, textarea, select, [contenteditable="true"]'
+                      )
                     if (editor.tool === 'pen' && !isInteractiveTarget) pointer.beginDrawing(event)
                     return
                   }
@@ -114,9 +120,6 @@ export function Canvas({
             event.preventDefault()
             setDropActive(false)
             onImportFiles(event.dataTransfer.files)
-          }}
-          onContextMenu={(event) => {
-            if (!selected.length) event.preventDefault()
           }}
         >
           <div
@@ -165,6 +168,11 @@ export function Canvas({
                 selected={selected.includes(item.id)}
                 activeTool={editor.tool}
                 presentingActive={presenting && item.id === presentingItemId}
+                gesture={
+                  pointer.drawing?.gesture?.ids.includes(item.id)
+                    ? pointer.drawing.gesture.type
+                    : undefined
+                }
                 onSelect={selectObject}
                 onDrag={beginDrag}
                 onResize={beginResize}
@@ -187,6 +195,9 @@ export function Canvas({
           onLink={() => editor.setTool('connector')}
           onUnlink={editor.unlinkSelection}
           canUnlink={selected.length >= 2}
+          onCut={editor.cutSelection}
+          onScreenshot={onScreenshot}
+          canEdit={selected.length > 0}
         />
       )}
     </ShadcnContextMenu>
