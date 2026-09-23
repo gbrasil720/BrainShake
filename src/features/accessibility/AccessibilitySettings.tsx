@@ -96,11 +96,6 @@ export function AccessibilitySettings({
           onChange={() => preferences.setEnhancedFocus((value) => !value)}
         />
       </div>
-      {preferences.tutorialCompleted && (
-        <button className="accessibility-tour-link" onClick={onOpenTour}>
-          Replay Tutorial
-        </button>
-      )}
     </section>
   )
 }
