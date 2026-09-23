@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type React from 'react'
 import { getObjectType } from './registry'
 import { ResizeHandle } from './ResizeHandle'
@@ -6,7 +7,7 @@ import type { BoardPatch, CanvasItem } from '@/features/board/types'
 
 // Positions an object on the board and wires selection, drag and resize.
 // The object body comes from the registry.
-export function CanvasObject({
+export const CanvasObject = memo(function CanvasObject({
   item,
   selected,
   activeTool,
@@ -69,4 +70,4 @@ export function CanvasObject({
       )}
     </div>
   )
-}
+})

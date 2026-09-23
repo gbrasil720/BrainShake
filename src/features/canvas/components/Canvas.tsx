@@ -1,11 +1,12 @@
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useViewport } from '@/features/canvas/hooks/useViewport'
 import type { useCanvasPointer } from '@/features/canvas/hooks/useCanvasPointer'
-import type { BoardPatch } from '@/features/board/types'
 import { isCanvasItem } from '@/features/board/types'
+import type { BoardPatch, CanvasItem } from '@/features/board/types'
 import { getStrokeBounds, getStrokeGroups } from '@/features/board/lib/objects'
 import { ContextMenu as ShadcnContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
-import { useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import type React from 'react'
 import { CanvasObject } from '../objects/CanvasObject'
 import { ConnectorLayer } from './ConnectorLayer'
 import { DraftStroke } from './DraftStroke'
@@ -31,6 +32,43 @@ export function Canvas({
   presentingItemId: string | null
 }) {
   const [dropActive, setDropActive] = useState(false)
+  const handlers = useRef({
+    selectObject: pointer.selectObject,
+    beginDrag: pointer.beginDrag,
+    beginResize: pointer.beginResize,
+    updateObject: editor.updateObject,
+    removeObject: editor.removeObject
+  })
+  useLayoutEffect(() => {
+    handlers.current = {
+      selectObject: pointer.selectObject,
+      beginDrag: pointer.beginDrag,
+      beginResize: pointer.beginResize,
+      updateObject: editor.updateObject,
+      removeObject: editor.removeObject
+    }
+  })
+  const selectObject = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) =>
+      handlers.current.selectObject(event, item),
+    [handlers]
+  )
+  const beginDrag = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) =>
+      handlers.current.beginDrag(event, item),
+    [handlers]
+  )
+  const beginResize = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) =>
+      handlers.current.beginResize(event, item),
+    [handlers]
+  )
+  const updateObject = useCallback(
+    (id: string, patch: BoardPatch, saveHistory?: boolean) =>
+      handlers.current.updateObject(id, patch, saveHistory),
+    [handlers]
+  )
+  const removeObject = useCallback((id: string) => handlers.current.removeObject(id), [handlers])
   const { board, selected, strokeWidth } = editor
   const { canvasRef, onWheel, zoom, pan } = viewport
   const contentObjects = board.objects.filter(isCanvasItem)
@@ -120,11 +158,11 @@ export function Canvas({
                 selected={selected.includes(item.id)}
                 activeTool={editor.tool}
                 presentingActive={presenting && item.id === presentingItemId}
-                onSelect={pointer.selectObject}
-                onDrag={pointer.beginDrag}
-                onResize={pointer.beginResize}
-                onChange={(id: string, patch: BoardPatch) => editor.updateObject(id, patch, false)}
-                onRemove={editor.removeObject}
+                onSelect={selectObject}
+                onDrag={beginDrag}
+                onResize={beginResize}
+                onChange={updateObject}
+                onRemove={removeObject}
               />
             ))}
             {pointer.drawing && <DraftStroke drawing={pointer.drawing} strokeWidth={strokeWidth} />}
