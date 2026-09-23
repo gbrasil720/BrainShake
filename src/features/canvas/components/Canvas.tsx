@@ -17,13 +17,17 @@ export function Canvas({
   viewport,
   pointer,
   grid,
-  onImportFiles
+  onImportFiles,
+  presenting,
+  presentingItemId
 }: {
   editor: ReturnType<typeof useBoardEditor>
   viewport: ReturnType<typeof useViewport>
   pointer: ReturnType<typeof useCanvasPointer>
   grid: boolean
   onImportFiles: (files: FileList | File[]) => void
+  presenting: boolean
+  presentingItemId: string | null
 }) {
   const [dropActive, setDropActive] = useState(false)
   const { board, selected, strokeWidth } = editor
@@ -34,9 +38,9 @@ export function Canvas({
       <ContextMenuTrigger asChild disabled={selected.length === 0}>
         <div
           ref={canvasRef}
-          className={`canvas-shell ${grid ? '' : 'grid-off'} ${pointer.isPanning ? 'is-panning' : ''}`}
-          onWheel={onWheel}
-          onPointerDown={pointer.onPointerDown}
+          className={`canvas-shell ${grid ? '' : 'grid-off'} ${pointer.isPanning ? 'is-panning' : ''} ${presenting ? 'is-presenting' : ''}`}
+          onWheel={presenting ? undefined : onWheel}
+          onPointerDown={presenting ? undefined : pointer.onPointerDown}
           onPointerMove={pointer.onPointerMove}
           onPointerUp={pointer.onPointerUp}
           onPointerCancel={pointer.onPointerUp}
@@ -58,7 +62,11 @@ export function Canvas({
             className="canvas-world"
             style={{
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transition: pointer.isPanning ? 'none' : 'transform 140ms cubic-bezier(.2,.75,.25,1)'
+              transition: pointer.isPanning
+                ? 'none'
+                : presenting
+                  ? 'transform 460ms cubic-bezier(.2,.75,.25,1)'
+                  : 'transform 140ms cubic-bezier(.2,.75,.25,1)'
             }}
           >
             <ConnectorLayer objects={board.objects} />
@@ -67,6 +75,7 @@ export function Canvas({
                 key={item.id}
                 item={item}
                 selected={selected.includes(item.id)}
+                presentingActive={presenting && item.id === presentingItemId}
                 onSelect={pointer.selectObject}
                 onDrag={pointer.beginDrag}
                 onResize={pointer.beginResize}

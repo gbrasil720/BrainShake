@@ -16,11 +16,30 @@
 .canvas-shell.grid-off {
   background-image: none !important;
 }
+.canvas-shell.is-presenting::before {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  content: '';
+  background: rgba(15, 18, 17, 0.34);
+}
 .canvas-world {
   position: absolute;
+  z-index: 1;
   transform-origin: 0 0;
   width: 1px;
   height: 1px;
+}
+.canvas-shell.is-presenting .canvas-world {
+  pointer-events: none;
+}
+.canvas-shell.is-presenting .canvas-object:not(.is-presenting-active) {
+  filter: brightness(0.56) saturate(0.7);
+}
+.canvas-object.is-presenting-active {
+  z-index: 12;
+  filter: brightness(1.12) drop-shadow(0 0 12px var(--primary));
 }
 .canvas-object {
   position: absolute;

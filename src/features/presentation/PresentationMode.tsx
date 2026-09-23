@@ -1,64 +1,81 @@
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import type { BoardItem, CanvasItem } from '@/features/board/types'
 import { isCanvasItem, isConnectorItem } from '@/features/board/types'
+import type { useViewport } from '@/features/canvas/hooks/useViewport'
+import { MAX_ZOOM, MIN_ZOOM } from '@/features/canvas/hooks/useViewport'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClose: () => void }) {
+function computeTargetViewport(
+  item: CanvasItem,
+  container: { w: number; h: number },
+  padding = 80
+) {
+  const zoom = Math.min(
+    (container.w - padding * 2) / item.w,
+    (container.h - padding * 2) / item.h
+  )
+  const targetZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom))
+  return {
+    zoom: targetZoom,
+    pan: {
+      x: container.w / 2 - (item.x + item.w / 2) * targetZoom,
+      y: container.h / 2 - (item.y + item.h / 2) * targetZoom
+    }
+  }
+}
+
+export function PresentationMode({
+  items,
+  viewport,
+  onActiveItemChange,
+  onClose
+}: {
+  items: BoardItem[]
+  viewport: ReturnType<typeof useViewport>
+  onActiveItemChange: (id: string | null) => void
+  onClose: () => void
+}) {
   const slides = orderSlides(items)
   const [index, setIndex] = useState(0)
   const current = slides[index]
+  const currentId = current?.id
+  const currentX = current?.x
+  const currentY = current?.y
+  const currentWidth = current?.w
+  const currentHeight = current?.h
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowRight' || event.key === ' ')
         setIndex((value) => Math.min(value + 1, slides.length - 1))
       if (event.key === 'ArrowLeft') setIndex((value) => Math.max(value - 1, 0))
+      if (event.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [slides.length])
+  }, [onClose, slides.length])
+
+  useEffect(() => {
+    onActiveItemChange(currentId ?? null)
+    if (!currentId || currentX === undefined || currentY === undefined) return
+    if (currentWidth === undefined || currentHeight === undefined) return
+    const rect = viewport.canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const target = computeTargetViewport(
+      { id: currentId, type: 'presentation', x: currentX, y: currentY, w: currentWidth, h: currentHeight },
+      { w: rect.width, h: rect.height }
+    )
+    viewport.setZoom(target.zoom)
+    viewport.setPan(target.pan)
+  }, [currentHeight, currentId, currentWidth, currentX, currentY, index, onActiveItemChange, viewport])
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent
-        className="presentation-dialog"
-        showCloseButton={false}
-        aria-describedby={undefined}
-        onOpenAutoFocus={(event) => {
-          event.preventDefault()
-          const content = event.currentTarget as HTMLElement
-          content.focus()
-        }}
-      >
-        <header className="presentation-heading">
-          <DialogTitle>
-            Presentation · {slides.length ? `${index + 1} / ${slides.length}` : 'No slides'}
-          </DialogTitle>
-          <Button
-            variant="ghost"
-            className="icon-button"
-            title="Close presentation"
-            aria-label="Close presentation"
-            onClick={onClose}
-          >
-            <X size={17} />
-          </Button>
-        </header>
-        {current ? (
-          <PresentationSlide item={current} />
-        ) : (
-          <p className="presentation-empty">
-            Select an item and use the presentation button in the dock to add a slide.
-          </p>
-        )}
-        <footer className="presentation-actions">
+    <header className="presentation-toolbar" aria-label="Presentation controls">
+      <strong>
+        Presentation · {slides.length ? `${index + 1} / ${slides.length}` : 'No slides'}
+      </strong>
+      <div className="presentation-actions">
           <Button
             variant="ghost"
             className="icon-button"
@@ -79,9 +96,17 @@ export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClo
           >
             <ChevronRight size={20} />
           </Button>
-        </footer>
-      </DialogContent>
-    </Dialog>
+          <Button
+            variant="ghost"
+            className="icon-button"
+            title="Close presentation"
+            aria-label="Close presentation"
+            onClick={onClose}
+          >
+            <X size={17} />
+          </Button>
+      </div>
+    </header>
   )
 }
 
@@ -127,11 +152,3 @@ function byClickOrder(left: CanvasItem, right: CanvasItem) {
   )
 }
 
-function PresentationSlide({ item }: { item: CanvasItem }) {
-  return (
-    <article className={`presentation-slide presentation-${item.type}`}>
-      <h1>{item.title || item.name || item.type}</h1>
-      <p>{item.text || 'This item is part of the presentation.'}</p>
-    </article>
-  )
-}

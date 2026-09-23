@@ -1,9 +1,9 @@
 import type React from 'react'
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { Point } from '@/features/board/types'
 
-const MIN_ZOOM = 0.35
-const MAX_ZOOM = 2.4
+export const MIN_ZOOM = 0.35
+export const MAX_ZOOM = 2.4
 const ZOOM_STEP = 0.1
 
 function clampZoom(value: number) {
@@ -12,8 +12,9 @@ function clampZoom(value: number) {
 
 export function useViewport() {
   const canvasRef = useRef<HTMLDivElement>(null)
-  const [zoom, setZoom] = useState(1)
+  const [zoom, setZoomState] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const setZoom = useCallback((value: number) => setZoomState(clampZoom(value)), [])
 
   // Converts a pointer position (clientX/clientY) into board coordinates.
   function screenPoint(event: { clientX: number; clientY: number }): Point {
@@ -39,7 +40,7 @@ export function useViewport() {
           ? event.deltaY * rect.height
           : event.deltaY
     const nextZoom = clampZoom(zoom * Math.pow(0.9985, delta))
-    setZoom(nextZoom)
+    setZoomState(nextZoom)
     setPan({
       x: event.clientX - rect.left - point.x * nextZoom,
       y: event.clientY - rect.top - point.y * nextZoom
@@ -47,16 +48,16 @@ export function useViewport() {
   }
 
   function zoomIn() {
-    setZoom((value) => Math.min(MAX_ZOOM, value + ZOOM_STEP))
+    setZoomState((value) => Math.min(MAX_ZOOM, value + ZOOM_STEP))
   }
 
   function zoomOut() {
-    setZoom((value) => Math.max(MIN_ZOOM, value - ZOOM_STEP))
+    setZoomState((value) => Math.max(MIN_ZOOM, value - ZOOM_STEP))
   }
 
   function reset() {
     setPan({ x: 0, y: 0 })
-    setZoom(1)
+    setZoomState(1)
   }
 
   function fitContent(hasObjects: boolean) {
@@ -64,7 +65,7 @@ export function useViewport() {
       reset()
       return
     }
-    setZoom(0.8)
+    setZoomState(0.8)
     setPan({ x: 80, y: 30 })
   }
 
@@ -73,6 +74,7 @@ export function useViewport() {
     zoom,
     pan,
     setPan,
+    setZoom,
     screenPoint,
     viewportCenter,
     onWheel,

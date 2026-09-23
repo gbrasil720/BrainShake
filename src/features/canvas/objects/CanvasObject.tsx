@@ -9,6 +9,7 @@ import type { BoardPatch, CanvasItem } from '@/features/board/types'
 export function CanvasObject({
   item,
   selected,
+  presentingActive,
   onSelect,
   onDrag,
   onResize,
@@ -17,6 +18,7 @@ export function CanvasObject({
 }: {
   item: CanvasItem
   selected: boolean
+  presentingActive: boolean
   onSelect: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
   onDrag: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
   onResize: (event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) => void
@@ -27,7 +29,14 @@ export function CanvasObject({
   const content = Component && <Component item={item} onChange={onChange} />
   return (
     <div
-      className={['canvas-object', className, selected ? 'selected' : ''].filter(Boolean).join(' ')}
+      className={[
+        'canvas-object',
+        className,
+        selected ? 'selected' : '',
+        presentingActive ? 'is-presenting-active' : ''
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={{ left: item.x, top: item.y, width: item.w, height: item.h }}
       onPointerDown={(event) => {
         onSelect(event, item)

@@ -31,6 +31,7 @@ export default function App() {
   const [showPanel, setShowPanel] = useState(true)
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
+  const [presentationItemId, setPresentationItemId] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
@@ -120,6 +121,8 @@ export default function App() {
             pointer={pointer}
             grid={preferences.grid}
             onImportFiles={transfer.importFiles}
+            presenting={presentationOpen}
+            presentingItemId={presentationItemId}
           />
           <Toolbar
             editor={editor}
@@ -174,7 +177,15 @@ export default function App() {
           onClose={() => setTourOpen(false)}
         />
         {presentationOpen && (
-          <PresentationMode items={board.objects} onClose={() => setPresentationOpen(false)} />
+          <PresentationMode
+            items={board.objects}
+            viewport={viewport}
+            onActiveItemChange={setPresentationItemId}
+            onClose={() => {
+              setPresentationOpen(false)
+              setPresentationItemId(null)
+            }}
+          />
         )}
       </div>
     </>
