@@ -22,6 +22,7 @@ export const STORAGE_KEYS = {
   focusColor: 'brainshake-focus-color',
   tutorialCompleted: 'brainshake-accessibility-tour-complete',
   sidebarAutoHide: 'brainshake-sidebar-auto-hide',
+  sidebarWidth: 'brainshake-sidebar-width',
   headerColor: 'brainshake-header-color',
   sidebarColor: 'brainshake-sidebar-color',
   canvasColor: 'brainshake-canvas-color',

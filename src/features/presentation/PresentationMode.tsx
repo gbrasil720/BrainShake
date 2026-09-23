@@ -42,7 +42,7 @@ export function PresentationMode({
   const currentWidth = current?.w
   const currentHeight = current?.h
   const initialViewport = useRef({ zoom: viewport.zoom, pan: viewport.pan })
-  const { setPan: setViewportPan, setZoom: setViewportZoom } = viewport
+  const { canvasRef, setPan: setViewportPan, setZoom: setViewportZoom } = viewport
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -67,7 +67,7 @@ export function PresentationMode({
     onActiveItemChange(currentId ?? null)
     if (!currentId || currentX === undefined || currentY === undefined) return
     if (currentWidth === undefined || currentHeight === undefined) return
-    const rect = viewport.canvasRef.current?.getBoundingClientRect()
+    const rect = canvasRef.current?.getBoundingClientRect()
     if (!rect) return
     const target = computeTargetViewport(
       {
@@ -80,9 +80,10 @@ export function PresentationMode({
       },
       { w: rect.width, h: rect.height }
     )
-    viewport.setZoom(target.zoom)
-    viewport.setPan(target.pan)
+    setViewportZoom(target.zoom)
+    setViewportPan(target.pan)
   }, [
+    canvasRef,
     currentHeight,
     currentId,
     currentWidth,
@@ -90,7 +91,8 @@ export function PresentationMode({
     currentY,
     index,
     onActiveItemChange,
-    viewport
+    setViewportPan,
+    setViewportZoom
   ])
 
   return (

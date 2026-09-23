@@ -35,3 +35,20 @@ export function shouldPanWithSpace({
 }) {
   return spacePressed && button === 0 && !interactiveTarget
 }
+
+export function canBeginCanvasPan({
+  tool,
+  pointerType,
+  isPrimary,
+  spacePressed,
+  button
+}: {
+  tool: string
+  pointerType: string
+  isPrimary: boolean
+  spacePressed: boolean
+  button: number
+}) {
+  if (button !== 0 || (pointerType === 'touch' && !isPrimary)) return false
+  return tool === 'hand' || spacePressed || (tool === 'select' && pointerType === 'touch')
+}

@@ -13,10 +13,10 @@ import {
   Type,
   Undo2
 } from 'lucide-react'
-import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
 import { ShapeMenu } from './ShapeMenu'
 import { StrokeMenu } from './StrokeMenu'
 import { getNextToolFromArrow } from './toolNavigation'
+import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
 
 const TOOLS = [
   { id: 'select', icon: BoxSelect, label: 'Select (V)' },
@@ -61,6 +61,7 @@ export function Toolbar({
           className="dock-handle"
           draggable="true"
           title="Drag to move dock"
+          aria-label="Move dock"
           onDragStart={(event) => {
             event.dataTransfer.setData('text/plain', DOCK_DRAG_TYPE)
             event.dataTransfer.effectAllowed = 'move'

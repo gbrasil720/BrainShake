@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getNextToolFromArrow, shouldPanWithSpace } from './toolNavigation'
+import { canBeginCanvasPan, getNextToolFromArrow, shouldPanWithSpace } from './toolNavigation'
 
 describe('getNextToolFromArrow', () => {
   it('cycles through the tool sequence with the horizontal dock axis', () => {
@@ -35,5 +35,49 @@ describe('shouldPanWithSpace', () => {
     expect(shouldPanWithSpace({ spacePressed: true, button: 0, interactiveTarget: true })).toBe(
       false
     )
+  })
+})
+
+describe('canBeginCanvasPan', () => {
+  it('keeps touch panning for the selected tool and ignores non-primary touches', () => {
+    expect(
+      canBeginCanvasPan({
+        tool: 'select',
+        pointerType: 'touch',
+        isPrimary: true,
+        spacePressed: false,
+        button: 0
+      })
+    ).toBe(true)
+    expect(
+      canBeginCanvasPan({
+        tool: 'select',
+        pointerType: 'touch',
+        isPrimary: false,
+        spacePressed: false,
+        button: 0
+      })
+    ).toBe(false)
+  })
+
+  it('allows space-drag from other tools while retaining hand-tool panning', () => {
+    expect(
+      canBeginCanvasPan({
+        tool: 'sticky',
+        pointerType: 'mouse',
+        isPrimary: true,
+        spacePressed: true,
+        button: 0
+      })
+    ).toBe(true)
+    expect(
+      canBeginCanvasPan({
+        tool: 'hand',
+        pointerType: 'mouse',
+        isPrimary: true,
+        spacePressed: false,
+        button: 0
+      })
+    ).toBe(true)
   })
 })

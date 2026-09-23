@@ -21,7 +21,7 @@ export async function createWorkspaceArchive(
 ): Promise<Blob> {
   if (!isWorkspaceDocument(document)) throw Error('Invalid workspace')
   const assets = new Map(savedAssets)
-  const cache = new Map<string, Promise<string>>()
+  const cache = new Map<string, Promise<{ path: string; mediaType: string }>>()
   const boards = await extractMedia(document.boards, assets, cache)
   const snapshots = await Promise.all(
     document.snapshots.map(async (snapshot) => ({

@@ -146,7 +146,7 @@ export async function replaceSnapshots(
   if (!snapshots.every(isWorkspaceSnapshot) || !isValidSnapshotGraph(snapshots))
     throw Error('Invalid snapshot relationships')
   const assets = new Map(archiveAssets)
-  const cache = new Map<string, Promise<string>>()
+  const cache = new Map<string, Promise<{ path: string; mediaType: string }>>()
   const stored = await Promise.all(
     snapshots.map(async (snapshot) => ({
       ...snapshot,
