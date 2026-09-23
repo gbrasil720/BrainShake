@@ -398,6 +398,23 @@
 .stroke-object .resize-handle {
   pointer-events: auto;
 }
+.stroke.gesture-erase path,
+.stroke.gesture-select path {
+  stroke-dasharray: 6 6;
+}
+.stroke.gesture-erase path {
+  stroke: var(--destructive);
+}
+.stroke.gesture-select path {
+  stroke: var(--primary);
+}
+.canvas-object.gesture-erase {
+  opacity: 0.35;
+}
+.canvas-object.gesture-select {
+  outline: 2px dashed var(--primary);
+  outline-offset: 3px;
+}
 .stroke-object.selected {
   overflow: visible;
 }

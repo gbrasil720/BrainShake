@@ -16,6 +16,7 @@ import type { useViewport } from './useViewport'
 import { canBeginCanvasPan, shouldPanWithSpace } from '@/features/toolbar/toolNavigation'
 import { recognize, type Recognition } from '@/features/pen/lib/recognize'
 import { arrowLink } from '@/features/pen/lib/arrowLink'
+import { recognizeGesture, type Gesture } from '@/features/pen/lib/gestures'
 
 const MIN_WIDTH = 100
 const MIN_HEIGHT = 80
@@ -55,7 +56,9 @@ type Dragging =
 export type Drawing = CanvasItem & {
   points: Point[]
   strokeWidth: number
-  // Shape the stroke snapped to while the pen was held still, applied on release.
+  // What holding the pen still turned the stroke into, applied on release: a
+  // command on other objects, or else a clean shape.
+  gesture?: Gesture | null
   snapped?: Recognition | null
 }
 
@@ -63,7 +66,8 @@ export function useCanvasPointer({
   editor,
   viewport,
   autoSnap = false,
-  onSnap
+  onSnap,
+  onGesture
 }: {
   editor: ReturnType<typeof useBoardEditor>
   viewport: ReturnType<typeof useViewport>
@@ -71,6 +75,7 @@ export function useCanvasPointer({
   autoSnap?: boolean
   // `linked` when an arrow was turned into a connector between two objects.
   onSnap?: (recognition: Recognition, linked: boolean) => void
+  onGesture?: (gesture: Gesture) => void
 }) {
   const [dragging, setDragging] = useState<Dragging | null>(null)
   const [drawing, setDrawing] = useState<Drawing | null>(null)
@@ -115,7 +120,15 @@ export function useCanvasPointer({
     hold.current = {
       anchor: { x: event.clientX, y: event.clientY },
       timer: window.setTimeout(() => {
-        setDrawing((current) => current && { ...current, snapped: recognize(current.points) })
+        setDrawing((current) => {
+          if (!current) return current
+          const points = current.points.map((point) => ({
+            x: current.x + point.x,
+            y: current.y + point.y
+          }))
+          const gesture = recognizeGesture(points, board.objects)
+          return { ...current, gesture, snapped: gesture ? null : recognize(current.points) }
+        })
       }, HOLD_DELAY)
     }
   }
@@ -276,6 +289,7 @@ export function useCanvasPointer({
         (current) =>
           current && {
             ...current,
+            gesture: moved ? null : current.gesture,
             snapped: moved ? null : current.snapped,
             points: [...current.points, { x: point.x - current.x, y: point.y - current.y }]
           }
@@ -348,11 +362,35 @@ export function useCanvasPointer({
       )
   }
 
+  function runGesture(gesture: Gesture) {
+    if (gesture.type === 'erase') {
+      const ids = new Set(gesture.ids)
+      commit((current) => ({
+        ...current,
+        objects: current.objects.filter(
+          (item) =>
+            !ids.has(item.id) &&
+            !(isConnectorItem(item) && (ids.has(item.from) || ids.has(item.to)))
+        )
+      }))
+      setSelected((current) => current.filter((id) => !ids.has(id)))
+    } else {
+      setSelected(gesture.ids)
+      setTool('select')
+    }
+    onGesture?.(gesture)
+  }
+
   function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
     if (dragging && event.pointerId !== dragging.pointerId) return
     if (drawing) {
       cancelHold()
-      const { snapped: held, ...stroke } = drawing
+      const { gesture, snapped: held, ...stroke } = drawing
+      if (gesture && event.type !== 'pointercancel') {
+        runGesture(gesture)
+        setDrawing(null)
+        return
+      }
       const snapped = held ?? (autoSnap ? recognize(stroke.points, AUTO_SNAP) : null)
       const drawn = finishStroke(stroke)
       commit((current) => addObjects(current, [drawn]))

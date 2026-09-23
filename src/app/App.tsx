@@ -35,7 +35,16 @@ export default function App() {
         linked
           ? 'Linked with an arrow. Undo to keep your drawing.'
           : `Snapped to ${kind}. Undo to keep your drawing.`
+      ),
+    onGesture: ({ type, ids }) => {
+      const one = ids.length === 1
+      const items = one ? '1 item' : `${ids.length} items`
+      showToast(
+        type === 'erase'
+          ? `Erased ${items}. Undo to bring ${one ? 'it' : 'them'} back.`
+          : `Selected ${items}.`
       )
+    }
   })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })

@@ -168,6 +168,11 @@ export function Canvas({
                 selected={selected.includes(item.id)}
                 activeTool={editor.tool}
                 presentingActive={presenting && item.id === presentingItemId}
+                gesture={
+                  pointer.drawing?.gesture?.ids.includes(item.id)
+                    ? pointer.drawing.gesture.type
+                    : undefined
+                }
                 onSelect={selectObject}
                 onDrag={beginDrag}
                 onResize={beginResize}
