@@ -13,7 +13,10 @@ export function StrokeObject({ item }: { item: CanvasItem }) {
         style={{ strokeWidth: (item.strokeWidth || 4) + 10 }}
         d={path}
       />
-      <path style={{ strokeWidth: item.strokeWidth || 4 }} d={path} />
+      <path
+        style={{ stroke: item.strokeColor || undefined, strokeWidth: item.strokeWidth || 4 }}
+        d={path}
+      />
     </svg>
   )
 }

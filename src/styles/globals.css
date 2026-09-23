@@ -42,6 +42,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
 }
 button,
@@ -64,6 +65,7 @@ a:focus-visible,
 }
 #root {
   height: 100vh;
+  height: 100dvh;
 }
 .app {
   --accessibility-scale: var(--font-scale);
@@ -971,6 +973,32 @@ a:focus-visible,
   display: flex;
   gap: 4px;
 }
+.property-color-control {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+}
+.property-color-control input[type='color'] {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+}
+.property-color-hex {
+  width: 72px;
+  height: 26px;
+  min-width: 0;
+  padding: 4px 6px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  font: 11px monospace;
+}
 .board-item {
   border: 0;
   width: 100%;
@@ -1536,6 +1564,19 @@ a:focus-visible,
   .sidebar-foot-copy {
     display: none;
   }
+  .sidebar-tabs {
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 12px;
+  }
+  .sidebar-tab {
+    width: 42px;
+    flex: 0 0 30px;
+    padding: 0;
+  }
+  .sidebar-tab span {
+    display: none;
+  }
   .sidebar-foot {
     width: 100%;
     padding: 10px 0 0;
@@ -1616,10 +1657,12 @@ a:focus-visible,
     bottom: 75px;
   }
   .floating-panel {
-    top: 10px;
-    right: 10px;
-    width: min(240px, calc(100% - 20px));
-    max-height: min(430px, calc(100% - 20px));
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: min(45vh, 330px);
     overflow-y: auto;
   }
   .workspace:has(.toolbar.dock-top) .floating-panel {
@@ -1628,7 +1671,9 @@ a:focus-visible,
   }
   .workspace:has(.toolbar.dock-right) .floating-panel {
     top: 10px;
+    bottom: auto;
     right: 64px;
+    left: auto;
     width: min(240px, calc(100% - 74px));
     max-width: none;
     max-height: calc(100% - 20px);
@@ -1664,10 +1709,11 @@ a:focus-visible,
     height: 34px;
   }
   .floating-panel {
-    top: 8px;
     right: 8px;
-    width: calc(100% - 16px);
-    max-height: calc(100% - 16px);
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 46vh;
   }
   .workspace:has(.toolbar.dock-top) .floating-panel {
     top: 62px;
@@ -1675,7 +1721,9 @@ a:focus-visible,
   }
   .workspace:has(.toolbar.dock-right) .floating-panel {
     top: 8px;
+    bottom: auto;
     right: 56px;
+    left: auto;
     width: calc(100% - 64px);
     max-height: calc(100% - 16px);
   }

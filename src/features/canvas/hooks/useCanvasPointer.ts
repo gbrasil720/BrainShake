@@ -52,7 +52,7 @@ export function useCanvasPointer({
       }
       return
     }
-    if (event.shiftKey)
+    if (event.shiftKey || event.ctrlKey || event.metaKey)
       setSelected((current) =>
         current.includes(item.id) ? current.filter((id) => id !== item.id) : [...current, item.id]
       )

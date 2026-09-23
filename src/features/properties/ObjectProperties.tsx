@@ -81,28 +81,73 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
                 key={color}
                 className={`color-swatch ${item.color === color ? 'active' : ''}`}
                 style={{ background: (STICKY_COLORS as Record<string, string>)[color] }}
-                onClick={() => onChange(item.id, { color })}
+                onClick={() => onChange(item.id, { color, fillColor: undefined })}
                 aria-label={`${color} color`}
               />
             ))}
           </div>
         </div>
       )}
-      {item.type === 'shape' && (
+      {(item.type === 'shape' || item.type === 'sticky') && (
         <div className="panel-row">
-          <span>Fill</span>
-          <Select
-            value={item.fill || 'solid'}
-            onValueChange={(fill) => onChange(item.id, { fill })}
-          >
-            <SelectTrigger className="menu-select" aria-label="Fill">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="solid">Solid</SelectItem>
-              <SelectItem value="outline">Outline</SelectItem>
-            </SelectContent>
-          </Select>
+          <span>{item.type === 'sticky' ? 'Note fill' : 'Fill'}</span>
+          <div className="property-color-control">
+            <input
+              type="color"
+              value={item.fillColor || '#ffffff'}
+              aria-label="Fill HEX color"
+              onChange={(event) => onChange(item.id, { fillColor: event.target.value })}
+            />
+            <Input
+              className="property-color-hex"
+              value={item.fillColor || ''}
+              placeholder="#HEX"
+              pattern="^#[0-9a-fA-F]{6}$"
+              aria-label="Fill HEX color"
+              onChange={(event) => {
+                const value = event.target.value
+                if (/^#[0-9a-fA-F]{0,6}$/.test(value)) onChange(item.id, { fillColor: value })
+              }}
+            />
+          </div>
+          {item.type === 'shape' && (
+            <Select
+              value={item.fill || 'solid'}
+              onValueChange={(fill) => onChange(item.id, { fill })}
+            >
+              <SelectTrigger className="menu-select" aria-label="Fill style">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="solid">Solid</SelectItem>
+                <SelectItem value="outline">Outline</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      )}
+      {item.type === 'stroke' && (
+        <div className="panel-row">
+          <span>Stroke color</span>
+          <div className="property-color-control">
+            <input
+              type="color"
+              value={item.strokeColor || '#536b5d'}
+              aria-label="Stroke HEX color"
+              onChange={(event) => onChange(item.id, { strokeColor: event.target.value })}
+            />
+            <Input
+              className="property-color-hex"
+              value={item.strokeColor || ''}
+              placeholder="#HEX"
+              pattern="^#[0-9a-fA-F]{6}$"
+              aria-label="Stroke HEX color"
+              onChange={(event) => {
+                const value = event.target.value
+                if (/^#[0-9a-fA-F]{0,6}$/.test(value)) onChange(item.id, { strokeColor: value })
+              }}
+            />
+          </div>
         </div>
       )}
       <Button

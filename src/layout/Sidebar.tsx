@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useImportExport } from '@/features/import-export/hooks/useImportExport'
-import { BoxSelect, Link2, Upload } from 'lucide-react'
+import { BoxSelect, LayoutGrid, Link2, SlidersHorizontal, Upload } from 'lucide-react'
 import { BoardList } from '@/features/board/components/BoardList'
 import { ExportMenu } from '@/features/import-export/components/ExportMenu'
 import { SidebarFooter } from './SidebarFooter'
@@ -37,14 +37,14 @@ export function Sidebar({
           className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
           onClick={() => setPage('workspace')}
         >
-          Workspace
+          <LayoutGrid size={15} /> <span>Workspace</span>
         </Button>
         <Button
           variant="ghost"
           className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
           onClick={() => setPage('customize')}
         >
-          Customize
+          <SlidersHorizontal size={15} /> <span>Customize</span>
         </Button>
       </div>
       {page === 'workspace' ? (

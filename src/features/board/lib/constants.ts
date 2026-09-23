@@ -1,4 +1,14 @@
-import { Circle, Diamond, Hexagon, Square, Triangle } from 'lucide-react'
+import {
+  ArrowRight,
+  Circle,
+  Diamond,
+  Hexagon,
+  Minus,
+  Pentagon,
+  Square,
+  Star,
+  Triangle
+} from 'lucide-react'
 import type { CanvasItem } from '../types'
 
 export const seedObjects: CanvasItem[] = [
@@ -62,7 +72,11 @@ export const SHAPES = [
   { id: 'circle', label: 'Circle', icon: Circle },
   { id: 'triangle', label: 'Triangle', icon: Triangle },
   { id: 'hexagon', label: 'Hexagon', icon: Hexagon },
-  { id: 'diamond', label: 'Diamond', icon: Diamond }
+  { id: 'diamond', label: 'Diamond', icon: Diamond },
+  { id: 'pentagon', label: 'Pentagon', icon: Pentagon },
+  { id: 'star', label: 'Star', icon: Star },
+  { id: 'line', label: 'Straight line', icon: Minus },
+  { id: 'arrow', label: 'Arrow', icon: ArrowRight }
 ]
 
 export const STROKE_WIDTHS = [

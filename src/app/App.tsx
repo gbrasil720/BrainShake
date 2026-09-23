@@ -138,7 +138,7 @@ export default function App() {
             onZoomOut={viewport.zoomOut}
             onFit={() => viewport.fitContent(board.objects.length > 0)}
           />
-          {showPanel && (
+          {showPanel && (!preferences.propertiesAutoHide || selected.length > 0) && (
             <PropertiesPanel
               item={board.objects.find((item) => item.id === selected[0])}
               onChange={editor.updateObject}

@@ -62,6 +62,21 @@ export function AppearanceSettings({
         </Button>
       </div>
       <div className="panel-row">
+        <span>Properties auto-hide</span>
+        <Button
+          variant="ghost"
+          className="nav-item"
+          style={{
+            padding: '0 7px',
+            minHeight: 25,
+            background: preferences.propertiesAutoHide ? 'var(--primary-soft)' : 'var(--line)'
+          }}
+          onClick={() => preferences.setPropertiesAutoHide((value) => !value)}
+        >
+          {preferences.propertiesAutoHide ? 'On' : 'Off'}
+        </Button>
+      </div>
+      <div className="panel-row">
         <span>Theme</span>
         <Select value={theme} onValueChange={setTheme}>
           <SelectTrigger className="menu-select" aria-label="Theme">

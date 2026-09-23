@@ -20,6 +20,7 @@ export type CanvasItem = {
   editing?: boolean
   fill?: string
   fillColor?: string
+  strokeColor?: string
   shape?: string
   strokeWidth?: number
   points?: Point[]
@@ -40,9 +41,18 @@ export function isBoardItem(value: unknown): value is BoardItem {
     return typeof value.from === 'string' && typeof value.to === 'string'
   return (
     ['x', 'y', 'w', 'h'].every((key) => typeof value[key] === 'number') &&
-    ['color', 'title', 'text', 'name', 'src', 'mediaType', 'fill', 'fillColor', 'shape'].every(
-      (key) => value[key] === undefined || typeof value[key] === 'string'
-    ) &&
+    [
+      'color',
+      'title',
+      'text',
+      'name',
+      'src',
+      'mediaType',
+      'fill',
+      'fillColor',
+      'strokeColor',
+      'shape'
+    ].every((key) => value[key] === undefined || typeof value[key] === 'string') &&
     ['locked', 'editing', 'mediaOmitted', 'slide'].every(
       (key) => value[key] === undefined || typeof value[key] === 'boolean'
     ) &&
