@@ -16,7 +16,7 @@ export function TextObject({
       style={{
         color: item.textColor,
         fontFamily: item.fontFamily || undefined,
-        fontSize: item.fontSize ? `${item.fontSize}px` : undefined
+        fontSize: `${item.fontSize || 18}px`
       }}
     >
       <MarkdownEditor

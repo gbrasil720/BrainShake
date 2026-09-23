@@ -24,6 +24,7 @@ type Dragging =
       h: number
       direction: string
       points?: Point[]
+      fontSize?: number
     }
   | { type: 'pan'; start: Point; origin: Point }
 
@@ -100,7 +101,8 @@ export function useCanvasPointer({
       w: item.w,
       h: item.h,
       direction,
-      points: item.type === 'stroke' ? item.points : undefined
+      points: item.type === 'stroke' ? item.points : undefined,
+      fontSize: item.type === 'text' ? item.fontSize || 18 : undefined
     })
   }
 
@@ -179,6 +181,20 @@ export function useCanvasPointer({
         y: top ? dragging.y + dragging.h - nextH : dragging.y,
         w: nextW,
         h: nextH,
+        ...(dragging.fontSize !== undefined
+          ? {
+              fontSize: Math.min(
+                160,
+                Math.max(
+                  8,
+                  Math.round(
+                    dragging.fontSize *
+                      Math.sqrt((nextW / dragging.w) * (nextH / dragging.h))
+                  )
+                )
+              )
+            }
+          : {}),
         ...(dragging.points
           ? {
               points: resizeStroke(
