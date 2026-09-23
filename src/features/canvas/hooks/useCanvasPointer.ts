@@ -50,6 +50,7 @@ type Dragging =
       points?: Point[]
       fontSize?: number
     }
+  | { type: 'pinch' }
   | { type: 'pan'; pointerId: number; start: Point; origin: Point }
 
 export type Drawing = CanvasItem & {
@@ -271,7 +272,7 @@ export function useCanvasPointer({
     event.stopPropagation()
     cancelHold()
     setDrawing(null)
-    setDragging(null)
+    setDragging({ type: 'pinch' })
     startPinch()
     event.currentTarget.setPointerCapture?.(event.pointerId)
   }
@@ -370,6 +371,7 @@ export function useCanvasPointer({
       return
     }
     if (!dragging) return
+    if (dragging.type === 'pinch') return
     if (event.pointerId !== dragging.pointerId) return
     if (dragging.type === 'pan') {
       setPan({
@@ -455,7 +457,7 @@ export function useCanvasPointer({
   }
 
   function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-    if (dragging && event.pointerId !== dragging.pointerId) return
+    if (dragging && dragging.type !== 'pinch' && event.pointerId !== dragging.pointerId) return
     if (drawing) {
       cancelHold()
       const { gesture, snapped: held, ...stroke } = drawing
@@ -507,6 +509,7 @@ export function useCanvasPointer({
     dragging,
     drawing,
     isPanning: dragging?.type === 'pan',
+    isPinching: dragging?.type === 'pinch',
     selectObject,
     beginDrag,
     beginResize,

@@ -130,11 +130,12 @@ export function Canvas({
             className="canvas-world"
             style={{
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transition: pointer.isPanning
-                ? 'none'
-                : presenting
-                  ? 'transform 460ms cubic-bezier(.2,.75,.25,1)'
-                  : 'transform 140ms cubic-bezier(.2,.75,.25,1)'
+              transition:
+                pointer.isPanning || pointer.isPinching
+                  ? 'none'
+                  : presenting
+                    ? 'transform 460ms cubic-bezier(.2,.75,.25,1)'
+                    : 'transform 140ms cubic-bezier(.2,.75,.25,1)'
             }}
           >
             <ConnectorLayer objects={board.objects} />
