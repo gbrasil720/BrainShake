@@ -263,6 +263,10 @@
   border: 0;
   overflow: visible;
 }
+.text-object .text-object-editor,
+.text-object .markdown-preview {
+  font-family: inherit;
+}
 .text-object-editor {
   resize: none;
   outline: none;
@@ -272,6 +276,10 @@
 .text-object .markdown-content h2,
 .text-object .markdown-content h3,
 .text-object .markdown-content h4 {
+  font-family: inherit;
+}
+.text-object .markdown-content,
+.text-object .markdown-content :where(*) {
   font-family: inherit;
 }
 .text-format-tooltip {
@@ -290,6 +298,15 @@
   background: color-mix(in srgb, var(--paper) 94%, transparent);
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
+}
+.text-object .text-format-tooltip {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.text-object .text-format-tooltip input {
+  font-family: inherit;
+  font-size: inherit;
 }
 .text-format-tooltip label {
   display: grid;
