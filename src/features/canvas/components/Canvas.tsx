@@ -42,7 +42,21 @@ export function Canvas({
           ref={canvasRef}
           className={`canvas-shell ${grid ? '' : 'grid-off'} ${pointer.isPanning ? 'is-panning' : ''} ${presenting ? 'is-presenting' : ''}`}
           onWheel={presenting ? undefined : onWheel}
-          onPointerDown={presenting ? undefined : pointer.onPointerDown}
+          onPointerDown={
+            presenting
+              ? undefined
+              : (event) => {
+                  if (event.target !== event.currentTarget) {
+                    const target = event.target
+                    const isInteractiveTarget =
+                      target instanceof Element &&
+                      target.closest('button, input, textarea, select, [contenteditable="true"]')
+                    if (editor.tool === 'pen' && !isInteractiveTarget) pointer.beginDrawing(event)
+                    return
+                  }
+                  pointer.onPointerDown(event)
+                }
+          }
           onPointerMove={pointer.onPointerMove}
           onPointerUp={pointer.onPointerUp}
           onPointerCancel={pointer.onPointerUp}
@@ -104,6 +118,7 @@ export function Canvas({
                 key={item.id}
                 item={item}
                 selected={selected.includes(item.id)}
+                activeTool={editor.tool}
                 presentingActive={presenting && item.id === presentingItemId}
                 onSelect={pointer.selectObject}
                 onDrag={pointer.beginDrag}

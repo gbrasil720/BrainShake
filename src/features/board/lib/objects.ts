@@ -43,6 +43,23 @@ export function finishStroke(stroke: CanvasItem & { points: Point[]; strokeWidth
 
 export type StrokeBounds = { minX: number; minY: number; maxX: number; maxY: number }
 
+export function resizeStroke(
+  stroke: Pick<CanvasItem, 'w' | 'h' | 'points'>,
+  width: number,
+  height: number
+) {
+  const scaleX = width / stroke.w
+  const scaleY = height / stroke.h
+  return {
+    w: width,
+    h: height,
+    points: (stroke.points || []).map((point) => ({
+      x: point.x * scaleX,
+      y: point.y * scaleY
+    }))
+  }
+}
+
 export function getStrokeBounds(stroke: CanvasItem): StrokeBounds | null {
   if (stroke.type !== 'stroke' || !stroke.points?.length) return null
   const padding = (stroke.strokeWidth || 4) / 2
