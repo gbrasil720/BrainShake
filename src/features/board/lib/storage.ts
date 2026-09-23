@@ -1,9 +1,14 @@
 import { seedObjects } from './constants'
 import type { Board } from '../types'
 import { isBoard } from '../types'
+import { makeId } from '@/lib/id'
 
 export const STORAGE_KEYS = {
   boards: 'brainshake-boards-v1',
+  activeBoard: 'brainshake-active-board',
+  workspaceId: 'brainshake-workspace-id',
+  workspaceName: 'brainshake-workspace-name',
+  snapshotHead: 'brainshake-snapshot-head',
   theme: 'brainshake-theme',
   accent: 'brainshake-accent',
   dock: 'brainshake-dock',
@@ -34,4 +39,11 @@ export function loadBoards(): Board[] {
 
 export function saveBoards(boards: Board[]) {
   localStorage.setItem(STORAGE_KEYS.boards, JSON.stringify(boards))
+}
+
+export function loadWorkspaceIdentity() {
+  return {
+    id: localStorage.getItem(STORAGE_KEYS.workspaceId) || makeId('workspace'),
+    name: localStorage.getItem(STORAGE_KEYS.workspaceName) || 'My workspace'
+  }
 }

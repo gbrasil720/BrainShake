@@ -8,10 +8,13 @@ import { SidebarFooter } from './SidebarFooter'
 import { SidebarSettings } from './SidebarSettings'
 import { useState } from 'react'
 import type { usePreferences } from '@/features/preferences/usePreferences'
+import { SnapshotList } from '@/features/workspace/SnapshotList'
+import type { useSnapshots } from '@/features/workspace/useSnapshots'
 
 export function Sidebar({
   editor,
   transfer,
+  snapshots,
   onImportFiles,
   autoHide,
   preferences,
@@ -19,6 +22,7 @@ export function Sidebar({
 }: {
   editor: ReturnType<typeof useBoardEditor>
   transfer: ReturnType<typeof useImportExport>
+  snapshots: ReturnType<typeof useSnapshots>
   onImportFiles: () => void
   autoHide: boolean
   preferences: ReturnType<typeof usePreferences>
@@ -72,6 +76,7 @@ export function Sidebar({
             onDelete={editor.deleteBoard}
             onToggleLink={editor.toggleBoardLink}
           />
+          <SnapshotList snapshots={snapshots} />
           <SidebarFooter />
         </>
       ) : (

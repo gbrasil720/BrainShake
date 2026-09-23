@@ -22,7 +22,7 @@ export function ExportMenu({
         <Button
           variant="ghost"
           className={compact ? 'icon-button' : 'nav-item sidebar-export'}
-          title="Export board"
+          title="Export workspace"
         >
           <Download size={compact ? 17 : 16} />
           {!compact && <span>Export</span>}
@@ -33,15 +33,15 @@ export function ExportMenu({
           <FileArchive size={16} />
           <span>
             <strong>.brainshake</strong>
-            <small>Includes local media when supported</small>
+            <small>All boards, snapshots, and local media</small>
           </span>
         </DropdownMenuItem>
-        <div className="export-note">External URLs and non-base64 media may not be bundled.</div>
+        <div className="export-note">External URLs stay as links.</div>
         <DropdownMenuItem onSelect={onExportJson} className="export-option">
           <FileText size={16} />
           <span>
             <strong>.json</strong>
-            <small>Compact, without media</small>
+            <small>Current board, without media</small>
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>

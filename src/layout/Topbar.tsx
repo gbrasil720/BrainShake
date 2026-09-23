@@ -31,7 +31,8 @@ export function Topbar({
       <BoardTitle name={editor.board.name} onRename={editor.renameBoard} />
       <div className="top-actions">
         <span className="save-state">
-          <i className="save-dot" /> Saved locally
+          <i className="save-dot" />{' '}
+          {editor.saveState === 'saved' ? 'Saved locally' : 'Local save failed'}
         </span>
         <ExportMenu
           onExport={transfer.exportAsBrainshake}
@@ -41,7 +42,7 @@ export function Topbar({
         <Button
           variant="ghost"
           className="icon-button"
-          title="Import board"
+          title="Import workspace or board"
           onClick={onImportBoard}
         >
           <Upload size={17} />
