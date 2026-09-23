@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import { useState } from 'react'
 import {
@@ -51,7 +52,8 @@ export function Toolbar({
         />
       )}
       <div className={`toolbar dock-${dockPosition} ${autoHide ? 'toolbar-auto-hide' : ''}`}>
-        <button
+        <Button
+          variant="ghost"
           className="dock-handle"
           draggable="true"
           title="Drag to move dock"
@@ -63,24 +65,31 @@ export function Toolbar({
           onDragEnd={() => setDockDragging(false)}
         >
           <span aria-hidden="true">::</span>
-        </button>
+        </Button>
         {TOOLS.map(({ id, icon: Icon, label }) => (
-          <button
+          <Button
+            variant="ghost"
             key={id}
             className={`tool-button ${tool === id ? 'active' : ''}`}
             title={label}
             onClick={() => setTool(id)}
           >
             <Icon size={17} />
-          </button>
+          </Button>
         ))}
         <ShapeMenu
+          dockPosition={dockPosition}
           onPick={(shape, label) =>
             editor.addObject('shape', { shape, fill: 'solid', name: label })
           }
         />
-        <StrokeMenu value={editor.strokeWidth} onChange={editor.setStrokeWidth} />
-        <button
+        <StrokeMenu
+          value={editor.strokeWidth}
+          onChange={editor.setStrokeWidth}
+          dockPosition={dockPosition}
+        />
+        <Button
+          variant="ghost"
           className={`tool-button ${editor.selected.length ? '' : 'disabled'}`}
           title="Add or remove selected items from presentation"
           aria-label="Add or remove selected items from presentation"
@@ -88,31 +97,34 @@ export function Toolbar({
           onClick={onToggleSlides}
         >
           <Presentation size={17} />
-        </button>
+        </Button>
         <div className="toolbar-divider" />
-        <button
+        <Button
+          variant="ghost"
           className="tool-button"
           title="Import image, video, or file"
           onClick={onImportFiles}
         >
           <ImagePlus size={17} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           className="tool-button"
           title="Undo"
           disabled={!editor.canUndo}
           onClick={editor.undo}
         >
           <Undo2 size={17} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           className="tool-button"
           title="Redo"
           disabled={!editor.canRedo}
           onClick={editor.redo}
         >
           <Redo2 size={17} />
-        </button>
+        </Button>
       </div>
     </>
   )
