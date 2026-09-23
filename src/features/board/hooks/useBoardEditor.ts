@@ -94,15 +94,12 @@ export function useBoardEditor({
 
   function unlinkSelection() {
     if (selected.length < 2) return
+    const selectedIds = new Set(selected)
     commit((current) => ({
       ...current,
       objects: current.objects.filter(
         (item) =>
-          !isConnectorItem(item) ||
-          !(
-            (item.from === selected[0] && item.to === selected[1]) ||
-            (item.from === selected[1] && item.to === selected[0])
-          )
+          !isConnectorItem(item) || !(selectedIds.has(item.from) && selectedIds.has(item.to))
       )
     }))
   }

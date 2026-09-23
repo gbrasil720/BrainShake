@@ -23,7 +23,8 @@ const TOOLS = [
   { id: 'hand', icon: Hand, label: 'Pan canvas (H)' },
   { id: 'text', icon: Type, label: 'Text (T)' },
   { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' },
-  { id: 'pen', icon: Pencil, label: 'Pen (P)' }
+  { id: 'pen', icon: Pencil, label: 'Pen (P)' },
+  { id: 'fill', icon: PaintBucket, label: 'Bucket fill' }
 ]
 
 export function Toolbar({

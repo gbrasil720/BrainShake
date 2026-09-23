@@ -92,5 +92,6 @@ export const TOOL_SHORTCUTS = {
   t: 'text',
   n: 'sticky',
   p: 'pen',
+  f: 'fill',
   l: 'connector'
 }

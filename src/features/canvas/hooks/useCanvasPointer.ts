@@ -28,10 +28,12 @@ type Dragging =
 
 export function useCanvasPointer({
   editor,
-  viewport
+  viewport,
+  fillColor
 }: {
   editor: ReturnType<typeof useBoardEditor>
   viewport: ReturnType<typeof useViewport>
+  fillColor: string
 }) {
   const [dragging, setDragging] = useState<Dragging | null>(null)
   const [drawing, setDrawing] = useState<
@@ -42,6 +44,18 @@ export function useCanvasPointer({
 
   function selectObject(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
+    if (event.button !== 0) return
+    if (tool === 'fill') {
+      if (item.type === 'shape' || item.type === 'sticky') {
+        editor.updateObject(
+          item.id,
+          item.type === 'shape' ? { fillColor, fill: 'solid' } : { fillColor },
+          true
+        )
+        setSelected([item.id])
+      }
+      return
+    }
     if (tool === 'connector') {
       if (!selected.length) setSelected([item.id])
       else if (selected[0] !== item.id) {
