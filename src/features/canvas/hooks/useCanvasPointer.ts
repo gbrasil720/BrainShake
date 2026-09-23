@@ -109,7 +109,7 @@ export function useCanvasPointer({
       beginPan(event)
       return
     }
-    if (tool !== 'select' || ![0, 1, 2].includes(event.button) || item.locked) return
+    if (tool !== 'select' || event.button !== 0 || item.locked) return
     if (
       (event.target as Element).closest('textarea, .markdown-preview') &&
       event.button === 0 &&
@@ -173,6 +173,7 @@ export function useCanvasPointer({
       return
     event.currentTarget.setPointerCapture?.(event.pointerId)
     event.preventDefault()
+    event.stopPropagation()
     setDragging({
       type: 'pan',
       pointerId: event.pointerId,
@@ -312,6 +313,7 @@ export function useCanvasPointer({
     beginDrag,
     beginResize,
     beginDrawing,
+    beginPan,
     onPointerDown,
     onPointerMove,
     onPointerUp

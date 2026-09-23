@@ -49,6 +49,7 @@ export function canBeginCanvasPan({
   spacePressed: boolean
   button: number
 }) {
+  if (button === 1) return pointerType === 'mouse'
   if (button !== 0 || (pointerType === 'touch' && !isPrimary)) return false
   return tool === 'hand' || spacePressed || (tool === 'select' && pointerType === 'touch')
 }

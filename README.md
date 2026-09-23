@@ -31,7 +31,7 @@ BrainShake includes light, warm, mint, dark, and OLED visual themes. The board s
 
 ## Highlights
 
-- Infinite-feeling canvas with scroll zoom, pan, grid controls, multi-selection, movement, and resizing
+- Infinite-feeling canvas with scroll zoom, middle-button drag pan, grid controls, multi-selection, movement, and resizing
 - Sticky notes, text widgets, images, videos, sandboxed HTML previews, and connectors
 - Draggable widget titlebars with accent colors and one-click close controls
 - Light, warm, mint, dark, and OLED themes with persistent accent customization
