@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useState } from 'react'
 import { makeId } from '@/lib/id'
-import { addObjects, finishStroke, moveObjects } from '@/features/board/lib/objects'
+import { addObjects, finishStroke, moveObjects, resizeStroke } from '@/features/board/lib/objects'
 import type { CanvasItem, Point } from '@/features/board/types'
 import { isCanvasItem } from '@/features/board/types'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
@@ -23,6 +23,7 @@ type Dragging =
       w: number
       h: number
       direction: string
+      points?: Point[]
     }
   | { type: 'pan'; start: Point; origin: Point }
 
@@ -87,9 +88,9 @@ export function useCanvasPointer({
 
   function beginResize(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
+    if (tool !== 'select' || item.locked) return
     const point = screenPoint(event)
-    const direction =
-      (event.currentTarget.className.match(/resize-(nw|n|ne|e|se|s|sw|w)/) || [])[1] || 'se'
+    const direction = event.currentTarget.dataset.direction || 'se'
     setDragging({
       type: 'resize',
       id: item.id,
@@ -98,7 +99,8 @@ export function useCanvasPointer({
       y: item.y,
       w: item.w,
       h: item.h,
-      direction
+      direction,
+      points: item.type === 'stroke' ? item.points : undefined
     })
   }
 
@@ -111,6 +113,7 @@ export function useCanvasPointer({
 
   function beginDrawing(event: React.PointerEvent<HTMLDivElement>) {
     if (tool !== 'pen' || event.button !== 0) return
+    setSelected([])
     event.currentTarget.setPointerCapture?.(event.pointerId)
     const point = screenPoint(event)
     setDrawing({
@@ -171,16 +174,22 @@ export function useCanvasPointer({
         MIN_HEIGHT,
         dragging.h + (top ? -dy : dragging.direction.includes('s') ? dy : 0)
       )
-      editor.updateObject(
-        dragging.id,
-        {
-          x: left ? dragging.x + dragging.w - nextW : dragging.x,
-          y: top ? dragging.y + dragging.h - nextH : dragging.y,
-          w: nextW,
-          h: nextH
-        },
-        false
-      )
+      const patch = {
+        x: left ? dragging.x + dragging.w - nextW : dragging.x,
+        y: top ? dragging.y + dragging.h - nextH : dragging.y,
+        w: nextW,
+        h: nextH,
+        ...(dragging.points
+          ? {
+              points: resizeStroke(
+                { w: dragging.w, h: dragging.h, points: dragging.points },
+                nextW,
+                nextH
+              ).points
+            }
+          : {})
+      }
+      editor.updateObject(dragging.id, patch, false)
     }
     if (dragging.type === 'move')
       commit(
@@ -212,6 +221,7 @@ export function useCanvasPointer({
     selectObject,
     beginDrag,
     beginResize,
+    beginDrawing,
     onPointerDown,
     onPointerMove,
     onPointerUp

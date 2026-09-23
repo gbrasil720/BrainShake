@@ -14,6 +14,7 @@ export function ResizeHandle({
         <div
           key={direction}
           className={`resize-handle resize-${direction}`}
+          data-direction={direction}
           onPointerDown={(event) => {
             event.stopPropagation()
             onResize(event, item)

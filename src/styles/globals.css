@@ -692,7 +692,7 @@ a:focus-visible,
   position: absolute;
   top: 21px;
   right: 21px;
-  width: min(260px, calc(100vw - 32px));
+  width: var(--properties-panel-width, min(260px, calc(100vw - 32px)));
   max-height: min(76vh, 620px);
   padding: 15px;
   border: 1px solid var(--line);
@@ -703,6 +703,35 @@ a:focus-visible,
   backdrop-filter: blur(15px);
   animation: panel-in 0.22s ease-out;
   overflow: auto;
+}
+.panel-resize-handle {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  z-index: 1;
+  width: 12px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.panel-resize-handle::after {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  width: 3px;
+  height: 34px;
+  border-radius: 3px;
+  background: var(--line);
+  content: '';
+  transform: translateY(-50%);
+  transition:
+    background 0.15s ease,
+    height 0.15s ease;
+}
+.panel-resize-handle:hover::after,
+.panel-resize-handle:focus-visible::after {
+  height: 48px;
+  background: var(--primary);
 }
 .workspace:has(.toolbar.dock-top) .floating-panel {
   top: 88px;
@@ -1653,7 +1682,7 @@ a:focus-visible,
   }
   .toolbar {
     left: 8px;
-    right: 8px;
+    right: 190px;
     bottom: 12px;
     transform: none;
     justify-content: flex-start;
@@ -1661,16 +1690,19 @@ a:focus-visible,
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   .toolbar::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0;
+    height: 0;
   }
   .toolbar > * {
     flex: 0 0 auto;
   }
   .toolbar.dock-top {
     top: 8px;
-    right: 8px;
+    right: 190px;
     bottom: auto;
     left: 8px;
     transform: none;
@@ -1688,6 +1720,9 @@ a:focus-visible,
     max-height: min(45vh, 330px);
     overflow-y: auto;
   }
+  .panel-resize-handle {
+    display: none;
+  }
   .workspace:has(.toolbar.dock-top) .floating-panel {
     top: 64px;
     max-height: calc(100% - 74px);
@@ -1704,6 +1739,24 @@ a:focus-visible,
   .empty-state {
     width: min(440px, calc(100% - 32px));
     padding: 24px 16px;
+  }
+}
+@media (max-height: 420px) {
+  .zoom-controls {
+    top: 8px;
+    right: 10px;
+    bottom: auto;
+  }
+  .toolbar.dock-bottom {
+    right: 190px;
+    bottom: 8px;
+  }
+  .toolbar.dock-top {
+    right: 190px;
+  }
+  .workspace:has(.toolbar.dock-top) .zoom-controls {
+    top: auto;
+    bottom: 8px;
   }
 }
 @media (max-width: 520px) {
