@@ -6,7 +6,6 @@ import { Sidebar } from '@/layout/Sidebar'
 import { Topbar } from '@/layout/Topbar'
 import { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import { Canvas } from '@/features/canvas/components/Canvas'
-import { ContextMenu } from '@/features/canvas/components/ContextMenu'
 import { ZoomControls } from '@/features/canvas/components/ZoomControls'
 import { useCanvasPointer } from '@/features/canvas/hooks/useCanvasPointer'
 import { useKeyboardShortcuts } from '@/features/canvas/hooks/useKeyboardShortcuts'
@@ -27,7 +26,6 @@ export default function App() {
   const editor = useBoardEditor({ viewport, showToast })
   const pointer = useCanvasPointer({ editor, viewport })
   const transfer = useImportExport({ editor, showToast })
-  const [context, setContext] = useState<{ x: number; y: number } | null>(null)
   const [showPanel, setShowPanel] = useState(true)
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
@@ -53,7 +51,6 @@ export default function App() {
     cancel: () => {
       editor.setSelected([])
       editor.setTool('select')
-      setContext(null)
     },
     setTool: editor.setTool,
     enabled: preferences.keyboardNavigation
@@ -74,7 +71,6 @@ export default function App() {
             '--panel-custom': preferences.panelColor || 'var(--paper)'
           } as React.CSSProperties
         }
-        onClick={() => setContext(null)}
       >
         <Topbar
           editor={editor}
@@ -99,7 +95,6 @@ export default function App() {
             pointer={pointer}
             grid={preferences.grid}
             onImportFiles={transfer.importFiles}
-            onContextMenu={setContext}
           />
           <Toolbar
             editor={editor}
@@ -120,15 +115,6 @@ export default function App() {
               item={board.objects.find((item) => item.id === selected[0])}
               onChange={editor.updateObject}
               onClose={() => setShowPanel(false)}
-            />
-          )}
-          {context && selected.length > 0 && (
-            <ContextMenu
-              position={context}
-              onDuplicate={editor.duplicateSelection}
-              onDelete={editor.removeSelection}
-              onCopy={editor.copySelection}
-              onFront={editor.bringSelectionToFront}
             />
           )}
           {transfer.urlOpen && (

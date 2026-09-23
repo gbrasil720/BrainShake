@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { usePreferences } from '@/features/preferences/usePreferences'
 import { AccessibilitySettings } from '@/features/accessibility/AccessibilitySettings'
 import { AppearanceSettings } from '@/features/properties/AppearanceSettings'
@@ -69,9 +70,9 @@ function ColorRow({
       />
       <code style={{ color: value || fallback }}>{value || 'Theme default'}</code>
       {value && (
-        <button type="button" onClick={() => onChange('')}>
+        <Button variant="ghost" type="button" onClick={() => onChange('')}>
           Reset
-        </button>
+        </Button>
       )}
     </label>
   )

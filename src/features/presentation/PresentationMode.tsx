@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import type { BoardItem, CanvasItem } from '@/features/board/types'
 import { isCanvasItem } from '@/features/board/types'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
@@ -10,35 +12,44 @@ export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClo
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
       if (event.key === 'ArrowRight' || event.key === ' ')
         setIndex((value) => Math.min(value + 1, slides.length - 1))
       if (event.key === 'ArrowLeft') setIndex((value) => Math.max(value - 1, 0))
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [onClose, slides.length])
+  }, [slides.length])
 
   return (
-    <div className="presentation-backdrop">
-      <div
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+    >
+      <DialogContent
         className="presentation-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Presentation mode"
+        showCloseButton={false}
+        aria-describedby={undefined}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+          const content = event.currentTarget as HTMLElement
+          content.focus()
+        }}
       >
         <header className="presentation-heading">
-          <span>
+          <DialogTitle>
             Presentation · {slides.length ? `${index + 1} / ${slides.length}` : 'No slides'}
-          </span>
-          <button
+          </DialogTitle>
+          <Button
+            variant="ghost"
             className="icon-button"
             title="Close presentation"
             aria-label="Close presentation"
             onClick={onClose}
           >
             <X size={17} />
-          </button>
+          </Button>
         </header>
         {current ? (
           <PresentationSlide item={current} />
@@ -48,7 +59,8 @@ export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClo
           </p>
         )}
         <footer className="presentation-actions">
-          <button
+          <Button
+            variant="ghost"
             className="icon-button"
             disabled={index === 0}
             title="Previous slide"
@@ -56,8 +68,9 @@ export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClo
             onClick={() => setIndex((value) => Math.max(value - 1, 0))}
           >
             <ChevronLeft size={20} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             className="icon-button"
             disabled={!current || index === slides.length - 1}
             title="Next slide"
@@ -65,10 +78,10 @@ export function PresentationMode({ items, onClose }: { items: BoardItem[]; onClo
             onClick={() => setIndex((value) => Math.min(value + 1, slides.length - 1))}
           >
             <ChevronRight size={20} />
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

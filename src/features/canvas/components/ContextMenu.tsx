@@ -1,37 +1,31 @@
-import type { Point } from '@/features/board/types'
+import { ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu'
 import { ArrowUpToLine, Copy, Trash2 } from 'lucide-react'
 
 export function ContextMenu({
-  position,
   onDuplicate,
   onDelete,
   onCopy,
   onFront
 }: {
-  position: Point
   onDuplicate: () => void
   onDelete: () => void
   onCopy: () => void
   onFront: () => void
 }) {
   return (
-    <div
-      className="context-menu"
-      style={{ left: position.x, top: position.y }}
-      onClick={(event) => event.stopPropagation()}
-    >
-      <button onClick={onDuplicate}>
+    <ContextMenuContent className="context-menu">
+      <ContextMenuItem onSelect={onDuplicate}>
         <Copy size={14} /> Duplicate
-      </button>
-      <button onClick={onCopy}>
+      </ContextMenuItem>
+      <ContextMenuItem onSelect={onCopy}>
         <Copy size={14} /> Copy
-      </button>
-      <button onClick={onFront}>
+      </ContextMenuItem>
+      <ContextMenuItem onSelect={onFront}>
         <ArrowUpToLine size={14} /> Bring to front
-      </button>
-      <button onClick={onDelete} style={{ color: '#b2553c' }}>
+      </ContextMenuItem>
+      <ContextMenuItem variant="destructive" onSelect={onDelete}>
         <Trash2 size={14} /> Delete
-      </button>
-    </div>
+      </ContextMenuItem>
+    </ContextMenuContent>
   )
 }

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useImportExport } from '@/features/import-export/hooks/useImportExport'
 import { BoxSelect, Link2, Upload } from 'lucide-react'
@@ -27,35 +28,37 @@ export function Sidebar({
   return (
     <aside className={`sidebar ${autoHide ? 'sidebar-auto-hide' : ''}`}>
       <div className="sidebar-tabs" role="tablist" aria-label="Sidebar pages">
-        <button
+        <Button
+          variant="ghost"
           className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
           onClick={() => setPage('workspace')}
         >
           Workspace
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
           onClick={() => setPage('customize')}
         >
           Customize
-        </button>
+        </Button>
       </div>
       {page === 'workspace' ? (
         <>
           <div className="sidebar-section">
             <div className="section-label">Workspace</div>
-            <button className="nav-item active">
+            <Button variant="ghost" className="nav-item active">
               <BoxSelect size={16} />
               <span>Canvas</span>
-            </button>
-            <button className="nav-item" onClick={onImportFiles}>
+            </Button>
+            <Button variant="ghost" className="nav-item" onClick={onImportFiles}>
               <Upload size={16} />
               <span>Import</span>
-            </button>
-            <button className="nav-item" onClick={transfer.openUrlDialog}>
+            </Button>
+            <Button variant="ghost" className="nav-item" onClick={transfer.openUrlDialog}>
               <Link2 size={16} />
               <span>Import image URL</span>
-            </button>
+            </Button>
             <ExportMenu
               onExport={transfer.exportAsBrainshake}
               onExportJson={transfer.exportAsJson}
