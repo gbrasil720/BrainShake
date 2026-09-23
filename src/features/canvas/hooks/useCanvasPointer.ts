@@ -13,9 +13,16 @@ const MIN_HEIGHT = 80
 // Pointer interactions on the canvas. `dragging.type` is one of: move | resize | pan.
 // Pen strokes in progress live in `drawing`.
 type Dragging =
-  | { type: 'move'; ids: string[]; start: Point; origins: (Point & { id: string })[] }
+  | {
+      type: 'move'
+      pointerId: number
+      ids: string[]
+      start: Point
+      origins: (Point & { id: string })[]
+    }
   | {
       type: 'resize'
+      pointerId: number
       id: string
       start: Point
       x: number
@@ -26,7 +33,7 @@ type Dragging =
       points?: Point[]
       fontSize?: number
     }
-  | { type: 'pan'; start: Point; origin: Point }
+  | { type: 'pan'; pointerId: number; start: Point; origin: Point }
 
 export function useCanvasPointer({
   editor,
@@ -78,6 +85,7 @@ export function useCanvasPointer({
     if (!selected.includes(item.id)) setSelected([item.id])
     setDragging({
       type: 'move',
+      pointerId: event.pointerId,
       ids,
       start: point,
       origins: board.objects
@@ -90,10 +98,12 @@ export function useCanvasPointer({
   function beginResize(event: React.PointerEvent<HTMLDivElement>, item: CanvasItem) {
     event.stopPropagation()
     if (tool !== 'select' || item.locked) return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     const point = screenPoint(event)
     const direction = event.currentTarget.dataset.direction || 'se'
     setDragging({
       type: 'resize',
+      pointerId: event.pointerId,
       id: item.id,
       start: point,
       x: item.x,
@@ -107,10 +117,16 @@ export function useCanvasPointer({
   }
 
   function beginPan(event: React.PointerEvent<HTMLDivElement>) {
-    if (tool !== 'hand' || event.button !== 0) return
+    if (event.button !== 0 || (event.pointerType === 'touch' && !event.isPrimary)) return
+    if (tool !== 'hand' && !(tool === 'select' && event.pointerType === 'touch')) return
     event.currentTarget.setPointerCapture?.(event.pointerId)
     event.preventDefault()
-    setDragging({ type: 'pan', start: { x: event.clientX, y: event.clientY }, origin: pan })
+    setDragging({
+      type: 'pan',
+      pointerId: event.pointerId,
+      start: { x: event.clientX, y: event.clientY },
+      origin: pan
+    })
   }
 
   function beginDrawing(event: React.PointerEvent<HTMLDivElement>) {
@@ -155,6 +171,7 @@ export function useCanvasPointer({
       return
     }
     if (!dragging) return
+    if (event.pointerId !== dragging.pointerId) return
     if (dragging.type === 'pan') {
       setPan({
         x: dragging.origin.x + event.clientX - dragging.start.x,
@@ -220,6 +237,7 @@ export function useCanvasPointer({
   }
 
   function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (dragging && event.pointerId !== dragging.pointerId) return
     if (drawing) {
       commit((current) => addObjects(current, [finishStroke(drawing)]))
       setDrawing(null)
