@@ -4,7 +4,7 @@ import { isCanvasItem, isConnectorItem } from '@/features/board/types'
 import type { useViewport } from '@/features/canvas/hooks/useViewport'
 import { MAX_ZOOM, MIN_ZOOM } from '@/features/canvas/hooks/useViewport'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function computeTargetViewport(
   item: CanvasItem,
@@ -41,6 +41,8 @@ export function PresentationMode({
   const currentY = current?.y
   const currentWidth = current?.w
   const currentHeight = current?.h
+  const initialViewport = useRef({ zoom: viewport.zoom, pan: viewport.pan })
+  const { setPan: setViewportPan, setZoom: setViewportZoom } = viewport
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -52,6 +54,14 @@ export function PresentationMode({
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [onClose, slides.length])
+
+  useEffect(() => {
+    const savedViewport = initialViewport.current
+    return () => {
+      setViewportZoom(savedViewport.zoom)
+      setViewportPan(savedViewport.pan)
+    }
+  }, [setViewportPan, setViewportZoom])
 
   useEffect(() => {
     onActiveItemChange(currentId ?? null)

@@ -679,6 +679,14 @@ a:focus-visible,
   animation: panel-in 0.22s ease-out;
   overflow: auto;
 }
+.workspace:has(.toolbar.dock-top) .floating-panel {
+  top: 88px;
+  max-height: calc(100% - 109px);
+}
+.workspace:has(.toolbar.dock-right) .floating-panel {
+  right: 88px;
+  max-width: calc(100% - 109px);
+}
 .panel-heading {
   display: flex;
   align-items: center;
@@ -1596,6 +1604,13 @@ a:focus-visible,
   .toolbar > * {
     flex: 0 0 auto;
   }
+  .toolbar.dock-top {
+    top: 8px;
+    right: 8px;
+    bottom: auto;
+    left: 8px;
+    transform: none;
+  }
   .zoom-controls {
     right: 10px;
     bottom: 75px;
@@ -1606,6 +1621,17 @@ a:focus-visible,
     width: min(240px, calc(100% - 20px));
     max-height: min(430px, calc(100% - 20px));
     overflow-y: auto;
+  }
+  .workspace:has(.toolbar.dock-top) .floating-panel {
+    top: 64px;
+    max-height: calc(100% - 74px);
+  }
+  .workspace:has(.toolbar.dock-right) .floating-panel {
+    top: 10px;
+    right: 64px;
+    width: min(240px, calc(100% - 74px));
+    max-width: none;
+    max-height: calc(100% - 20px);
   }
   .empty-state {
     width: min(440px, calc(100% - 32px));
@@ -1641,6 +1667,16 @@ a:focus-visible,
     top: 8px;
     right: 8px;
     width: calc(100% - 16px);
+    max-height: calc(100% - 16px);
+  }
+  .workspace:has(.toolbar.dock-top) .floating-panel {
+    top: 62px;
+    max-height: calc(100% - 70px);
+  }
+  .workspace:has(.toolbar.dock-right) .floating-panel {
+    top: 8px;
+    right: 56px;
+    width: calc(100% - 64px);
     max-height: calc(100% - 16px);
   }
   .zoom-controls {
