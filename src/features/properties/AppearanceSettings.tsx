@@ -47,7 +47,8 @@ export function AppearanceSettings({
       </div>
       <div className="panel-row">
         <span>Dock auto-hide</span>
-        <button
+        <Button
+          variant="ghost"
           className="nav-item"
           style={{
             padding: '0 7px',
@@ -57,11 +58,12 @@ export function AppearanceSettings({
           onClick={() => preferences.setDockAutoHide((value) => !value)}
         >
           {preferences.dockAutoHide ? 'On' : 'Off'}
-        </button>
+        </Button>
       </div>
       <div className="panel-row">
         <span>Sidebar auto-hide</span>
-        <button
+        <Button
+          variant="ghost"
           className="nav-item"
           style={{
             padding: '0 7px',
@@ -71,7 +73,7 @@ export function AppearanceSettings({
           onClick={() => preferences.setSidebarAutoHide((value) => !value)}
         >
           {preferences.sidebarAutoHide ? 'On' : 'Off'}
-        </button>
+        </Button>
       </div>
       <div className="panel-row">
         <span>Theme</span>
