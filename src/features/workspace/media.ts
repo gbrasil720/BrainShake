@@ -14,6 +14,29 @@ const MEDIA_EXTENSIONS: Record<string, string> = {
 
 export type MediaAsset = { path: string; blob: Blob }
 
+async function hasValidDigest(path: string, blob: Blob): Promise<boolean> {
+  const match = /^media\/([a-f0-9]{64})\.[a-z0-9]+$/i.exec(path)
+  if (!match) return true
+  const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
+  const hash = Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, '0')
+  ).join('')
+  return hash === match[1].toLowerCase()
+}
+
+export async function validateMediaAssets(
+  paths: string[],
+  getAsset: (path: string) => Promise<Blob | undefined>
+): Promise<void> {
+  await Promise.all(
+    paths.map(async (path) => {
+      const blob = await getAsset(path)
+      if (!blob) throw Error('Missing media asset')
+      if (!(await hasValidDigest(path, blob))) throw Error('Invalid media asset')
+    })
+  )
+}
+
 function mediaReference(item: Board['objects'][number]): string | null {
   if (!MEDIA_OBJECT_TYPES.has(item.type) || !('src' in item) || !item.src?.startsWith('media/'))
     return null
@@ -100,7 +123,10 @@ export async function restoreMedia(
           if (!loaded) {
             loaded = getAsset(path).then((blob) => {
               if (!blob) throw Error('Missing media asset')
-              return blobToDataUrl(new Blob([blob], { type: item.mediaType }))
+              return hasValidDigest(path, blob).then((valid) => {
+                if (!valid) throw Error('Invalid media asset')
+                return blobToDataUrl(new Blob([blob], { type: item.mediaType }))
+              })
             })
             cache.set(cacheKey, loaded)
           }

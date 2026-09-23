@@ -1,6 +1,6 @@
 import type { WorkspaceSnapshot, SnapshotSummary } from './model'
-import { isWorkspaceSnapshot } from './model'
-import { extractMedia, referencedMediaPaths, restoreMedia } from './media'
+import { isValidSnapshotGraph, isWorkspaceSnapshot } from './model'
+import { extractMedia, referencedMediaPaths, restoreMedia, validateMediaAssets } from './media'
 
 const DATABASE_NAME = 'brainshake-workspace-v2'
 const SNAPSHOTS = 'snapshots'
@@ -97,6 +97,7 @@ export async function loadArchiveSnapshots(): Promise<{
       if (!blob) throw Error('Missing saved media asset')
       assets.set(path, blob)
     })
+    await validateMediaAssets(paths, async (path) => assets.get(path))
   } finally {
     db.close()
   }
@@ -110,9 +111,28 @@ export async function saveSnapshot(snapshot: WorkspaceSnapshot): Promise<void> {
   try {
     const tx = db.transaction([SNAPSHOTS, ASSETS], 'readwrite')
     const done = transactionDone(tx)
-    for (const [path, blob] of assets) tx.objectStore(ASSETS).put(blob, path)
-    tx.objectStore(SNAPSHOTS).put(stored)
-    await done
+    const existingValues: unknown[] = await request(tx.objectStore(SNAPSHOTS).getAll())
+    if (!existingValues.every(isWorkspaceSnapshot)) throw Error('Invalid saved snapshots')
+    const existing = existingValues
+    const nextSnapshots = [...existing.filter((item) => item.id !== stored.id), stored]
+    if (!isValidSnapshotGraph(nextSnapshots)) throw Error('Invalid snapshot relationships')
+    try {
+      for (const [path, blob] of assets) tx.objectStore(ASSETS).put(blob, path)
+      tx.objectStore(SNAPSHOTS).put(stored)
+      const referenced = new Set(nextSnapshots.flatMap((item) => referencedMediaPaths(item.boards)))
+      const assetKeys = await request(tx.objectStore(ASSETS).getAllKeys())
+      for (const key of assetKeys) {
+        if (typeof key === 'string' && !referenced.has(key)) tx.objectStore(ASSETS).delete(key)
+      }
+      await done
+    } catch (error) {
+      try {
+        await done
+      } catch {
+        return Promise.reject(error)
+      }
+      throw error
+    }
   } finally {
     db.close()
   }
@@ -123,6 +143,8 @@ export async function replaceSnapshots(
   snapshots: WorkspaceSnapshot[],
   archiveAssets = new Map<string, Blob>()
 ): Promise<void> {
+  if (!snapshots.every(isWorkspaceSnapshot) || !isValidSnapshotGraph(snapshots))
+    throw Error('Invalid snapshot relationships')
   const assets = new Map(archiveAssets)
   const cache = new Map<string, Promise<string>>()
   const stored = await Promise.all(
@@ -134,15 +156,28 @@ export async function replaceSnapshots(
   for (const snapshot of stored)
     for (const path of referencedMediaPaths(snapshot.boards))
       if (!assets.has(path)) throw Error('Missing snapshot media asset')
+  await validateMediaAssets(
+    [...new Set(stored.flatMap((snapshot) => referencedMediaPaths(snapshot.boards)))],
+    async (path) => assets.get(path)
+  )
   const db = await openDatabase()
   try {
     const tx = db.transaction([SNAPSHOTS, ASSETS], 'readwrite')
     const done = transactionDone(tx)
-    tx.objectStore(SNAPSHOTS).clear()
-    tx.objectStore(ASSETS).clear()
-    for (const [path, blob] of assets) tx.objectStore(ASSETS).put(blob, path)
-    for (const snapshot of stored) tx.objectStore(SNAPSHOTS).put(snapshot)
-    await done
+    try {
+      tx.objectStore(SNAPSHOTS).clear()
+      tx.objectStore(ASSETS).clear()
+      for (const [path, blob] of assets) tx.objectStore(ASSETS).put(blob, path)
+      for (const snapshot of stored) tx.objectStore(SNAPSHOTS).put(snapshot)
+      await done
+    } catch (error) {
+      try {
+        await done
+      } catch {
+        return Promise.reject(error)
+      }
+      throw error
+    }
   } finally {
     db.close()
   }

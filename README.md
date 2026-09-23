@@ -47,6 +47,8 @@ Imported assets are stored as Data URLs so images, videos, and HTML previews rem
 
 ## Run locally
 
+BrainShake requires Node.js `22.12.0` or newer. Vitest 5 does not support older Node.js versions.
+
 ```bash
 npm install
 npm run dev

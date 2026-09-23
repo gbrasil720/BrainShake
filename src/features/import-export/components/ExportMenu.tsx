@@ -41,7 +41,7 @@ export function ExportMenu({
           <FileText size={16} />
           <span>
             <strong>.json</strong>
-            <small>Current board, without media</small>
+            <small>Structure only; local media is omitted</small>
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>

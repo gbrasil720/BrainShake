@@ -4,7 +4,12 @@ import type { Board } from '@/features/board/types'
 import { isBoardData } from '@/features/board/types'
 import type { WorkspaceDocument } from '@/features/workspace/model'
 import { isWorkspaceDocument } from '@/features/workspace/model'
-import { extractMedia, referencedMediaPaths, restoreMedia } from '@/features/workspace/media'
+import {
+  extractMedia,
+  referencedMediaPaths,
+  restoreMedia,
+  validateMediaAssets
+} from '@/features/workspace/media'
 
 export type BrainshakeImport =
   | { kind: 'workspace'; data: WorkspaceDocument; assets: Map<string, Blob> }
@@ -81,6 +86,7 @@ export async function importBrainshake(file: Blob): Promise<BrainshakeImport> {
         assets.set(path, blob)
       })
     )
+    await validateMediaAssets(paths, async (path) => assets.get(path))
     const getAsset = async (path: string) => assets.get(path)
     const boards = await restoreMedia(data.boards, getAsset)
     return { kind: 'workspace', data: { ...data, boards }, assets }

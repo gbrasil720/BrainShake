@@ -5,7 +5,12 @@ import type { Board } from '@/features/board/types'
 import { createWorkspaceArchive, importBrainshake } from '@/features/import-export/lib/archive'
 import { STORAGE_KEYS } from '@/features/board/lib/storage'
 import { commitWorkspaceImport } from './import'
-import type { WorkspaceDocument, WorkspaceSnapshot } from './model'
+import {
+  isValidSnapshotGraph,
+  isWorkspaceDocument,
+  type WorkspaceDocument,
+  type WorkspaceSnapshot
+} from './model'
 import { createWorkspaceOperationGate, WorkspaceBusyError } from './operationGate'
 import {
   listSnapshots,
@@ -164,6 +169,34 @@ describe('.brainshake archive', () => {
   })
 })
 
+describe('snapshot relationships', () => {
+  const chain = [
+    snapshot,
+    { ...snapshot, id: 'snapshot-tuesday', parentId: snapshot.id },
+    { ...snapshot, id: 'snapshot-wednesday', parentId: 'snapshot-tuesday' }
+  ]
+
+  it('accepts a valid chain and rejects broken relationships', () => {
+    expect(isValidSnapshotGraph(chain, 'snapshot-wednesday')).toBe(true)
+    expect(isValidSnapshotGraph([{ ...snapshot, parentId: 'missing' }])).toBe(false)
+    expect(isValidSnapshotGraph([{ ...snapshot, parentId: snapshot.id }])).toBe(false)
+    expect(
+      isValidSnapshotGraph([
+        { ...snapshot, parentId: 'snapshot-tuesday' },
+        { ...snapshot, id: 'snapshot-tuesday', parentId: 'snapshot-wednesday' },
+        { ...snapshot, id: 'snapshot-wednesday', parentId: snapshot.id }
+      ])
+    ).toBe(false)
+    expect(isValidSnapshotGraph([snapshot], 'missing')).toBe(false)
+  })
+
+  it('requires workspace active board and snapshot head relationships', () => {
+    expect(isWorkspaceDocument(workspace)).toBe(true)
+    expect(isWorkspaceDocument({ ...workspace, activeBoardId: 'missing' })).toBe(false)
+    expect(isWorkspaceDocument({ ...workspace, headSnapshotId: 'missing' })).toBe(false)
+  })
+})
+
 class MemoryStorage {
   private values = new Map<string, string>()
   rejectBoards = false
@@ -307,5 +340,37 @@ describe('local snapshots', () => {
     expect(assetCount).toBe(1)
     await replaceSnapshots([])
     expect(await listSnapshots()).toEqual([])
+  })
+
+  it('rolls back snapshots and assets when the replacement transaction fails', async () => {
+    await replaceSnapshots([snapshot])
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const opening = indexedDB.open('brainshake-workspace-v2')
+      opening.onsuccess = () => resolve(opening.result)
+      opening.onerror = () => reject(opening.error)
+    })
+    const originalPut = IDBObjectStore.prototype.put
+    let failed = false
+    vi.spyOn(IDBObjectStore.prototype, 'put').mockImplementation(function (
+      this: IDBObjectStore,
+      ...args: Parameters<IDBObjectStore['put']>
+    ) {
+      if (this.name === 'snapshots' && !failed) {
+        failed = true
+        this.transaction.abort()
+        throw Error('Injected transaction failure')
+      }
+      return originalPut.apply(this, args)
+    })
+    try {
+      await expect(replaceSnapshots([{ ...snapshot, id: 'new-snapshot' }])).rejects.toThrow()
+    } finally {
+      vi.restoreAllMocks()
+      database.close()
+    }
+    expect((await listSnapshots()).map((item) => item.id)).toEqual([snapshot.id])
+    expect((await loadSnapshot(snapshot.id)).boards[0].objects[0]).toMatchObject({ src: image })
+    expect((await loadArchiveSnapshots()).assets.size).toBe(1)
+    await replaceSnapshots([])
   })
 })

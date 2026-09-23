@@ -14,12 +14,20 @@ const IMPORT_KEYS = [
 
 function stageWorkingCopy(document: WorkspaceDocument, storage: BrowserStorage): () => void {
   const previous = new Map(IMPORT_KEYS.map((key) => [key, storage.getItem(key)]))
+  const next = new Map<string, string | null>([
+    [STORAGE_KEYS.boards, JSON.stringify(document.boards)],
+    [STORAGE_KEYS.activeBoard, document.activeBoardId],
+    [STORAGE_KEYS.workspaceId, document.id],
+    [STORAGE_KEYS.workspaceName, document.name],
+    [STORAGE_KEYS.snapshotHead, document.headSnapshotId]
+  ])
   const restore = () => {
     for (const key of IMPORT_KEYS) {
       const value = previous.get(key)
       if (value === null || value === undefined) storage.removeItem(key)
       else storage.setItem(key, value)
     }
+    storage.removeItem(STORAGE_KEYS.pendingImport)
   }
 
   try {
@@ -29,6 +37,14 @@ function stageWorkingCopy(document: WorkspaceDocument, storage: BrowserStorage):
     storage.setItem(STORAGE_KEYS.workspaceName, document.name)
     if (document.headSnapshotId) storage.setItem(STORAGE_KEYS.snapshotHead, document.headSnapshotId)
     else storage.removeItem(STORAGE_KEYS.snapshotHead)
+    storage.setItem(
+      STORAGE_KEYS.pendingImport,
+      JSON.stringify({
+        state: 'staged',
+        previous: Object.fromEntries(previous),
+        next: Object.fromEntries(next)
+      })
+    )
   } catch (error) {
     restore()
     throw error
@@ -47,6 +63,15 @@ export async function commitWorkspaceImport(
   const restorePrevious = stageWorkingCopy(document, storage)
   try {
     await replaceSavedSnapshots()
+    storage.setItem(
+      STORAGE_KEYS.pendingImport,
+      JSON.stringify({
+        state: 'committed',
+        previous: {},
+        next: Object.fromEntries(IMPORT_KEYS.map((key) => [key, storage.getItem(key)]))
+      })
+    )
+    storage.removeItem(STORAGE_KEYS.pendingImport)
   } catch (error) {
     restorePrevious()
     throw error

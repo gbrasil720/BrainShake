@@ -49,6 +49,29 @@ export function isWorkspaceSnapshot(value: unknown): value is WorkspaceSnapshot 
   )
 }
 
+export function isValidSnapshotGraph(
+  snapshots: WorkspaceSnapshot[],
+  headSnapshotId: string | null = null
+): boolean {
+  const ids = new Set(snapshots.map((snapshot) => snapshot.id))
+  if (ids.size !== snapshots.length) return false
+  if (headSnapshotId !== null && !ids.has(headSnapshotId)) return false
+  if (snapshots.some((snapshot) => snapshot.parentId !== null && !ids.has(snapshot.parentId)))
+    return false
+
+  const byId = new Map(snapshots.map((snapshot) => [snapshot.id, snapshot]))
+  for (const snapshot of snapshots) {
+    const visited = new Set<string>()
+    let current: WorkspaceSnapshot | undefined = snapshot
+    while (current) {
+      if (visited.has(current.id)) return false
+      visited.add(current.id)
+      current = current.parentId ? byId.get(current.parentId) : undefined
+    }
+  }
+  return true
+}
+
 export function isWorkspaceDocument(value: unknown): value is WorkspaceDocument {
   if (
     !isRecord(value) ||
@@ -62,27 +85,8 @@ export function isWorkspaceDocument(value: unknown): value is WorkspaceDocument 
   )
     return false
 
-  const ids = new Set(value.snapshots.map((snapshot: WorkspaceSnapshot) => snapshot.id))
-  const relationshipsValid =
-    ids.size === value.snapshots.length &&
-    (value.headSnapshotId === null ||
-      (typeof value.headSnapshotId === 'string' && ids.has(value.headSnapshotId))) &&
-    value.snapshots.every(
-      (snapshot: WorkspaceSnapshot) => snapshot.parentId === null || ids.has(snapshot.parentId)
-    )
-  if (!relationshipsValid) return false
-
-  const byId = new Map(
-    value.snapshots.map((snapshot: WorkspaceSnapshot) => [snapshot.id, snapshot])
+  return (
+    (typeof value.headSnapshotId === 'string' || value.headSnapshotId === null) &&
+    isValidSnapshotGraph(value.snapshots, value.headSnapshotId)
   )
-  for (const snapshot of value.snapshots) {
-    const visited = new Set<string>()
-    let current: WorkspaceSnapshot | undefined = snapshot
-    while (current) {
-      if (visited.has(current.id)) return false
-      visited.add(current.id)
-      current = current.parentId ? byId.get(current.parentId) : undefined
-    }
-  }
-  return true
 }
