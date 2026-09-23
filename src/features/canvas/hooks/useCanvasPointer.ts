@@ -188,8 +188,7 @@ export function useCanvasPointer({
                 Math.max(
                   8,
                   Math.round(
-                    dragging.fontSize *
-                      Math.sqrt((nextW / dragging.w) * (nextH / dragging.h))
+                    dragging.fontSize * Math.sqrt((nextW / dragging.w) * (nextH / dragging.h))
                   )
                 )
               )
