@@ -154,8 +154,10 @@ export default function App() {
           <Toolbar
             editor={editor}
             dockPosition={preferences.dockPosition}
+            onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
+            keyboardNavigation={preferences.keyboardNavigation}
           />
           <ZoomControls
             zoom={viewport.zoom}
