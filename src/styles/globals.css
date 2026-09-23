@@ -1,4 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.theme-dark *, .theme-oled *));
 
 :root {
   font-family: 'DM Sans', sans-serif;
@@ -25,6 +30,9 @@
   --warning-bg: rgba(197, 138, 68, 0.14);
   --danger-ink: #7d2d2d;
   --danger-bg: rgba(209, 73, 91, 0.12);
+  --radius: 0.625rem;
+  --destructive: #b2553c;
+  --primary-foreground: #fff;
 }
 
 * {
@@ -2236,4 +2244,29 @@ kbd {
 .theme-dracula .canvas-shell {
   background-color: #21222c;
   background-image: radial-gradient(#44475a 1px, transparent 1px);
+}
+
+@theme inline {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --color-background: var(--surface);
+  --color-foreground: var(--ink);
+  --color-popover: var(--paper);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--accent);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--accent);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--destructive);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--primary);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 13px;
 }
