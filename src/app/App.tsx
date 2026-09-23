@@ -150,7 +150,6 @@ export default function App() {
             dockPosition={preferences.dockPosition}
             onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
-            onUnlink={editor.unlinkSelection}
             onImportFiles={openFilePicker}
             fillColor={preferences.fillColor}
             strokeColor={preferences.strokeColor}

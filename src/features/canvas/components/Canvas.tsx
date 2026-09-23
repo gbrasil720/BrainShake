@@ -124,6 +124,9 @@ export function Canvas({
           onDelete={editor.removeSelection}
           onCopy={editor.copySelection}
           onFront={editor.bringSelectionToFront}
+          onLink={() => editor.setTool('connector')}
+          onUnlink={editor.unlinkSelection}
+          canUnlink={selected.length >= 2}
         />
       )}
     </ShadcnContextMenu>

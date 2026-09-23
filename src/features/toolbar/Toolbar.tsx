@@ -5,14 +5,13 @@ import {
   BoxSelect,
   Hand,
   ImagePlus,
-  Link2,
+  Palette,
   Pencil,
   PaintBucket,
   Presentation,
   Redo2,
   StickyNote,
   Type,
-  Unlink,
   Undo2
 } from 'lucide-react'
 import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
@@ -24,8 +23,7 @@ const TOOLS = [
   { id: 'hand', icon: Hand, label: 'Pan canvas (H)' },
   { id: 'text', icon: Type, label: 'Text (T)' },
   { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' },
-  { id: 'pen', icon: Pencil, label: 'Pen (P)' },
-  { id: 'connector', icon: Link2, label: 'Link elements (L)' }
+  { id: 'pen', icon: Pencil, label: 'Pen (P)' }
 ]
 
 export function Toolbar({
@@ -34,7 +32,6 @@ export function Toolbar({
   onDockChange,
   onImportFiles,
   onToggleSlides,
-  onUnlink,
   fillColor,
   strokeColor,
   onFillColorChange,
@@ -45,7 +42,6 @@ export function Toolbar({
   onDockChange: (position: string) => void
   onImportFiles: () => void
   onToggleSlides: () => void
-  onUnlink: () => void
   fillColor: string
   strokeColor: string
   onFillColorChange: (color: string) => void
@@ -106,7 +102,7 @@ export function Toolbar({
           onOpenChange={(open) => setOpenMenu(open ? 'stroke' : null)}
         />
         <label className="dock-color-picker" title="Stroke color">
-          <Pencil size={15} />
+          <Palette size={15} />
           <input
             type="color"
             value={strokeColor}
@@ -132,16 +128,6 @@ export function Toolbar({
           onClick={onToggleSlides}
         >
           <Presentation size={17} />
-        </Button>
-        <Button
-          variant="ghost"
-          className="tool-button"
-          title="Unlink selected elements"
-          aria-label="Unlink selected elements"
-          disabled={editor.selected.length < 2}
-          onClick={onUnlink}
-        >
-          <Unlink size={17} />
         </Button>
         <div className="toolbar-divider" />
         <Button

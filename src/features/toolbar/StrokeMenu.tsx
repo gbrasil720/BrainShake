@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { Pencil } from 'lucide-react'
+import { PencilLine } from 'lucide-react'
 import { STROKE_WIDTHS } from '@/features/board/lib/constants'
 
 export function StrokeMenu({
@@ -27,7 +27,7 @@ export function StrokeMenu({
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="tool-button" title="Stroke width">
-          <Pencil size={17} />
+          <PencilLine size={17} />
         </Button>
       </PopoverTrigger>
       <PopoverContent
