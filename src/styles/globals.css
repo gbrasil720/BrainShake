@@ -1259,14 +1259,6 @@ a:focus-visible,
 .accessibility-tour-button.alt {
   background: var(--primary-soft);
 }
-.tour-backdrop {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(12, 18, 16, 0.52);
-  z-index: 120;
-}
 .tour-panel {
   width: min(480px, calc(100vw - 32px));
   border: 1px solid var(--line);
@@ -2002,19 +1994,17 @@ a:focus-visible,
   margin-top: 16px;
 }
 
-.tour-backdrop {
-  position: fixed;
-  inset: 0;
+[data-slot='dialog-overlay']:has(+ .tour-dialog) {
   z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: 24px;
   background: rgba(18, 24, 21, 0.56);
 }
 
 .tour-dialog {
-  width: min(460px, 100%);
-  max-height: min(680px, 100%);
+  z-index: 100;
+  display: block;
+  width: min(460px, calc(100% - 48px));
+  max-width: none;
+  max-height: min(680px, calc(100% - 48px));
   overflow: auto;
   padding: 22px;
   color: var(--ink);

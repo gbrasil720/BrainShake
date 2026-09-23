@@ -34,16 +34,17 @@ export function AppearanceSettings({
       </div>
       <div className="panel-row">
         <span>App dock</span>
-        <select
-          className="menu-select"
-          value={preferences.dockPosition}
-          onChange={(event) => preferences.setDockPosition(event.target.value)}
-        >
-          <option value="top">Top</option>
-          <option value="right">Right</option>
-          <option value="bottom">Bottom</option>
-          <option value="left">Left</option>
-        </select>
+        <Select value={preferences.dockPosition} onValueChange={preferences.setDockPosition}>
+          <SelectTrigger className="menu-select" aria-label="App dock">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="top">Top</SelectItem>
+            <SelectItem value="right">Right</SelectItem>
+            <SelectItem value="bottom">Bottom</SelectItem>
+            <SelectItem value="left">Left</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="panel-row">
         <span>Dock auto-hide</span>

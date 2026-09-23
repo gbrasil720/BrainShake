@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import type { usePreferences } from '@/features/preferences/usePreferences'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import { FONT_SIZES, normalizeFontSize } from './accessibility'
@@ -24,9 +25,9 @@ export function AccessibilitySettings({
     <section className="accessibility-settings" aria-labelledby="accessibility-heading">
       <div className="settings-section-heading">
         <h2 id="accessibility-heading">Accessibility</h2>
-        <button className="text-button" onClick={onOpenTour}>
+        <Button variant="ghost" className="text-button" onClick={onOpenTour}>
           Accessibility Tour
-        </button>
+        </Button>
       </div>
       <div className="settings-group">
         <p className="settings-group-label">Text</p>
@@ -36,7 +37,8 @@ export function AccessibilitySettings({
             <span>Adjust text across the workspace.</span>
           </div>
           <div className="font-size-control">
-            <button
+            <Button
+              variant="ghost"
               className="icon-button"
               title="Decrease font size"
               aria-label="Decrease font size"
@@ -44,9 +46,10 @@ export function AccessibilitySettings({
               onClick={() => setFontAt(fontIndex - 1)}
             >
               <Minus size={14} />
-            </button>
+            </Button>
             <span aria-live="polite">{fontLabels[fontSize]}</span>
-            <button
+            <Button
+              variant="ghost"
               className="icon-button"
               title="Increase font size"
               aria-label="Increase font size"
@@ -54,15 +57,16 @@ export function AccessibilitySettings({
               onClick={() => setFontAt(fontIndex + 1)}
             >
               <Plus size={14} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               className="icon-button"
               title="Reset font size"
               aria-label="Reset font size"
               onClick={() => preferences.setFontSize('default')}
             >
               <RotateCcw size={13} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -117,13 +121,14 @@ function ToggleRow({
         <strong>{label}</strong>
         <span>{description}</span>
       </div>
-      <button
+      <Button
+        variant="ghost"
         className={`segmented-toggle ${value ? 'on' : ''}`}
         aria-pressed={value}
         onClick={onChange}
       >
         {value ? 'On' : 'Off'}
-      </button>
+      </Button>
     </div>
   )
 }
