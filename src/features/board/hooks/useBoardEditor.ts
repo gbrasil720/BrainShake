@@ -133,6 +133,12 @@ export function useBoardEditor({
     showToast('Copied to clipboard')
   }
 
+  function cutSelection() {
+    if (!selected.length) return
+    copySelection()
+    removeSelection()
+  }
+
   function pasteSelection() {
     try {
       const saved: unknown = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.clipboard) || '[]')
@@ -180,6 +186,7 @@ export function useBoardEditor({
     removeSelection,
     duplicateSelection,
     copySelection,
+    cutSelection,
     pasteSelection,
     bringSelectionToFront,
     toggleBoardLink: boards.toggleBoardLink

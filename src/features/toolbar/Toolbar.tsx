@@ -12,7 +12,6 @@ import {
   Type,
   Undo2
 } from 'lucide-react'
-import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
 import { ShapeMenu } from './ShapeMenu'
 import { StrokeMenu } from './StrokeMenu'
 
@@ -27,44 +26,19 @@ const TOOLS = [
 export function Toolbar({
   editor,
   dockPosition,
-  onDockChange,
   onImportFiles,
   onToggleSlides
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
-  onDockChange: (position: string) => void
   onImportFiles: () => void
   onToggleSlides: () => void
 }) {
-  const [dockDragging, setDockDragging] = useState(false)
   const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
   const { tool, setTool } = editor
   return (
     <>
-      {dockDragging && (
-        <DockDropZones
-          onDrop={(position) => {
-            onDockChange(position)
-            setDockDragging(false)
-          }}
-        />
-      )}
       <div className={`toolbar dock-${dockPosition}`}>
-        <Button
-          variant="ghost"
-          className="dock-handle"
-          draggable="true"
-          title="Drag to move dock"
-          onDragStart={(event) => {
-            event.dataTransfer.setData('text/plain', DOCK_DRAG_TYPE)
-            event.dataTransfer.effectAllowed = 'move'
-            setDockDragging(true)
-          }}
-          onDragEnd={() => setDockDragging(false)}
-        >
-          <span aria-hidden="true">::</span>
-        </Button>
         {TOOLS.map(({ id, icon: Icon, label }) => (
           <Button
             variant="ghost"

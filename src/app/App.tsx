@@ -1,5 +1,6 @@
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
+import { toPng } from 'html-to-image'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/hooks/useToast'
 import { Sidebar } from '@/layout/Sidebar'
@@ -70,6 +71,21 @@ export default function App() {
     )
   }
 
+  async function screenshotWorkspace() {
+    const canvas = viewport.canvasRef.current
+    if (!canvas) return
+    try {
+      const dataUrl = await toPng(canvas, { cacheBust: true, pixelRatio: 2 })
+      const link = document.createElement('a')
+      link.download = `${editor.board.name || 'brainshake-workspace'}.png`
+      link.href = dataUrl
+      link.click()
+      showToast('Workspace screenshot downloaded')
+    } catch {
+      showToast('Could not capture workspace')
+    }
+  }
+
   useKeyboardShortcuts({
     undo: editor.undo,
     redo: editor.redo,
@@ -131,13 +147,13 @@ export default function App() {
             pointer={pointer}
             grid={preferences.grid}
             onImportFiles={transfer.importFiles}
+            onScreenshot={screenshotWorkspace}
             presenting={presentationOpen}
             presentingItemId={presentationItemId}
           />
           <Toolbar
             editor={editor}
             dockPosition={preferences.dockPosition}
-            onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
           />

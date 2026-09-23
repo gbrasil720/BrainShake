@@ -1,5 +1,5 @@
 import { ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu'
-import { ArrowUpToLine, Copy, Link2, Trash2, Unlink } from 'lucide-react'
+import { ArrowUpToLine, Camera, Copy, Link2, Scissors, Trash2, Unlink } from 'lucide-react'
 
 export function ContextMenu({
   onDuplicate,
@@ -8,7 +8,10 @@ export function ContextMenu({
   onFront,
   onLink,
   onUnlink,
-  canUnlink
+  canUnlink,
+  onCut,
+  onScreenshot,
+  canEdit
 }: {
   onDuplicate: () => void
   onDelete: () => void
@@ -17,26 +20,35 @@ export function ContextMenu({
   onLink: () => void
   onUnlink: () => void
   canUnlink: boolean
+  onCut: () => void
+  onScreenshot: () => void | Promise<void>
+  canEdit: boolean
 }) {
   return (
     <ContextMenuContent className="context-menu">
-      <ContextMenuItem onSelect={onDuplicate}>
+      <ContextMenuItem disabled={!canEdit} onSelect={onDuplicate}>
         <Copy size={14} /> Duplicate
       </ContextMenuItem>
-      <ContextMenuItem onSelect={onCopy}>
+      <ContextMenuItem disabled={!canEdit} onSelect={onCopy}>
         <Copy size={14} /> Copy
       </ContextMenuItem>
-      <ContextMenuItem onSelect={onFront}>
+      <ContextMenuItem disabled={!canEdit} onSelect={onFront}>
         <ArrowUpToLine size={14} /> Bring to front
       </ContextMenuItem>
-      <ContextMenuItem onSelect={onLink}>
+      <ContextMenuItem disabled={!canEdit} onSelect={onLink}>
         <Link2 size={14} /> Link elements
       </ContextMenuItem>
       <ContextMenuItem disabled={!canUnlink} onSelect={onUnlink}>
         <Unlink size={14} /> Unlink elements
       </ContextMenuItem>
-      <ContextMenuItem variant="destructive" onSelect={onDelete}>
+      <ContextMenuItem disabled={!canEdit} onSelect={onCut}>
+        <Scissors size={14} /> Cut
+      </ContextMenuItem>
+      <ContextMenuItem disabled={!canEdit} variant="destructive" onSelect={onDelete}>
         <Trash2 size={14} /> Delete
+      </ContextMenuItem>
+      <ContextMenuItem onSelect={onScreenshot}>
+        <Camera size={14} /> Screenshot workspace
       </ContextMenuItem>
     </ContextMenuContent>
   )

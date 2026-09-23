@@ -19,6 +19,7 @@ export function Canvas({
   pointer,
   grid,
   onImportFiles,
+  onScreenshot,
   presenting,
   presentingItemId
 }: {
@@ -27,6 +28,7 @@ export function Canvas({
   pointer: ReturnType<typeof useCanvasPointer>
   grid: boolean
   onImportFiles: (files: FileList | File[]) => void
+  onScreenshot: () => void | Promise<void>
   presenting: boolean
   presentingItemId: string | null
 }) {
@@ -37,7 +39,7 @@ export function Canvas({
   const strokeGroups = getStrokeGroups(contentObjects)
   return (
     <ShadcnContextMenu modal={false}>
-      <ContextMenuTrigger asChild disabled={selected.length === 0}>
+      <ContextMenuTrigger asChild>
         <div
           ref={canvasRef}
           className={`canvas-shell ${grid ? '' : 'grid-off'} ${pointer.isPanning ? 'is-panning' : ''} ${presenting ? 'is-presenting' : ''}`}
@@ -69,9 +71,6 @@ export function Canvas({
             event.preventDefault()
             setDropActive(false)
             onImportFiles(event.dataTransfer.files)
-          }}
-          onContextMenu={(event) => {
-            if (!selected.length) event.preventDefault()
           }}
         >
           <div
@@ -142,6 +141,9 @@ export function Canvas({
           onLink={() => editor.setTool('connector')}
           onUnlink={editor.unlinkSelection}
           canUnlink={selected.length >= 2}
+          onCut={editor.cutSelection}
+          onScreenshot={onScreenshot}
+          canEdit={selected.length > 0}
         />
       )}
     </ShadcnContextMenu>
