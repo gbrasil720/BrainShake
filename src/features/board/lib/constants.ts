@@ -51,10 +51,10 @@ export const THEMES = [
   { id: 'mint', label: 'Mint' },
   { id: 'dark', label: 'Dark' },
   { id: 'oled', label: 'OLED' },
-  { id: 'catppuccin', label: 'Lavender Milk' },
-  { id: 'gruvbox', label: 'Harvest Board' },
+  { id: 'catppuccin', label: 'Lavender' },
+  { id: 'gruvbox', label: 'Harvest' },
   { id: 'dracula', label: 'Night Orchid' },
-  { id: 'nord', label: 'Arctic Paper' }
+  { id: 'nord', label: 'Arctic' }
 ]
 
 export const SHAPES = [
