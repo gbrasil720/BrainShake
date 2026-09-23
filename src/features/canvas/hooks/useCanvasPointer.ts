@@ -14,7 +14,7 @@ import { isCanvasItem, isConnectorItem } from '@/features/board/types'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useViewport } from './useViewport'
 import { canBeginCanvasPan, shouldPanWithSpace } from '@/features/toolbar/toolNavigation'
-import { recognize, type Recognition } from '@/features/pen/lib/recognize'
+import { recognize, UNATTENDED, type Recognition } from '@/features/pen/lib/recognize'
 import { arrowLink } from '@/features/pen/lib/arrowLink'
 import { recognizeGesture, type Gesture } from '@/features/pen/lib/gestures'
 
@@ -24,9 +24,6 @@ const MIN_HEIGHT = 80
 const HOLD_DELAY = 500
 // Screen pixels the pointer may drift while held and still count as still.
 const HOLD_TOLERANCE = 6
-// Snapping strokes on release without being asked is held to a higher bar, so
-// handwriting (an "o", an "l") and loose doodles stay as drawn.
-const AUTO_SNAP = { minSize: 40, minConfidence: 0.2 }
 
 // Pointer interactions on the canvas. `dragging.type` is one of: move | resize | pan.
 // Pen strokes in progress live in `drawing`.
@@ -391,7 +388,7 @@ export function useCanvasPointer({
         setDrawing(null)
         return
       }
-      const snapped = held ?? (autoSnap ? recognize(stroke.points, AUTO_SNAP) : null)
+      const snapped = held ?? (autoSnap ? recognize(stroke.points, UNATTENDED) : null)
       const drawn = finishStroke(stroke)
       commit((current) => addObjects(current, [drawn]))
       // A separate history entry, so undo brings back the stroke as it was drawn.

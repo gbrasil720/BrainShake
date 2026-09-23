@@ -39,8 +39,14 @@ const SNAP_ANGLE = (10 * Math.PI) / 180
 const RIGHT_ANGLE_TOLERANCE = 18
 // Arrow barbs are drawn this far off the shaft, like connector arrowheads.
 const BARB_ANGLE = Math.PI / 6
+// Interior angle (degrees) under which a stroke is doubling back on itself.
+const RETRACE_ANGLE = 35
 // Relative difference under which two sides are treated as equal.
 const EQUAL_SIDES = 0.12
+
+// Stricter options for snapping strokes nobody asked to snap (auto-correct), so
+// handwriting (an "o", an "l") and loose doodles stay as drawn.
+export const UNATTENDED = { minSize: 40, minConfidence: 0.1 }
 
 // `minSize` and `minConfidence` let callers be stricter than the defaults, e.g.
 // when snapping strokes nobody asked to snap.
@@ -57,11 +63,13 @@ export function recognize(
 }
 
 function recognizeShape(stroke: Point[], diagonal: number): Recognition | null {
-  const points = resample(stroke, SAMPLES)
-
   if (!isClosed(stroke)) {
-    const arrow = fitArrow(points)
+    const arrow = fitArrow(resample(stroke, SAMPLES))
     if (arrow) return arrow
+  }
+  const points = resample(trimRetrace(resample(stroke, SAMPLES), diagonal), SAMPLES)
+
+  if (!isClosed(points)) {
     const straightness = distance(points[0], points[points.length - 1]) / pathLength(points)
     if (straightness < LINE_STRAIGHTNESS) return null
     return {
@@ -122,10 +130,13 @@ function snapLine(start: Point, end: Point): Point[] {
 // A straight shaft whose far end turns back into one or two short barbs.
 function fitArrow(points: Point[]): Recognition | null {
   const tail = points[0]
-  // A V head returns to the tip before drawing its second barb, so take the
-  // first time the stroke gets (almost) as far from the tail as it ever does.
-  const reach = Math.max(...points.map((point) => distance(point, tail)))
-  const tipIndex = points.findIndex((point) => distance(point, tail) >= reach * 0.98)
+  // A V head comes back to the tip before its second barb, so the tip is the
+  // first point where the stroke, nearly as far out as it ever gets, turns back.
+  const reaches = points.map((point) => distance(point, tail))
+  const reach = Math.max(...reaches)
+  const tipIndex = reaches.findIndex(
+    (value, index) => value >= reach * 0.9 && value >= (reaches[index + 1] ?? -Infinity)
+  )
   // The head needs a few samples after the tip; otherwise this is just a line.
   if (tipIndex > points.length - 4) return null
   const tip = points[tipIndex]
@@ -133,7 +144,7 @@ function fitArrow(points: Point[]): Recognition | null {
   const straightness = length / pathLength(points.slice(0, tipIndex + 1))
   const head = points.slice(tipIndex + 1)
   const headLength = pathLength([tip, ...head])
-  if (straightness < ARROW_STRAIGHTNESS || headLength > length * 1.2) return null
+  if (straightness < ARROW_STRAIGHTNESS || headLength > length * 1.6) return null
 
   // Farthest point of the head on each side of the shaft.
   const back = { x: (tail.x - tip.x) / length, y: (tail.y - tip.y) / length }
@@ -145,7 +156,7 @@ function fitArrow(points: Point[]): Recognition | null {
     const dx = point.x - tip.x
     const dy = point.y - tip.y
     const offset = Math.hypot(dx, dy)
-    if (offset > length * 0.5) return null
+    if (offset > length * 0.6) return null
     if (!offset) continue
     const side = back.x * dy - back.y * dx > 0 ? 'left' : 'right'
     const angle = Math.acos(Math.max(-1, Math.min(1, (back.x * dx + back.y * dy) / offset)))
@@ -208,20 +219,38 @@ function fitEllipse(points: Point[], snap: boolean): Recognition {
     xy += dx * dy
   }
   const tilt = snapTilt(0.5 * Math.atan2(2 * xy, xx - yy), snap)
-  const box = bounds(rotate(points, -tilt, center))
-  let rx = (box.maxX - box.minX) / 2
-  let ry = (box.maxY - box.minY) / 2
-  const middle = { x: (box.minX + box.maxX) / 2, y: (box.minY + box.maxY) / 2 }
-  const round = Math.abs(rx - ry) / Math.max(rx, ry) < EQUAL_SIDES
-  if (round) rx = ry = (rx + ry) / 2
-  const outline = Array.from({ length: SAMPLES + 1 }, (_, index) => {
-    const t = (index / SAMPLES) * 2 * Math.PI
-    return { x: middle.x + rx * Math.cos(t), y: middle.y + ry * Math.sin(t) }
-  })
+  const aligned = rotate(points, -tilt, center)
+  // The bounding box sizes the ellipse well for round strokes but overshoots on
+  // pointy ones (a leaf, a lemon); the spread of the points does the opposite.
+  // Keep whichever follows the stroke more closely.
+  const box = bounds(aligned)
+  const spread = (axis: 'x' | 'y') =>
+    Math.sqrt(
+      (2 * aligned.reduce((sum, point) => sum + (point[axis] - center[axis]) ** 2, 0)) /
+        aligned.length
+    )
+  const [best] = [
+    {
+      middle: { x: (box.minX + box.maxX) / 2, y: (box.minY + box.maxY) / 2 },
+      rx: (box.maxX - box.minX) / 2,
+      ry: (box.maxY - box.minY) / 2
+    },
+    { middle: center, rx: spread('x'), ry: spread('y') }
+  ]
+    .map(({ middle, rx, ry }) => {
+      const round = Math.abs(rx - ry) / Math.max(rx, ry) < EQUAL_SIDES
+      if (round) rx = ry = (rx + ry) / 2
+      const outline = Array.from({ length: SAMPLES + 1 }, (_, index) => {
+        const t = (index / SAMPLES) * 2 * Math.PI
+        return { x: middle.x + rx * Math.cos(t), y: middle.y + ry * Math.sin(t) }
+      })
+      return { round, outline, error: fitError(aligned, outline) }
+    })
+    .sort((a, b) => a.error - b.error)
   return {
-    kind: round ? 'circle' : 'ellipse',
+    kind: best.round ? 'circle' : 'ellipse',
     confidence: 0,
-    points: rotate(outline, tilt, center)
+    points: rotate(best.outline, tilt, center)
   }
 }
 
@@ -285,6 +314,26 @@ function squareOffCorners(corners: Point[], diagonal: number): Point[] {
       .filter((_, index) => index !== (shortest + 1) % count)
   }
   return result
+}
+
+// Drops a stretch at either end that the stroke immediately draws back over, as
+// when a rectangle is started mid-side, drawn down, then back up the same side.
+function trimRetrace(points: Point[], diagonal: number): Point[] {
+  const vertices = simplify(points, diagonal * CORNER_TOLERANCE)
+  if (vertices.length < 3) return points
+  const total = pathLength(points)
+  const last = vertices.length - 1
+  let start = 0
+  let end = points.length - 1
+  if (angleAt(vertices[0], vertices[1], vertices[2]) < RETRACE_ANGLE) {
+    const index = points.indexOf(vertices[1])
+    if (pathLength(points.slice(0, index + 1)) < total * 0.35) start = index
+  }
+  if (angleAt(vertices[last - 2], vertices[last - 1], vertices[last]) < RETRACE_ANGLE) {
+    const index = points.indexOf(vertices[last - 1])
+    if (pathLength(points.slice(index)) < total * 0.35) end = index
+  }
+  return end - start >= 2 ? points.slice(start, end + 1) : points
 }
 
 // Cuts the tail of a stroke that runs past its start, at the point where it

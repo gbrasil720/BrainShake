@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Point } from '@/features/board/types'
 import { bounds, distance, resample, rotate } from './geometry'
-import { recognize } from './recognize'
+import { drawnStrokes } from './drawnStrokes.fixture'
+import { recognize, UNATTENDED } from './recognize'
 
 // Deterministic pseudo-random numbers, so a failing case can be reproduced.
 function random(seed: number) {
@@ -68,6 +69,10 @@ function sides(points: Point[]) {
 }
 
 describe('recognize', () => {
+  it.each(drawnStrokes)('auto-corrects a real $name', ({ kind, points }) => {
+    expect(recognize(points, UNATTENDED)?.kind).toBe(kind)
+  })
+
   it('ignores taps and tiny strokes', () => {
     expect(recognize([{ x: 0, y: 0 }])).toBeNull()
     expect(recognize(sketch(rectangle(8, 8)))).toBeNull()
