@@ -86,7 +86,7 @@ export function AppearanceSettings({
               className={`color-swatch ${accent === color ? 'active' : ''}`}
               style={{ background: color }}
               onClick={() => setAccent(color)}
-              aria-label="Choose accent color"
+              aria-label={`Choose ${color} accent color`}
             />
           ))}
           <label className="accent-picker" title="Choose custom accent color">

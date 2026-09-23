@@ -16,6 +16,7 @@ import { STORAGE_KEYS } from '@/features/board/lib/storage'
 const MIN_SIDEBAR_WIDTH = 220
 const MAX_SIDEBAR_WIDTH = 560
 const DEFAULT_SIDEBAR_WIDTH = 280
+const MOBILE_SIDEBAR_BREAKPOINT = 820
 
 function maxSidebarWidth() {
   return Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, window.innerWidth - 320))
@@ -109,9 +110,12 @@ export function Sidebar({
           <Button
             variant="ghost"
             className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={page === 'workspace'}
+            title="Workspace"
             onClick={() => {
               setPage('workspace')
-              if (window.innerWidth <= 820) setExpanded(true)
+              if (window.innerWidth <= MOBILE_SIDEBAR_BREAKPOINT) setExpanded(true)
             }}
           >
             <LayoutGrid size={15} /> <span>Workspace</span>
@@ -119,9 +123,12 @@ export function Sidebar({
           <Button
             variant="ghost"
             className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={page === 'customize'}
+            title="Customize"
             onClick={() => {
               setPage('customize')
-              if (window.innerWidth <= 820) setExpanded(true)
+              if (window.innerWidth <= MOBILE_SIDEBAR_BREAKPOINT) setExpanded(true)
             }}
           >
             <SlidersHorizontal size={15} /> <span>Customize</span>
