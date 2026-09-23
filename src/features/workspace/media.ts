@@ -81,11 +81,14 @@ export async function extractMedia(
           if (!path) {
             path = (async () => {
               const blob = await (await fetch(source)).blob()
-              const mediaType =
-                (blob.type || /^data:([^;,]+)/.exec(source)?.[1] || 'application/octet-stream')
-                  .split(';', 1)[0]
-                  .trim()
-                  .toLowerCase()
+              const mediaType = (
+                blob.type ||
+                /^data:([^;,]+)/.exec(source)?.[1] ||
+                'application/octet-stream'
+              )
+                .split(';', 1)[0]
+                .trim()
+                .toLowerCase()
               const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
               const hash = Array.from(new Uint8Array(digest), (byte) =>
                 byte.toString(16).padStart(2, '0')
