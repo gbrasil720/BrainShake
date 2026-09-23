@@ -1634,6 +1634,78 @@ a:focus-visible,
     opacity: 1;
   }
 }
+@media (min-width: 821px) and (max-width: 1100px) {
+  .app,
+  .app.sidebar-auto-hide {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .sidebar,
+  .sidebar.sidebar-auto-hide {
+    width: 220px;
+    max-width: 220px;
+    padding: 20px 12px 16px;
+  }
+  .workspace {
+    min-width: 0;
+  }
+  .toolbar {
+    left: 12px;
+    right: 12px;
+    bottom: 16px;
+    justify-content: center;
+    max-width: calc(100% - 24px);
+    overflow-x: auto;
+    transform: none;
+    scrollbar-width: thin;
+  }
+  .toolbar.dock-top {
+    top: 12px;
+    right: 12px;
+    bottom: auto;
+    left: 12px;
+    transform: none;
+  }
+  .toolbar.dock-right {
+    top: 50%;
+    right: 12px;
+    bottom: auto;
+    left: auto;
+    transform: translateY(-50%);
+  }
+  .toolbar.dock-left {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 12px;
+    transform: translateY(-50%);
+  }
+  .zoom-controls {
+    right: 16px;
+    bottom: 82px;
+  }
+  .workspace:has(.toolbar.dock-top) .floating-panel {
+    top: 76px;
+    right: 16px;
+    max-height: calc(100% - 92px);
+  }
+  .workspace:has(.toolbar.dock-right) .floating-panel {
+    top: 16px;
+    right: 76px;
+    max-width: calc(100% - 92px);
+    max-height: calc(100% - 32px);
+  }
+  .workspace:has(.toolbar.dock-left) .floating-panel {
+    top: 16px;
+    right: 16px;
+    max-height: calc(100% - 32px);
+  }
+  .workspace:has(.toolbar.dock-right) .zoom-controls {
+    right: 76px;
+  }
+  .workspace:has(.toolbar.dock-left) .zoom-controls {
+    right: 16px;
+  }
+}
 @media (max-width: 820px) {
   .url-dialog {
     top: 79px;
