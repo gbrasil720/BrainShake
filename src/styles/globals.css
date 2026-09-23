@@ -260,6 +260,7 @@ a:focus-visible,
 .nav-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   min-height: 38px;
   padding: 0 11px;
