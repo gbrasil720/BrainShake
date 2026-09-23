@@ -65,3 +65,6 @@ The build checks TypeScript before Vite bundles the app. Run `npm run typecheck`
 ## Project status
 
 BrainShake is an actively evolving browser canvas. The project is intentionally small, local-first, and easy to run, inspect, and deploy.
+
+See [the website guide](docs/website-accessibility.md) for accessibility,
+interface customization, and presentation mode details.

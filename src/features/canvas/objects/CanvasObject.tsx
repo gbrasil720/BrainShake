@@ -43,7 +43,14 @@ export function CanvasObject({
           {content}
         </WidgetFrame>
       ) : (
-        content
+        <>
+          {content}
+          {item.slide && (
+            <span className="slide-marker" aria-label="Included in presentation">
+              *
+            </span>
+          )}
+        </>
       )}
       {selected && <ResizeHandle item={item} onResize={onResize} />}
     </div>

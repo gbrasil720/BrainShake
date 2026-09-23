@@ -18,7 +18,14 @@ export function WidgetFrame({
   return (
     <div className="object-card">
       <div className="widget-titlebar" onPointerDown={(event) => onDrag(event, item)}>
-        <span>{item.name || item.title || item.type}</span>
+        <span>
+          {item.name || item.title || item.type}
+          {item.slide && (
+            <b className="slide-marker-inline" title="Included in presentation">
+              *
+            </b>
+          )}
+        </span>
         <button
           type="button"
           aria-label="Close widget"

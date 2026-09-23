@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background-color: #f4f6f2;
+  background-color: var(--canvas-custom, #f4f6f2);
   background-image: radial-gradient(#cdd5ce 1px, transparent 1px);
   background-size: 24px 24px;
 }

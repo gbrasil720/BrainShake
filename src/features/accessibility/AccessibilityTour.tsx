@@ -2,7 +2,13 @@ import type { usePreferences } from '@/features/preferences/usePreferences'
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 
-const STEPS = ['Font Size', 'High Contrast', 'Reduce Motion', 'Keyboard Navigation']
+const STEPS = [
+  'Font Size',
+  'High Contrast',
+  'Reduce Motion',
+  'Keyboard Navigation',
+  'Customize & Present'
+]
 
 export function AccessibilityTour({
   isOpen,
@@ -77,6 +83,7 @@ export function AccessibilityTour({
           {step === 1 && <ContrastStep preferences={preferences} />}
           {step === 2 && <MotionStep preferences={preferences} />}
           {step === 3 && <KeyboardStep preferences={preferences} />}
+          {step === 4 && <CustomizeStep />}
         </div>
         <div className="tour-actions">
           <button
@@ -175,6 +182,21 @@ function KeyboardStep({ preferences }: { preferences: ReturnType<typeof usePrefe
         <span>→</span>
         <kbd>Escape</kbd>
       </div>
+    </div>
+  )
+}
+
+function CustomizeStep() {
+  return (
+    <div className="tour-demo-card">
+      <p>
+        Use the Customize tab in the sidebar to change themes, accent colors, auto-hide and each
+        interface surface.
+      </p>
+      <p>
+        Mark selected objects as slides from the dock, then open Presentation mode from the header.
+        Marked widgets show an asterisk.
+      </p>
     </div>
   )
 }

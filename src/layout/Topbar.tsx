@@ -1,6 +1,6 @@
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useImportExport } from '@/features/import-export/hooks/useImportExport'
-import { Settings2, Upload } from 'lucide-react'
+import { Presentation, Settings2, Upload } from 'lucide-react'
 import { BalloonIcon } from '@/components/icons/BalloonIcon'
 import { BoardTitle } from '@/features/board/components/BoardTitle'
 import { ExportMenu } from '@/features/import-export/components/ExportMenu'
@@ -10,13 +10,15 @@ export function Topbar({
   transfer,
   onImportBoard,
   onToggleSettings,
-  onOpenTour
+  onOpenTour,
+  onOpenPresentation
 }: {
   editor: ReturnType<typeof useBoardEditor>
   transfer: ReturnType<typeof useImportExport>
   onImportBoard: () => void
   onToggleSettings: () => void
   onOpenTour: () => void
+  onOpenPresentation: () => void
 }) {
   return (
     <header className="topbar">
@@ -40,6 +42,9 @@ export function Topbar({
         </button>
         <button className="icon-button" title="Accessibility Tour" onClick={onOpenTour}>
           <BalloonIcon />
+        </button>
+        <button className="icon-button" title="Presentation mode" onClick={onOpenPresentation}>
+          <Presentation size={17} />
         </button>
         <button className="icon-button" title="Settings" onClick={onToggleSettings}>
           <Settings2 size={17} />

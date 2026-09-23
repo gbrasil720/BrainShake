@@ -20,6 +20,10 @@ export function usePreferences() {
   )
   const [dockAutoHide, setDockAutoHide] = useLocalStorage(STORAGE_KEYS.dockAutoHide, false)
   const [sidebarAutoHide, setSidebarAutoHide] = useLocalStorage(STORAGE_KEYS.sidebarAutoHide, false)
+  const [headerColor, setHeaderColor] = useLocalStorage(STORAGE_KEYS.headerColor, '')
+  const [sidebarColor, setSidebarColor] = useLocalStorage(STORAGE_KEYS.sidebarColor, '')
+  const [canvasColor, setCanvasColor] = useLocalStorage(STORAGE_KEYS.canvasColor, '')
+  const [panelColor, setPanelColor] = useLocalStorage(STORAGE_KEYS.panelColor, '')
   const [grid, setGrid] = useState(true)
   return {
     theme,
@@ -44,6 +48,14 @@ export function usePreferences() {
     setDockAutoHide,
     sidebarAutoHide,
     setSidebarAutoHide,
+    headerColor,
+    setHeaderColor,
+    sidebarColor,
+    setSidebarColor,
+    canvasColor,
+    setCanvasColor,
+    panelColor,
+    setPanelColor,
     grid,
     setGrid
   }

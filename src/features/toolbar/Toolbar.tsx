@@ -1,6 +1,16 @@
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import { useState } from 'react'
-import { BoxSelect, Hand, ImagePlus, Pencil, Redo2, StickyNote, Type, Undo2 } from 'lucide-react'
+import {
+  BoxSelect,
+  Hand,
+  ImagePlus,
+  Pencil,
+  Presentation,
+  Redo2,
+  StickyNote,
+  Type,
+  Undo2
+} from 'lucide-react'
 import { DOCK_DRAG_TYPE, DockDropZones } from './DockDropZones'
 import { ShapeMenu } from './ShapeMenu'
 import { StrokeMenu } from './StrokeMenu'
@@ -18,13 +28,15 @@ export function Toolbar({
   dockPosition,
   onDockChange,
   onImportFiles,
-  autoHide
+  autoHide,
+  onToggleSlides
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
   onImportFiles: () => void
   autoHide: boolean
+  onToggleSlides: () => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const { tool, setTool } = editor
@@ -68,6 +80,15 @@ export function Toolbar({
           }
         />
         <StrokeMenu value={editor.strokeWidth} onChange={editor.setStrokeWidth} />
+        <button
+          className={`tool-button ${editor.selected.length ? '' : 'disabled'}`}
+          title="Add or remove selected items from presentation"
+          aria-label="Add or remove selected items from presentation"
+          disabled={!editor.selected.length}
+          onClick={onToggleSlides}
+        >
+          <Presentation size={17} />
+        </button>
         <div className="toolbar-divider" />
         <button
           className="tool-button"

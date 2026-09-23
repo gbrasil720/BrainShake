@@ -15,7 +15,11 @@ export const STORAGE_KEYS = {
   enhancedFocus: 'brainshake-enhanced-focus',
   tutorialCompleted: 'brainshake-accessibility-tour-complete',
   dockAutoHide: 'brainshake-dock-auto-hide',
-  sidebarAutoHide: 'brainshake-sidebar-auto-hide'
+  sidebarAutoHide: 'brainshake-sidebar-auto-hide',
+  headerColor: 'brainshake-header-color',
+  sidebarColor: 'brainshake-sidebar-color',
+  canvasColor: 'brainshake-canvas-color',
+  panelColor: 'brainshake-panel-color'
 }
 
 export function loadBoards(): Board[] {
