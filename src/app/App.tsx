@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/hooks/useToast'
 import { Sidebar } from '@/layout/Sidebar'
@@ -28,10 +28,20 @@ export default function App() {
   const pointer = useCanvasPointer({ editor, viewport })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
-  const [showPanel, setShowPanel] = useState(true)
+  const [showPanel, setShowPanel] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
   const [presentationItemId, setPresentationItemId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 720px)')
+    const closePanelOnMobile = (event: MediaQueryListEvent) => {
+      if (event.matches) setShowPanel(false)
+    }
+    mobileQuery.addEventListener('change', closePanelOnMobile)
+    return () => mobileQuery.removeEventListener('change', closePanelOnMobile)
+  }, [])
+
   const fileRef = useRef<HTMLInputElement>(null)
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
