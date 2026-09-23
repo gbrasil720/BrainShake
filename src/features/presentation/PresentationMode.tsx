@@ -11,10 +11,7 @@ function computeTargetViewport(
   container: { w: number; h: number },
   padding = 80
 ) {
-  const zoom = Math.min(
-    (container.w - padding * 2) / item.w,
-    (container.h - padding * 2) / item.h
-  )
+  const zoom = Math.min((container.w - padding * 2) / item.w, (container.h - padding * 2) / item.h)
   const targetZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom))
   return {
     zoom: targetZoom,
@@ -63,12 +60,28 @@ export function PresentationMode({
     const rect = viewport.canvasRef.current?.getBoundingClientRect()
     if (!rect) return
     const target = computeTargetViewport(
-      { id: currentId, type: 'presentation', x: currentX, y: currentY, w: currentWidth, h: currentHeight },
+      {
+        id: currentId,
+        type: 'presentation',
+        x: currentX,
+        y: currentY,
+        w: currentWidth,
+        h: currentHeight
+      },
       { w: rect.width, h: rect.height }
     )
     viewport.setZoom(target.zoom)
     viewport.setPan(target.pan)
-  }, [currentHeight, currentId, currentWidth, currentX, currentY, index, onActiveItemChange, viewport])
+  }, [
+    currentHeight,
+    currentId,
+    currentWidth,
+    currentX,
+    currentY,
+    index,
+    onActiveItemChange,
+    viewport
+  ])
 
   return (
     <header className="presentation-toolbar" aria-label="Presentation controls">
@@ -76,35 +89,35 @@ export function PresentationMode({
         Presentation · {slides.length ? `${index + 1} / ${slides.length}` : 'No slides'}
       </strong>
       <div className="presentation-actions">
-          <Button
-            variant="ghost"
-            className="icon-button"
-            disabled={index === 0}
-            title="Previous slide"
-            aria-label="Previous slide"
-            onClick={() => setIndex((value) => Math.max(value - 1, 0))}
-          >
-            <ChevronLeft size={20} />
-          </Button>
-          <Button
-            variant="ghost"
-            className="icon-button"
-            disabled={!current || index === slides.length - 1}
-            title="Next slide"
-            aria-label="Next slide"
-            onClick={() => setIndex((value) => Math.min(value + 1, slides.length - 1))}
-          >
-            <ChevronRight size={20} />
-          </Button>
-          <Button
-            variant="ghost"
-            className="icon-button"
-            title="Close presentation"
-            aria-label="Close presentation"
-            onClick={onClose}
-          >
-            <X size={17} />
-          </Button>
+        <Button
+          variant="ghost"
+          className="icon-button"
+          disabled={index === 0}
+          title="Previous slide"
+          aria-label="Previous slide"
+          onClick={() => setIndex((value) => Math.max(value - 1, 0))}
+        >
+          <ChevronLeft size={20} />
+        </Button>
+        <Button
+          variant="ghost"
+          className="icon-button"
+          disabled={!current || index === slides.length - 1}
+          title="Next slide"
+          aria-label="Next slide"
+          onClick={() => setIndex((value) => Math.min(value + 1, slides.length - 1))}
+        >
+          <ChevronRight size={20} />
+        </Button>
+        <Button
+          variant="ghost"
+          className="icon-button"
+          title="Close presentation"
+          aria-label="Close presentation"
+          onClick={onClose}
+        >
+          <X size={17} />
+        </Button>
       </div>
     </header>
   )
@@ -151,4 +164,3 @@ function byClickOrder(left: CanvasItem, right: CanvasItem) {
     (left.slideOrder ?? Number.MAX_SAFE_INTEGER) - (right.slideOrder ?? Number.MAX_SAFE_INTEGER)
   )
 }
-
