@@ -40,6 +40,40 @@ function NumberPair({
   )
 }
 
+function HexColorControl({
+  value,
+  fallback,
+  label,
+  onChange
+}: {
+  value?: string
+  fallback: string
+  label: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div className="property-color-control">
+      <input
+        type="color"
+        value={value || fallback}
+        aria-label={label}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <Input
+        className="property-color-hex"
+        value={value || ''}
+        placeholder="#HEX"
+        pattern="^#[0-9a-fA-F]{6}$"
+        aria-label={label}
+        onChange={(event) => {
+          const nextValue = event.target.value
+          if (/^#[0-9a-fA-F]{0,6}$/.test(nextValue)) onChange(nextValue)
+        }}
+      />
+    </div>
+  )
+}
+
 export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChange: OnChange }) {
   if (!item || !isCanvasItem(item))
     return (
@@ -105,6 +139,28 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
               </SelectContent>
             </Select>
           )}
+        </div>
+      )}
+      {(item.type === 'shape' || item.type === 'sticky') && (
+        <div className="panel-row">
+          <span>Fill HEX</span>
+          <HexColorControl
+            value={item.fillColor}
+            fallback={item.type === 'sticky' ? '#fff0ad' : '#d86e50'}
+            label="Fill HEX color"
+            onChange={(fillColor) => onChange(item.id, { fillColor })}
+          />
+        </div>
+      )}
+      {item.type === 'stroke' && (
+        <div className="panel-row">
+          <span>Stroke HEX</span>
+          <HexColorControl
+            value={item.strokeColor}
+            fallback="#536b5d"
+            label="Stroke HEX color"
+            onChange={(strokeColor) => onChange(item.id, { strokeColor })}
+          />
         </div>
       )}
       <Button

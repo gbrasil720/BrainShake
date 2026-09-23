@@ -5,9 +5,7 @@ import {
   BoxSelect,
   Hand,
   ImagePlus,
-  Palette,
   Pencil,
-  PaintBucket,
   Presentation,
   Redo2,
   StickyNote,
@@ -23,8 +21,7 @@ const TOOLS = [
   { id: 'hand', icon: Hand, label: 'Pan canvas (H)' },
   { id: 'text', icon: Type, label: 'Text (T)' },
   { id: 'sticky', icon: StickyNote, label: 'Sticky note (N)' },
-  { id: 'pen', icon: Pencil, label: 'Pen (P)' },
-  { id: 'fill', icon: PaintBucket, label: 'Bucket fill' }
+  { id: 'pen', icon: Pencil, label: 'Pen (P)' }
 ]
 
 export function Toolbar({
@@ -32,21 +29,13 @@ export function Toolbar({
   dockPosition,
   onDockChange,
   onImportFiles,
-  onToggleSlides,
-  fillColor,
-  strokeColor,
-  onFillColorChange,
-  onStrokeColorChange
+  onToggleSlides
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
   onImportFiles: () => void
   onToggleSlides: () => void
-  fillColor: string
-  strokeColor: string
-  onFillColorChange: (color: string) => void
-  onStrokeColorChange: (color: string) => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
@@ -102,24 +91,6 @@ export function Toolbar({
           open={openMenu === 'stroke'}
           onOpenChange={(open) => setOpenMenu(open ? 'stroke' : null)}
         />
-        <label className="dock-color-picker" title="Stroke color">
-          <Palette size={15} />
-          <input
-            type="color"
-            value={strokeColor}
-            aria-label="Stroke color"
-            onChange={(event) => onStrokeColorChange(event.target.value)}
-          />
-        </label>
-        <label className="dock-color-picker" title="Bucket fill color">
-          <PaintBucket size={15} />
-          <input
-            type="color"
-            value={fillColor}
-            aria-label="Bucket fill color"
-            onChange={(event) => onFillColorChange(event.target.value)}
-          />
-        </label>
         <Button
           variant="ghost"
           className={`tool-button ${editor.selected.length ? '' : 'disabled'}`}

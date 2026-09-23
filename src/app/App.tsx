@@ -25,12 +25,7 @@ export default function App() {
   const preferences = usePreferences()
   const viewport = useViewport()
   const editor = useBoardEditor({ viewport, showToast })
-  const pointer = useCanvasPointer({
-    editor,
-    viewport,
-    fillColor: preferences.fillColor,
-    strokeColor: preferences.strokeColor
-  })
+  const pointer = useCanvasPointer({ editor, viewport })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
   const [showPanel, setShowPanel] = useState(true)
@@ -46,22 +41,6 @@ export default function App() {
   const panelVisible = preferences.propertiesAutoHide
     ? Boolean(selectionKey) && dismissedPanelSelection !== selectionKey
     : showPanel
-
-  const applyFillColor = (color: string) => {
-    preferences.setFillColor(color)
-    board.objects
-      .filter(
-        (item) => selected.includes(item.id) && (item.type === 'shape' || item.type === 'sticky')
-      )
-      .forEach((item) => editor.updateObject(item.id, { fillColor: color }, false))
-  }
-
-  const applyStrokeColor = (color: string) => {
-    preferences.setStrokeColor(color)
-    board.objects
-      .filter((item) => selected.includes(item.id) && item.type === 'stroke')
-      .forEach((item) => editor.updateObject(item.id, { strokeColor: color }, false))
-  }
 
   const toggleSlides = () => {
     const selectedItems = board.objects.filter((item) => selected.includes(item.id))
@@ -156,10 +135,6 @@ export default function App() {
             onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
             onImportFiles={openFilePicker}
-            fillColor={preferences.fillColor}
-            strokeColor={preferences.strokeColor}
-            onFillColorChange={applyFillColor}
-            onStrokeColorChange={applyStrokeColor}
           />
           <ZoomControls
             zoom={viewport.zoom}
