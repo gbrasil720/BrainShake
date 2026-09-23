@@ -1830,8 +1830,23 @@ a:focus-visible,
     padding: 5px;
   }
   .tool-button {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (hover: none) and (pointer: coarse) {
+  .icon-button,
+  .tool-button {
+    width: 44px;
+    height: 44px;
+  }
+  .toolbar {
+    gap: 6px;
+    padding: 8px;
+  }
+  .zoom-controls {
+    padding: 6px;
+    gap: 6px;
   }
 }
 @media (hover: none) {
