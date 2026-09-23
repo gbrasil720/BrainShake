@@ -1,34 +1,8 @@
-import { useMemo, useState } from 'react'
-import { Check, ChevronLeft, ChevronRight, MoveRight, Sparkles, X } from 'lucide-react'
 import type { usePreferences } from '@/features/preferences/usePreferences'
+import { useEffect, useRef, useState } from 'react'
+import { X } from 'lucide-react'
 
-const TOUR_STEPS = [
-  {
-    id: 'font',
-    title: 'Font Size',
-    description: 'Resize BrainShake text and interface controls without breaking the layout.'
-  },
-  {
-    id: 'contrast',
-    title: 'High Contrast',
-    description: 'Increase separation between text, panels, controls, and focus states.'
-  },
-  {
-    id: 'color',
-    title: 'Color Vision',
-    description: 'Use simulation modes while keeping status information clear with text and icons.'
-  },
-  {
-    id: 'motion',
-    title: 'Reduce Motion',
-    description: 'Minimize animation and transitions while preserving essential feedback.'
-  },
-  {
-    id: 'keyboard',
-    title: 'Keyboard Navigation',
-    description: 'Use Tab, Enter, and Escape to move, activate, and close interface overlays.'
-  }
-] as const
+const STEPS = ['Font Size', 'High Contrast', 'Color Vision', 'Reduce Motion', 'Keyboard Navigation']
 
 export function AccessibilityTour({
   isOpen,
@@ -39,200 +13,191 @@ export function AccessibilityTour({
   preferences: ReturnType<typeof usePreferences>
   onClose: () => void
 }) {
-  if (!isOpen) return null
+  const [step, setStep] = useState(0)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
-  return <AccessibilityTourContent preferences={preferences} onClose={onClose} />
-}
-
-function AccessibilityTourContent({
-  preferences,
-  onClose
-}: {
-  preferences: ReturnType<typeof usePreferences>
-  onClose: () => void
-}) {
-  const [stepIndex, setStepIndex] = useState(0)
-  const { setTutorialCompleted } = preferences
-
-  const currentStep = TOUR_STEPS[stepIndex]
-  const progress = useMemo(() => ((stepIndex + 1) / TOUR_STEPS.length) * 100, [stepIndex])
-
-  function nextStep() {
-    if (stepIndex === TOUR_STEPS.length - 1) {
-      setTutorialCompleted(true)
-      onClose()
-      return
+  useEffect(() => {
+    if (!isOpen) return
+    dialogRef.current?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+      if (event.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>('button, select, input')
+        if (!focusable?.length) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
+      }
     }
-    setStepIndex((index) => index + 1)
-  }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isOpen, onClose])
 
-  function previousStep() {
-    setStepIndex((index) => Math.max(index - 1, 0))
-  }
-
-  function finishTour() {
-    setTutorialCompleted(true)
-    onClose()
-  }
+  if (!isOpen) return null
+  const isLast = step === STEPS.length - 1
 
   return (
-    <div className="tour-backdrop" role="dialog" aria-modal="true" aria-label="Accessibility tour">
-      <div className="tour-panel" onClick={(event) => event.stopPropagation()}>
-        <div className="tour-panel-header">
+    <div
+      className="tour-backdrop"
+      role="presentation"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div
+        className="tour-dialog"
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tour-title"
+      >
+        <div className="tour-heading">
           <div>
-            <div className="tour-kicker">Accessibility</div>
-            <div className="tour-title">
-              {currentStep.title} · {stepIndex + 1}/{TOUR_STEPS.length}
-            </div>
+            <span className="tour-progress">
+              Accessibility · {step + 1} / {STEPS.length}
+            </span>
+            <h2 id="tour-title">{STEPS[step]}</h2>
           </div>
-          <button className="icon-button" title="Close accessibility tour" onClick={onClose}>
-            <X size={14} />
+          <button
+            className="icon-button"
+            title="Close accessibility tour"
+            aria-label="Close accessibility tour"
+            onClick={onClose}
+          >
+            <X size={16} />
           </button>
         </div>
-
-        <div className="tour-progress">
-          <span style={{ width: `${progress}%` }} />
+        <div className="tour-content">
+          {step === 0 && <FontStep preferences={preferences} />}
+          {step === 1 && <ContrastStep preferences={preferences} />}
+          {step === 2 && <ColorStep preferences={preferences} />}
+          {step === 3 && <MotionStep preferences={preferences} />}
+          {step === 4 && <KeyboardStep preferences={preferences} />}
         </div>
-
-        <div className="tour-demo">
-          {currentStep.id === 'font' && (
-            <div className="tour-demo-card">
-              <div className="tour-demo-toolbar">
-                <button
-                  className="tour-mini-button"
-                  onClick={() => preferences.setFontSize('small')}
-                >
-                  A−
-                </button>
-                <button
-                  className="tour-mini-button active"
-                  onClick={() => preferences.setFontSize('default')}
-                >
-                  Default
-                </button>
-                <button
-                  className="tour-mini-button"
-                  onClick={() => preferences.setFontSize('large')}
-                >
-                  A+
-                </button>
-              </div>
-              <div className="tour-font-sample">
-                <strong>BrainShake</strong>
-                <span>
-                  {preferences.fontSize === 'default' ? 'Default view' : preferences.fontSize}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {currentStep.id === 'contrast' && (
-            <div className="tour-demo-state">
-              <div className={`tour-demo-card ${preferences.highContrast ? 'high-contrast' : ''}`}>
-                <span className="tour-demo-label">Before</span>
-                <div className="tour-status-row">
-                  <span className="tour-state">✓ Ready</span>
-                  <span className="tour-state ghost">Needs review</span>
-                </div>
-              </div>
-              <div className="tour-demo-toggle">
-                <button
-                  className="segmented-toggle on"
-                  onClick={() => preferences.setHighContrast((value) => !value)}
-                >
-                  {preferences.highContrast ? 'High Contrast On' : 'Turn on contrast'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {currentStep.id === 'color' && (
-            <div className="tour-demo-card color-demo">
-              <span className="tour-demo-label">Status cues</span>
-              <div className="tour-status-row">
-                <span className="tour-state success">
-                  <Check size={12} /> Success
-                </span>
-                <span className="tour-state warning">
-                  <Sparkles size={12} /> Warning
-                </span>
-                <span className="tour-state danger">
-                  <X size={12} /> Error
-                </span>
-              </div>
-              <div className="tour-color-select">
-                <label>
-                  Mode
-                  <select
-                    className="menu-select"
-                    value={preferences.colorVision}
-                    onChange={(event) => preferences.setColorVision(event.target.value)}
-                  >
-                    <option value="none">None</option>
-                    <option value="protanopia">Protanopia</option>
-                    <option value="deuteranopia">Deuteranopia</option>
-                    <option value="tritanopia">Tritanopia</option>
-                    <option value="achromatopsia">Achromatopsia</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {currentStep.id === 'motion' && (
-            <div className="tour-demo-card motion-demo">
-              <span className="tour-demo-label">Motion</span>
-              <button
-                className={`segmented-toggle ${preferences.reduceMotion ? 'on' : ''}`}
-                onClick={() => preferences.setReduceMotion((value) => !value)}
-              >
-                {preferences.reduceMotion ? 'Reduce motion on' : 'Reduce motion off'}
-              </button>
-              <div className={`pulse-demo ${preferences.reduceMotion ? 'reduced' : ''}`} />
-            </div>
-          )}
-
-          {currentStep.id === 'keyboard' && (
-            <div className="tour-demo-card keyboard-demo">
-              <span className="tour-demo-label">Keyboard flow</span>
-              <div className="tour-key-list">
-                <button className="tour-key" aria-label="Tab button">
-                  Tab
-                </button>
-                <MoveRight size={14} />
-                <button className="tour-key" aria-label="Enter button">
-                  Enter
-                </button>
-                <MoveRight size={14} />
-                <button className="tour-key" aria-label="Escape button">
-                  Esc
-                </button>
-              </div>
-              <div className="tour-helper">
-                Focus moves logically, opens actions, and closes overlays with Escape.
-              </div>
-            </div>
-          )}
-        </div>
-
-        <p className="tour-copy">{currentStep.description}</p>
-
         <div className="tour-actions">
           <button
-            className="dialog-button secondary"
-            onClick={previousStep}
-            disabled={stepIndex === 0}
+            className="nav-item"
+            disabled={step === 0}
+            onClick={() => setStep((value) => value - 1)}
           >
-            <ChevronLeft size={14} /> Back
+            Back
           </button>
           <button
-            className="dialog-button primary"
-            onClick={stepIndex === TOUR_STEPS.length - 1 ? finishTour : nextStep}
+            className="nav-item active"
+            onClick={() =>
+              isLast
+                ? (preferences.setTutorialCompleted(true), onClose())
+                : setStep((value) => value + 1)
+            }
           >
-            {stepIndex === TOUR_STEPS.length - 1 ? 'Finish' : 'Next'}
-            {stepIndex !== TOUR_STEPS.length - 1 && <ChevronRight size={14} />}
+            {isLast ? 'Finish' : 'Next'}
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function FontStep({ preferences }: { preferences: ReturnType<typeof usePreferences> }) {
+  return (
+    <div className="tour-demo-card">
+      <p>Adjust the text scale and see the interface respond immediately.</p>
+      <div className="tour-font-actions">
+        <button className="nav-item" onClick={() => preferences.setFontSize('small')}>
+          A−
+        </button>
+        <button className="nav-item active" onClick={() => preferences.setFontSize('default')}>
+          Default
+        </button>
+        <button className="nav-item" onClick={() => preferences.setFontSize('large')}>
+          A+
+        </button>
+      </div>
+      <strong className="tour-sample-text">Readable workspace text</strong>
+    </div>
+  )
+}
+
+function ContrastStep({ preferences }: { preferences: ReturnType<typeof usePreferences> }) {
+  return (
+    <div className="tour-demo-card">
+      <p>Increase separation between surfaces, borders and text.</p>
+      <button
+        className="segmented-toggle"
+        aria-pressed={preferences.highContrast}
+        onClick={() => preferences.setHighContrast((value) => !value)}
+      >
+        {preferences.highContrast ? 'High contrast on' : 'Turn on high contrast'}
+      </button>
+      <div className="tour-contrast-sample">
+        <span>Selected item</span>
+        <span>Secondary label</span>
+      </div>
+    </div>
+  )
+}
+
+function ColorStep({ preferences }: { preferences: ReturnType<typeof usePreferences> }) {
+  return (
+    <div className="tour-demo-card">
+      <p>Color filters preview common color-vision differences. Labels keep meaning clear.</p>
+      <select
+        className="menu-select"
+        value={preferences.colorVision}
+        onChange={(event) => preferences.setColorVision(event.target.value)}
+      >
+        <option value="none">Off</option>
+        <option value="protanopia">Protanopia</option>
+        <option value="deuteranopia">Deuteranopia</option>
+        <option value="tritanopia">Tritanopia</option>
+        <option value="achromatopsia">Achromatopsia</option>
+      </select>
+      <div className="status-samples">
+        <span className="status-sample success">✓ Saved</span>
+        <span className="status-sample danger">! Error</span>
+      </div>
+    </div>
+  )
+}
+
+function MotionStep({ preferences }: { preferences: ReturnType<typeof usePreferences> }) {
+  return (
+    <div className="tour-demo-card">
+      <p>Reduce Motion keeps feedback visible while removing distracting movement.</p>
+      <button
+        className="segmented-toggle"
+        aria-pressed={preferences.reduceMotion}
+        onClick={() => preferences.setReduceMotion((value) => !value)}
+      >
+        {preferences.reduceMotion ? 'Reduce motion on' : 'Reduce motion off'}
+      </button>
+      <div className={`tour-motion-sample ${preferences.reduceMotion ? 'reduced' : ''}`} />
+    </div>
+  )
+}
+
+function KeyboardStep({ preferences }: { preferences: ReturnType<typeof usePreferences> }) {
+  return (
+    <div className="tour-demo-card">
+      <p>Use Tab to reach controls, Enter to activate them and Escape to leave an overlay.</p>
+      <button
+        className="segmented-toggle"
+        aria-pressed={preferences.keyboardNavigation}
+        onClick={() => preferences.setKeyboardNavigation((value) => !value)}
+      >
+        {preferences.keyboardNavigation ? 'Keyboard navigation on' : 'Keyboard navigation off'}
+      </button>
+      <div className="tour-keyboard-hint">
+        <kbd>Tab</kbd>
+        <span>→</span>
+        <kbd>Enter</kbd>
+        <span>→</span>
+        <kbd>Escape</kbd>
       </div>
     </div>
   )

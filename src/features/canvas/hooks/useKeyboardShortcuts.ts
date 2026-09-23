@@ -14,7 +14,9 @@ export function useKeyboardShortcuts({
   paste,
   remove,
   cancel,
-  setTool
+  setTool,
+  enabled,
+  vimBindings
 }: {
   undo: () => void
   redo: () => void
@@ -24,9 +26,12 @@ export function useKeyboardShortcuts({
   remove: () => void
   cancel: () => void
   setTool: (tool: string) => void
+  enabled: boolean
+  vimBindings: boolean
 }) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (!enabled) return
       const typing = isTyping()
       const mod = event.metaKey || event.ctrlKey
       const key = event.key.toLowerCase()
@@ -54,10 +59,12 @@ export function useKeyboardShortcuts({
       if (typing) return
       if (event.key === 'Delete' || event.key === 'Backspace') remove()
       if (event.key === 'Escape') cancel()
-      const shortcut = (TOOL_SHORTCUTS as Record<string, string | undefined>)[key]
+      const shortcut = vimBindings
+        ? ({ h: 'hand', v: 'select', t: 'text', n: 'sticky', p: 'pen' }[key] as string | undefined)
+        : (TOOL_SHORTCUTS as Record<string, string | undefined>)[key]
       if (shortcut) setTool(shortcut)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  })
+  }, [cancel, copy, enabled, paste, redo, remove, selectAll, setTool, undo, vimBindings])
 }

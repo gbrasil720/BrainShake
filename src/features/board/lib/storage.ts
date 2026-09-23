@@ -7,14 +7,15 @@ export const STORAGE_KEYS = {
   theme: 'brainshake-theme',
   accent: 'brainshake-accent',
   dock: 'brainshake-dock',
+  clipboard: 'brainshake-copy',
   fontSize: 'brainshake-font-size',
   highContrast: 'brainshake-high-contrast',
   colorVision: 'brainshake-color-vision',
   reduceMotion: 'brainshake-reduce-motion',
   keyboardNavigation: 'brainshake-keyboard-navigation',
   enhancedFocus: 'brainshake-enhanced-focus',
-  tutorialCompleted: 'brainshake-accessibility-tour-complete',
-  clipboard: 'brainshake-copy'
+  vimBindings: 'brainshake-vim-bindings',
+  tutorialCompleted: 'brainshake-accessibility-tour-complete'
 }
 
 export function loadBoards(): Board[] {

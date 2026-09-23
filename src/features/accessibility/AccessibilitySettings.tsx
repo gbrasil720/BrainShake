@@ -1,222 +1,160 @@
-import type { ReactNode } from 'react'
 import type { usePreferences } from '@/features/preferences/usePreferences'
-import { Accessibility, Eye, Keyboard, MousePointerClick, Sparkles, Type } from 'lucide-react'
-import {
-  COLOR_VISION_OPTIONS,
-  FONT_SIZE_OPTIONS,
-  getFontScale,
-  normalizeColorVisionMode
-} from './accessibility'
+import { Minus, Plus, RotateCcw } from 'lucide-react'
+import { FONT_SIZES, normalizeColorVision, normalizeFontSize } from './accessibility'
 
-const FONT_LABELS: Record<string, string> = {
+const fontLabels = {
   small: 'Small',
   default: 'Default',
   large: 'Large',
   'extra-large': 'Extra Large'
-}
-
-const COLOR_VISION_LABELS: Record<string, string> = {
-  none: 'None',
-  protanopia: 'Protanopia',
-  deuteranopia: 'Deuteranopia',
-  tritanopia: 'Tritanopia',
-  achromatopsia: 'Achromatopsia'
-}
-
-function SettingGroup({
-  title,
-  icon: Icon,
-  children
-}: {
-  title: string
-  icon: typeof Type
-  children: ReactNode
-}) {
-  return (
-    <div className="accessibility-group">
-      <div className="accessibility-group-label">
-        <Icon size={12} />
-        <span>{title}</span>
-      </div>
-      {children}
-    </div>
-  )
-}
+} as const
 
 export function AccessibilitySettings({
   preferences,
-  onOpenAccessibilityTour
+  onOpenTour
 }: {
   preferences: ReturnType<typeof usePreferences>
-  onOpenAccessibilityTour: () => void
+  onOpenTour: () => void
 }) {
-  const {
-    fontSize,
-    setFontSize,
-    highContrast,
-    setHighContrast,
-    colorVision,
-    setColorVision,
-    reduceMotion,
-    setReduceMotion,
-    keyboardNavigation,
-    setKeyboardNavigation,
-    enhancedFocus,
-    setEnhancedFocus,
-    tutorialCompleted
-  } = preferences
-
-  const currentScale = getFontScale(fontSize)
-  const fontOrder = [...FONT_SIZE_OPTIONS]
-  const currentIndex = fontOrder.indexOf(fontSize as (typeof FONT_SIZE_OPTIONS)[number])
-  const decrementFontSize = () => {
-    const nextIndex = Math.max(currentIndex - 1, 0)
-    setFontSize(fontOrder[nextIndex])
-  }
-  const incrementFontSize = () => {
-    const nextIndex = Math.min(currentIndex + 1, fontOrder.length - 1)
-    setFontSize(fontOrder[nextIndex])
-  }
+  const fontSize = normalizeFontSize(preferences.fontSize)
+  const fontIndex = FONT_SIZES.indexOf(fontSize)
+  const setFontAt = (index: number) => preferences.setFontSize(FONT_SIZES[index])
 
   return (
-    <div className="accessibility-settings">
-      <div className="panel-section">
-        <div className="panel-section-title">
-          <Accessibility size={12} />
-          <span>Accessibility</span>
-        </div>
-        <div className="accessibility-group">
-          <div className="accessibility-group-label">
-            <Type size={12} />
-            <span>Text</span>
-          </div>
-          <div className="font-size-controls">
-            <button
-              type="button"
-              className="font-stepper"
-              onClick={decrementFontSize}
-              aria-label="Decrease font size"
-            >
-              A−
-            </button>
-            <div className="font-size-indicator" aria-live="polite">
-              {FONT_LABELS[fontSize] ?? 'Default'}
-            </div>
-            <button
-              type="button"
-              className="font-stepper"
-              onClick={incrementFontSize}
-              aria-label="Increase font size"
-            >
-              A+
-            </button>
-            <button type="button" className="font-reset" onClick={() => setFontSize('default')}>
-              Reset
-            </button>
-          </div>
-          <div className="accessibility-description">
-            Scale: {currentScale.toFixed(2)}× · Text, labels, and controls resize together.
-          </div>
-        </div>
-
-        <SettingGroup title="Visual" icon={Sparkles}>
-          <div className="accessibility-option">
-            <div>
-              <strong>High Contrast</strong>
-              <small>Increase visual contrast between interface elements and text.</small>
-            </div>
-            <button
-              type="button"
-              className={`segmented-toggle ${highContrast ? 'on' : ''}`}
-              onClick={() => setHighContrast((value) => !value)}
-              aria-pressed={highContrast}
-            >
-              {highContrast ? 'On' : 'Off'}
-            </button>
-          </div>
-
-          <div className="accessibility-option stacked">
-            <div>
-              <strong>Color Vision</strong>
-              <small>Adjust for protanopia, deuteranopia, tritanopia, or achromatopsia.</small>
-            </div>
-            <select
-              className="menu-select accessibility-select"
-              value={normalizeColorVisionMode(colorVision)}
-              onChange={(event) => setColorVision(normalizeColorVisionMode(event.target.value))}
-            >
-              {COLOR_VISION_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {COLOR_VISION_LABELS[option]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="accessibility-option">
-            <div>
-              <strong>Reduce Motion</strong>
-              <small>Limit animation, transforms, and transition intensity.</small>
-            </div>
-            <button
-              type="button"
-              className={`segmented-toggle ${reduceMotion ? 'on' : ''}`}
-              onClick={() => setReduceMotion((value) => !value)}
-              aria-pressed={reduceMotion}
-            >
-              {reduceMotion ? 'On' : 'Off'}
-            </button>
-          </div>
-        </SettingGroup>
-
-        <SettingGroup title="Navigation" icon={Keyboard}>
-          <div className="accessibility-option">
-            <div>
-              <strong>Keyboard Navigation</strong>
-              <small>Keep focus order logical and controls usable without a mouse.</small>
-            </div>
-            <button
-              type="button"
-              className={`segmented-toggle ${keyboardNavigation ? 'on' : ''}`}
-              onClick={() => setKeyboardNavigation((value) => !value)}
-              aria-pressed={keyboardNavigation}
-            >
-              {keyboardNavigation ? 'On' : 'Off'}
-            </button>
-          </div>
-
-          <div className="accessibility-option">
-            <div>
-              <strong>Enhanced Focus</strong>
-              <small>Use stronger focus states and clearer keyboard cues.</small>
-            </div>
-            <button
-              type="button"
-              className={`segmented-toggle ${enhancedFocus ? 'on' : ''}`}
-              onClick={() => setEnhancedFocus((value) => !value)}
-              aria-pressed={enhancedFocus}
-            >
-              {enhancedFocus ? 'On' : 'Off'}
-            </button>
-          </div>
-        </SettingGroup>
-      </div>
-
-      <div className="accessibility-actions">
-        <button className="nav-item accessibility-tour-button" onClick={onOpenAccessibilityTour}>
-          <Eye size={14} />
-          <span>Learn about accessibility</span>
+    <section className="accessibility-settings" aria-labelledby="accessibility-heading">
+      <div className="settings-section-heading">
+        <h2 id="accessibility-heading">Accessibility</h2>
+        <button className="text-button" onClick={onOpenTour}>
+          Accessibility Tour
         </button>
-        {tutorialCompleted && (
-          <button
-            className="nav-item accessibility-tour-button alt"
-            onClick={onOpenAccessibilityTour}
-          >
-            <MousePointerClick size={14} />
-            <span>Replay Tutorial</span>
-          </button>
-        )}
       </div>
+      <div className="settings-group">
+        <p className="settings-group-label">Text</p>
+        <div className="accessibility-row">
+          <div>
+            <strong>Font Size</strong>
+            <span>Adjust text across the workspace.</span>
+          </div>
+          <div className="font-size-control">
+            <button
+              className="icon-button"
+              title="Decrease font size"
+              aria-label="Decrease font size"
+              disabled={fontIndex === 0}
+              onClick={() => setFontAt(fontIndex - 1)}
+            >
+              <Minus size={14} />
+            </button>
+            <span aria-live="polite">{fontLabels[fontSize]}</span>
+            <button
+              className="icon-button"
+              title="Increase font size"
+              aria-label="Increase font size"
+              disabled={fontIndex === FONT_SIZES.length - 1}
+              onClick={() => setFontAt(fontIndex + 1)}
+            >
+              <Plus size={14} />
+            </button>
+            <button
+              className="icon-button"
+              title="Reset font size"
+              aria-label="Reset font size"
+              onClick={() => preferences.setFontSize('default')}
+            >
+              <RotateCcw size={13} />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="settings-group">
+        <p className="settings-group-label">Visual</p>
+        <ToggleRow
+          label="High Contrast"
+          description="Increase contrast between text and surfaces."
+          value={preferences.highContrast}
+          onChange={() => preferences.setHighContrast((value) => !value)}
+        />
+        <div className="accessibility-row">
+          <div>
+            <strong>Color Vision</strong>
+            <span>Preview color differences more clearly.</span>
+          </div>
+          <select
+            className="menu-select"
+            aria-label="Color vision mode"
+            value={normalizeColorVision(preferences.colorVision)}
+            onChange={(event) =>
+              preferences.setColorVision(normalizeColorVision(event.target.value))
+            }
+          >
+            <option value="none">Off</option>
+            <option value="protanopia">Protanopia</option>
+            <option value="deuteranopia">Deuteranopia</option>
+            <option value="tritanopia">Tritanopia</option>
+            <option value="achromatopsia">Achromatopsia</option>
+          </select>
+        </div>
+        <ToggleRow
+          label="Reduce Motion"
+          description="Reduce animation and transition intensity."
+          value={preferences.reduceMotion}
+          onChange={() => preferences.setReduceMotion((value) => !value)}
+        />
+      </div>
+      <div className="settings-group">
+        <p className="settings-group-label">Navigation</p>
+        <ToggleRow
+          label="Keyboard Navigation"
+          description="Enable keyboard shortcuts and tool switching."
+          value={preferences.keyboardNavigation}
+          onChange={() => preferences.setKeyboardNavigation((value) => !value)}
+        />
+        <ToggleRow
+          label="Enhanced Focus"
+          description="Make the active keyboard focus easier to see."
+          value={preferences.enhancedFocus}
+          onChange={() => preferences.setEnhancedFocus((value) => !value)}
+        />
+        <ToggleRow
+          label="Vim Bindings"
+          description="Use H, J, K and L style navigation where available."
+          value={preferences.vimBindings}
+          onChange={() => preferences.setVimBindings((value) => !value)}
+        />
+      </div>
+      {preferences.tutorialCompleted && (
+        <button className="accessibility-tour-link" onClick={onOpenTour}>
+          Replay Tutorial
+        </button>
+      )}
+    </section>
+  )
+}
+
+function ToggleRow({
+  label,
+  description,
+  value,
+  onChange
+}: {
+  label: string
+  description: string
+  value: boolean
+  onChange: () => void
+}) {
+  return (
+    <div className="accessibility-row">
+      <div>
+        <strong>{label}</strong>
+        <span>{description}</span>
+      </div>
+      <button
+        className={`segmented-toggle ${value ? 'on' : ''}`}
+        aria-pressed={value}
+        onClick={onChange}
+      >
+        {value ? 'On' : 'Off'}
+      </button>
     </div>
   )
 }

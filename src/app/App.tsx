@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/hooks/useToast'
 import { Sidebar } from '@/layout/Sidebar'
@@ -11,19 +11,13 @@ import { ZoomControls } from '@/features/canvas/components/ZoomControls'
 import { useCanvasPointer } from '@/features/canvas/hooks/useCanvasPointer'
 import { useKeyboardShortcuts } from '@/features/canvas/hooks/useKeyboardShortcuts'
 import { useViewport } from '@/features/canvas/hooks/useViewport'
-import { AccessibilityTour } from '@/features/accessibility/AccessibilityTour'
 import { ImageUrlDialog } from '@/features/import-export/components/ImageUrlDialog'
 import { useImportExport } from '@/features/import-export/hooks/useImportExport'
 import { usePreferences } from '@/features/preferences/usePreferences'
 import { PropertiesPanel } from '@/features/properties/PropertiesPanel'
 import { Toolbar } from '@/features/toolbar/Toolbar'
-
-const FONT_SCALE = {
-  small: 0.92,
-  default: 1,
-  large: 1.12,
-  'extra-large': 1.24
-} as const
+import { normalizeColorVision, normalizeFontSize } from '@/features/accessibility/accessibility'
+import { AccessibilityTour } from '@/features/accessibility/AccessibilityTour'
 
 export default function App() {
   const [toast, showToast] = useToast()
@@ -52,44 +46,18 @@ export default function App() {
       editor.setTool('select')
       setContext(null)
     },
-    setTool: editor.setTool
+    setTool: editor.setTool,
+    enabled: preferences.keyboardNavigation,
+    vimBindings: preferences.vimBindings
   })
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== 'Escape') return
-      if (tourOpen) {
-        setTourOpen(false)
-        return
-      }
-      if (transfer.urlOpen) {
-        transfer.closeUrlDialog()
-        return
-      }
-      if (context) {
-        setContext(null)
-        return
-      }
-      if (showPanel) {
-        setShowPanel(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [context, showPanel, tourOpen, transfer])
-
-  const appClassName = [
-    'app',
-    `theme-${preferences.theme}`,
-    preferences.highContrast ? 'accessibility-high-contrast' : '',
-    preferences.reduceMotion ? 'reduce-motion' : '',
-    preferences.enhancedFocus ? 'enhanced-focus' : '',
-    preferences.colorVision !== 'none' ? `color-vision-${preferences.colorVision}` : '',
-    `font-size-${preferences.fontSize}`
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const fontScale = {
+    small: 0.92,
+    default: 1,
+    large: 1.12,
+    'extra-large': 1.24
+  }[normalizeFontSize(preferences.fontSize)]
+  const colorVision = normalizeColorVision(preferences.colorVision)
 
   return (
     <>
@@ -97,35 +65,32 @@ export default function App() {
         <filter id="protanopia">
           <feColorMatrix
             type="matrix"
-            values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"
+            values="0.567 0.433 0 0 0 0.558 0.442 0 0 0 0 0.242 0.758 0 0 0 0 0 1 0"
           />
         </filter>
         <filter id="deuteranopia">
           <feColorMatrix
             type="matrix"
-            values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"
+            values="0.625 0.375 0 0 0 0.7 0.3 0 0 0 0 0.3 0.7 0 0 0 0 0 1 0"
           />
         </filter>
         <filter id="tritanopia">
           <feColorMatrix
             type="matrix"
-            values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"
+            values="0.95 0.05 0 0 0 0 0.433 0.567 0 0 0 0.475 0.525 0 0 0 0 0 1 0"
           />
         </filter>
         <filter id="achromatopsia">
           <feColorMatrix
             type="matrix"
-            values="0.299,0.587,0.114,0,0 0.299,0.587,0.114,0,0 0.299,0.587,0.114,0,0 0,0,0,1,0"
+            values="0.299 0.587 0.114 0 0 0.299 0.587 0.114 0 0 0.299 0.587 0.114 0 0 0 0 0 1 0"
           />
         </filter>
       </svg>
       <div
-        className={appClassName}
+        className={`app theme-${preferences.theme} font-size-${normalizeFontSize(preferences.fontSize)} ${preferences.highContrast ? 'accessibility-high-contrast' : ''} ${preferences.reduceMotion ? 'reduce-motion' : ''} ${preferences.enhancedFocus ? 'enhanced-focus' : ''} color-vision-${colorVision}`}
         style={
-          {
-            '--primary': preferences.accent,
-            '--font-scale': FONT_SCALE[preferences.fontSize as keyof typeof FONT_SCALE] ?? 1
-          } as React.CSSProperties
+          { '--primary': preferences.accent, '--font-scale': fontScale } as React.CSSProperties
         }
         onClick={() => setContext(null)}
       >
@@ -134,7 +99,7 @@ export default function App() {
           transfer={transfer}
           onImportBoard={() => boardFileRef.current?.click()}
           onToggleSettings={() => setShowPanel((value) => !value)}
-          onOpenAccessibilityTour={() => setTourOpen(true)}
+          onOpenTour={() => setTourOpen(true)}
         />
         <Sidebar editor={editor} transfer={transfer} onImportFiles={openFilePicker} />
         <main className="workspace">
@@ -164,7 +129,7 @@ export default function App() {
               onChange={editor.updateObject}
               preferences={preferences}
               onClose={() => setShowPanel(false)}
-              onOpenAccessibilityTour={() => setTourOpen(true)}
+              onOpenTour={() => setTourOpen(true)}
             />
           )}
           {context && selected.length > 0 && (
@@ -202,12 +167,12 @@ export default function App() {
             }}
           />
         </main>
+        <AccessibilityTour
+          isOpen={tourOpen}
+          preferences={preferences}
+          onClose={() => setTourOpen(false)}
+        />
       </div>
-      <AccessibilityTour
-        isOpen={tourOpen}
-        preferences={preferences}
-        onClose={() => setTourOpen(false)}
-      />
     </>
   )
 }
