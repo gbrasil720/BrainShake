@@ -5,9 +5,15 @@ export function strokePath(points: Point[]) {
 }
 
 export function StrokeObject({ item }: { item: CanvasItem }) {
+  const path = strokePath(item.points || [])
   return (
     <svg className="stroke" viewBox={`0 0 ${item.w} ${item.h}`}>
-      <path style={{ strokeWidth: item.strokeWidth || 4 }} d={strokePath(item.points || [])} />
+      <path
+        className="stroke-hit-area"
+        style={{ strokeWidth: (item.strokeWidth || 4) + 10 }}
+        d={path}
+      />
+      <path style={{ strokeWidth: item.strokeWidth || 4 }} d={path} />
     </svg>
   )
 }

@@ -3,6 +3,7 @@ import type { useViewport } from '@/features/canvas/hooks/useViewport'
 import type { useCanvasPointer } from '@/features/canvas/hooks/useCanvasPointer'
 import type { BoardPatch } from '@/features/board/types'
 import { isCanvasItem } from '@/features/board/types'
+import { getStrokeBounds, getStrokeGroups } from '@/features/board/lib/objects'
 import { ContextMenu as ShadcnContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { useState } from 'react'
 import { CanvasObject } from '../objects/CanvasObject'
@@ -33,6 +34,7 @@ export function Canvas({
   const { board, selected, strokeWidth } = editor
   const { canvasRef, onWheel, zoom, pan } = viewport
   const contentObjects = board.objects.filter(isCanvasItem)
+  const strokeGroups = getStrokeGroups(contentObjects)
   return (
     <ShadcnContextMenu modal={false}>
       <ContextMenuTrigger asChild disabled={selected.length === 0}>
@@ -70,6 +72,33 @@ export function Canvas({
             }}
           >
             <ConnectorLayer objects={board.objects} />
+            {strokeGroups.map((group) => {
+              if (group.length < 2 || !group.some((item) => selected.includes(item.id))) return null
+              const groupBounds = group
+                .map(getStrokeBounds)
+                .filter((bounds): bounds is NonNullable<typeof bounds> => Boolean(bounds))
+                .reduce(
+                  (result, bounds) => ({
+                    minX: Math.min(result.minX, bounds.minX),
+                    minY: Math.min(result.minY, bounds.minY),
+                    maxX: Math.max(result.maxX, bounds.maxX),
+                    maxY: Math.max(result.maxY, bounds.maxY)
+                  }),
+                  { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+                )
+              return (
+                <div
+                  className="stroke-group-outline"
+                  key={group.map((item) => item.id).join('-')}
+                  style={{
+                    left: groupBounds.minX,
+                    top: groupBounds.minY,
+                    width: groupBounds.maxX - groupBounds.minX,
+                    height: groupBounds.maxY - groupBounds.minY
+                  }}
+                />
+              )
+            })}
             {contentObjects.map((item) => (
               <CanvasObject
                 key={item.id}

@@ -279,11 +279,32 @@
   pointer-events: none;
 }
 .stroke-object {
+  pointer-events: none;
+}
+.stroke-object .stroke-hit-area {
+  fill: none;
+  stroke: transparent;
+  pointer-events: stroke;
+}
+.stroke-object.selected .stroke-hit-area {
+  stroke: var(--primary);
+  stroke-dasharray: 5 4;
+  stroke-opacity: 0.7;
+}
+.stroke-object .resize-handle {
   pointer-events: auto;
 }
 .stroke-object.selected {
-  outline: 2px solid var(--primary);
-  outline-offset: 3px;
+  overflow: visible;
+}
+.stroke-group-outline {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border: 2px solid var(--primary);
+  border-radius: 6px;
+  outline: 1px dashed color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 4px;
 }
 .canvas-object .stroke {
   border: 0;

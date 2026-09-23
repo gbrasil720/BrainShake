@@ -41,6 +41,63 @@ export function finishStroke(stroke: CanvasItem & { points: Point[]; strokeWidth
   }
 }
 
+export type StrokeBounds = { minX: number; minY: number; maxX: number; maxY: number }
+
+export function getStrokeBounds(stroke: CanvasItem): StrokeBounds | null {
+  if (stroke.type !== 'stroke' || !stroke.points?.length) return null
+  const padding = (stroke.strokeWidth || 4) / 2
+  const points = stroke.points
+  const bounds = points.reduce(
+    (result, point) => ({
+      minX: Math.min(result.minX, point.x),
+      minY: Math.min(result.minY, point.y),
+      maxX: Math.max(result.maxX, point.x),
+      maxY: Math.max(result.maxY, point.y)
+    }),
+    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+  )
+  return {
+    minX: stroke.x + bounds.minX - padding,
+    minY: stroke.y + bounds.minY - padding,
+    maxX: stroke.x + bounds.maxX + padding,
+    maxY: stroke.y + bounds.maxY + padding
+  }
+}
+
+export function getStrokeGroups(strokes: CanvasItem[], gap = 18) {
+  const items = strokes.filter((stroke) => stroke.type === 'stroke' && stroke.points?.length)
+  const bounds = new Map(items.map((stroke) => [stroke.id, getStrokeBounds(stroke)!]))
+  const groups: CanvasItem[][] = []
+  const visited = new Set<string>()
+
+  for (const stroke of items) {
+    if (visited.has(stroke.id)) continue
+    const group: CanvasItem[] = []
+    const queue = [stroke]
+    visited.add(stroke.id)
+    while (queue.length) {
+      const current = queue.shift()!
+      group.push(current)
+      const currentBounds = bounds.get(current.id)!
+      for (const candidate of items) {
+        if (visited.has(candidate.id)) continue
+        const candidateBounds = bounds.get(candidate.id)!
+        const separated =
+          currentBounds.maxX + gap < candidateBounds.minX ||
+          candidateBounds.maxX + gap < currentBounds.minX ||
+          currentBounds.maxY + gap < candidateBounds.minY ||
+          candidateBounds.maxY + gap < currentBounds.minY
+        if (!separated) {
+          visited.add(candidate.id)
+          queue.push(candidate)
+        }
+      }
+    }
+    groups.push(group)
+  }
+  return groups
+}
+
 export function addObjects(board: Board, items: BoardItem[]): Board {
   return { ...board, objects: [...board.objects, ...items] }
 }
