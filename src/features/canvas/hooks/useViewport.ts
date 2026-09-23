@@ -10,6 +10,13 @@ function clampZoom(value: number) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value))
 }
 
+function hasScrollableTextField(event: React.WheelEvent<HTMLDivElement>) {
+  if (!(event.target instanceof Element)) return false
+  const field = event.target.closest('textarea, input, [contenteditable="true"]')
+  if (!(field instanceof HTMLElement)) return false
+  return field.scrollHeight > field.clientHeight || field.scrollWidth > field.clientWidth
+}
+
 export function useViewport() {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [zoom, setZoomState] = useState(1)
@@ -30,6 +37,7 @@ export function useViewport() {
   }
 
   function onWheel(event: React.WheelEvent<HTMLDivElement>) {
+    if (hasScrollableTextField(event)) return
     event.preventDefault()
     const rect = canvasRef.current!.getBoundingClientRect()
     const point = screenPoint(event)
