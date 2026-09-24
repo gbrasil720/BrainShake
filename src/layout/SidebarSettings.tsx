@@ -32,7 +32,6 @@ export function SidebarSettings({
       <div className="sidebar-settings-heading">
         <div>
           <h1>Customize</h1>
-          <p>Make the workspace feel like yours.</p>
         </div>
       </div>
 

@@ -57,8 +57,12 @@ export function AppearanceSettings({
                   aria-pressed={accent === color}
                 />
               ))}
-              <label className="custom-accent-picker" title="Choose a custom accent color">
-                <span aria-hidden="true">+</span>
+              <label
+                className="custom-accent-picker"
+                title="Choose a custom accent color"
+                aria-label="Choose a custom accent color"
+              >
+                <span className="custom-accent-wheel" aria-hidden="true" />
                 <input
                   type="color"
                   value={accent}

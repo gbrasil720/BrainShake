@@ -265,14 +265,14 @@
   font-weight: 500;
 }
 
-.sidebar-tab[aria-selected='true'] {
-  background: var(--paper);
-  box-shadow: 0 1px 3px rgba(20, 24, 30, 0.08);
+.sidebar-tabs .sidebar-tab[aria-selected='true'] {
+  background-color: var(--paper) !important;
+  box-shadow: 0 1px 3px rgba(20, 24, 30, 0.08) !important;
 }
 
-.sidebar-tab[aria-selected='false'] {
-  background: transparent;
-  box-shadow: none;
+.sidebar-tabs .sidebar-tab[aria-selected='false'] {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .sidebar-settings {
@@ -389,18 +389,40 @@
 
 .custom-accent-picker {
   position: relative;
-  display: grid;
+  display: block;
   width: 24px;
   height: 24px;
-  place-items: center;
   overflow: hidden;
-  color: var(--muted);
-  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.custom-accent-wheel {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(29, 29, 31, 0.12);
+  border-radius: 50%;
+  background: conic-gradient(
+    #ff453a,
+    #ff9f0a,
+    #ffd60a,
+    #30d158,
+    #00c7be,
+    #0a84ff,
+    #5e5ce6,
+    #bf5af2,
+    #ff375f,
+    #ff453a
+  );
+}
+
+.custom-accent-wheel::after {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(29, 29, 31, 0.14);
   border-radius: 50%;
   background: var(--paper);
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
+  content: '';
 }
 
 .custom-accent-picker input {

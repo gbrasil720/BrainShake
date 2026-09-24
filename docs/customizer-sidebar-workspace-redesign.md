@@ -43,7 +43,7 @@ As capturas enviadas são referências visuais. A primeira documenta o customize
 
 **Customize**
 
-1. **Appearance**: seletor de tema, quatro cores de destaque frequentes, seletor de cor customizada e `More` para revelar as outras opções. Grade fica no mesmo grupo.
+1. **Appearance**: seletor de tema, quatro cores de destaque frequentes, disco arco-íris para abrir o seletor de cor customizada e `More` para revelar as outras opções. Grade fica no mesmo grupo.
 2. **Drawing**: autocorreção de formas com um rótulo e uma descrição curta.
 3. **Accessibility**: controles compactos para tamanho do texto, alto contraste e movimento reduzido. Opções menos frequentes ficam em `More accessibility options`.
 4. **Advanced appearance** recolhido: posição do dock, auto-hide e cores customizadas de header, sidebar, canvas e panels, em uma lista compacta com seletor e reset por linha.
@@ -61,16 +61,16 @@ Não apagar configurações existentes antes de medir uso. Primeiro escondê-las
 
 ## Direção visual
 
-| Elemento           | Referência recomendada                                                                                                                                            |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Elemento           | Referência recomendada                                                                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Fonte              | Lexend como fonte de interface, com `-apple-system`, `BlinkMacSystemFont` e `Segoe UI` como fallback; títulos em peso 600, sem uma fonte display separada para cada painel |
-| Texto de interface | 14 px base; rótulos de seção 12–13 px; ajuda 11–12 px; evitar texto funcional abaixo de 12 px                                                                          |
-| Sidebar            | 272–288 px no desktop; padding horizontal 16 px; item de navegação com 36–40 px de altura                                                                         |
-| Espaçamento        | escala 4 / 8 / 12 / 16 / 24 px; 16–20 px entre grupos; usar divisores apenas entre áreas principais                                                               |
-| Superfícies        | branco ou cinza muito claro, borda neutra de 1 px, raio 10–12 px; sombra baixa só para painéis flutuantes                                                         |
-| Seleção            | fundo de destaque suave mais contorno/foco acessível; não depender apenas da cor                                                                                  |
-| Controles          | altura 32 px para opções normais; alvos táteis de pelo menos 40 px em telas touch; swatches de 24–28 px                                                           |
-| Ícones             | Lucide 16–18 px, sempre com alinhamento e área de clique uniformes                                                                                                |
+| Texto de interface | 14 px base; rótulos de seção 12–13 px; ajuda 11–12 px; evitar texto funcional abaixo de 12 px                                                                              |
+| Sidebar            | 272–288 px no desktop; padding horizontal 16 px; item de navegação com 36–40 px de altura                                                                                  |
+| Espaçamento        | escala 4 / 8 / 12 / 16 / 24 px; 16–20 px entre grupos; usar divisores apenas entre áreas principais                                                                        |
+| Superfícies        | branco ou cinza muito claro, borda neutra de 1 px, raio 10–12 px; sombra baixa só para painéis flutuantes                                                                  |
+| Seleção            | fundo de destaque suave mais contorno/foco acessível; não depender apenas da cor                                                                                           |
+| Controles          | altura 32 px para opções normais; alvos táteis de pelo menos 40 px em telas touch; swatches de 24–28 px                                                                    |
+| Ícones             | Lucide 16–18 px, sempre com alinhamento e área de clique uniformes                                                                                                         |
 
 Paleta inicial: fundo geral `#F5F5F7`, superfície `#FFFFFF`, texto principal `#1D1D1F`, texto secundário `#6E6E73`, linha `#D2D2D7`, seleção suave `#E8E8ED` e azul `#0A84FF` como destaque inicial. Preferências já salvas continuam valendo. Lexend foi escolhida para dar o aspecto mais cheio e arredondado pedido, com fontes do sistema como fallback.
 
@@ -126,7 +126,7 @@ Customize:
 2. Reagrupei o customizer e movi opções raras para áreas avançadas, preservando as preferências e os valores salvos.
 3. Simplifiquei a sidebar de workspace, deixei snapshots recolhidos e agrupei ações secundárias no menu do topbar.
 4. Reduzi o dock ao conjunto de ferramentas e histórico usados com mais frequência; ações contextuais aparecem quando há seleção.
-5. Revisei as telas no navegador e alinhei sidebar, customizer, dock, menu de ações, painel contextual e tamanhos de toque à mesma escala de superfícies, bordas e controles.
+5. Revisei as telas no navegador e alinhei sidebar, customizer, dock, menu de ações, painel contextual e tamanhos de toque à mesma escala de superfícies, bordas e controles. O seletor customizado usa um disco arco-íris e mantém o seletor de cor nativo ao clicar.
 
 ## Limite da inspeção
 

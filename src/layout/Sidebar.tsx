@@ -117,11 +117,6 @@ export function Sidebar({
             className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
             role="tab"
             aria-selected={page === 'workspace'}
-            style={
-              page === 'workspace'
-                ? { background: 'var(--paper)', boxShadow: '0 1px 3px rgba(20, 24, 30, 0.08)' }
-                : { background: 'transparent', boxShadow: 'none' }
-            }
             title="Workspace"
             onClick={() => {
               setPage('workspace')
@@ -135,11 +130,6 @@ export function Sidebar({
             className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
             role="tab"
             aria-selected={page === 'customize'}
-            style={
-              page === 'customize'
-                ? { background: 'var(--paper)', boxShadow: '0 1px 3px rgba(20, 24, 30, 0.08)' }
-                : { background: 'transparent', boxShadow: 'none' }
-            }
             title="Customize"
             onClick={() => {
               setPage('customize')

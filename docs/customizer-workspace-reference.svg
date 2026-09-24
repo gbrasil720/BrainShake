@@ -47,16 +47,15 @@
   <path d="M169 101H180M174.5 97V108" stroke="#55565B" stroke-width="1.5" stroke-linecap="round"/>
   <text x="190" y="112" class="small" font-weight="600">Customize</text>
   <text x="22" y="166" font-size="19" font-weight="600">Customize</text>
-  <text x="22" y="187" class="tiny muted">Make the workspace feel like yours.</text>
-
   <text x="22" y="222" class="section">Appearance</text>
   <text x="22" y="254" class="small">Theme</text>
   <rect x="153" y="235" width="132" height="34" rx="9" fill="#FFFFFF" stroke="#D2D2D7"/>
   <text x="166" y="257" class="small">Light</text>
   <path d="M262 249L266 253L270 249" stroke="#77777D" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
   <text x="22" y="300" class="small">Accent</text>
-  <circle cx="174" cy="294" r="11" fill="#0A84FF" stroke="#FFFFFF" stroke-width="3"/><circle cx="174" cy="294" r="13" stroke="#1D1D1F" stroke-width="1.2"/>
-  <circle cx="207" cy="294" r="11" fill="#577D6A"/><circle cx="240" cy="294" r="11" fill="#50739A"/><circle cx="273" cy="294" r="11" fill="#8A6B9F"/>
+  <circle cx="145" cy="294" r="11" fill="#0A84FF" stroke="#FFFFFF" stroke-width="3"/><circle cx="145" cy="294" r="13" stroke="#1D1D1F" stroke-width="1.2"/>
+  <circle cx="177" cy="294" r="11" fill="#577D6A"/><circle cx="209" cy="294" r="11" fill="#50739A"/><circle cx="241" cy="294" r="11" fill="#8A6B9F"/>
+  <circle cx="273" cy="294" r="12" fill="url(#customAccent)" stroke="#FFFFFF" stroke-width="1.5"/><circle cx="273" cy="294" r="4" fill="#FFFFFF"/><circle cx="273" cy="294" r="12" stroke="#1D1D1F" stroke-opacity=".15"/>
   <text x="22" y="344" class="small">Show grid</text>
   <rect x="237" y="327" width="44" height="24" rx="12" fill="#0A84FF"/><circle cx="268" cy="339" r="9" fill="#FFFFFF"/>
 
