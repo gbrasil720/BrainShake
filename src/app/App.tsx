@@ -137,6 +137,7 @@ export default function App() {
         style={
           {
             '--primary': preferences.accent,
+            '--stroke-color': preferences.accent,
             '--font-scale': fontScale,
             '--header-custom': preferences.headerColor || 'var(--paper)',
             '--sidebar-custom': preferences.sidebarColor || 'var(--paper)',
