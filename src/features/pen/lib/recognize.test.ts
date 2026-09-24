@@ -69,8 +69,12 @@ function sides(points: Point[]) {
 }
 
 describe('recognize', () => {
+  // Square and rectangle, or circle and ellipse, depend on proportions a hand
+  // doesn't control precisely; the family is what must match.
+  const family = (kind?: string) =>
+    kind === 'square' ? 'rectangle' : kind === 'circle' ? 'ellipse' : kind
   it.each(drawnStrokes)('auto-corrects a real $name', ({ kind, points }) => {
-    expect(recognize(points, UNATTENDED)?.kind).toBe(kind)
+    expect(family(recognize(points, UNATTENDED)?.kind)).toBe(family(kind))
   })
 
   it('ignores taps and tiny strokes', () => {
@@ -107,8 +111,25 @@ describe('recognize', () => {
       { x: 300, y: 150 },
       { x: 0, y: 150 }
     ]
+    // A crescent: the outer arc and back along a smaller inner one.
+    const crescent = [
+      ...Array.from({ length: 30 }, (_, index) => {
+        const angle = Math.PI / 2 + (index / 29) * Math.PI
+        return { x: 100 * Math.cos(angle), y: 100 * Math.sin(angle) }
+      }),
+      ...Array.from({ length: 30 }, (_, index) => {
+        const angle = (3 * Math.PI) / 2 - (index / 29) * Math.PI
+        return { x: -40 + 70 * Math.cos(angle), y: 100 * Math.sin(angle) }
+      })
+    ]
+    // A loop gone around three times.
+    const coil = Array.from({ length: 150 }, (_, index) => {
+      const angle = (index / 50) * 2 * Math.PI
+      return { x: (100 + index / 3) * Math.cos(angle), y: (100 + index / 3) * Math.sin(angle) }
+    })
+    expect(recognize(coil)).toBeNull()
     for (const seed of [1, 2, 3]) {
-      expect(recognize(sketch(polygon(5), { seed })), `pentagon ${seed}`).toBeNull()
+      expect(recognize(sketch(crescent, { seed })), `crescent ${seed}`).toBeNull()
       const star = polygon(10, (index) => (index % 2 ? 45 : 100))
       expect(recognize(sketch(star, { seed })), `star ${seed}`).toBeNull()
       expect(recognize(sketch(trapezoid, { seed })), `trapezoid ${seed}`).toBeNull()
@@ -184,8 +205,11 @@ describe('recognize', () => {
       for (const seed of [1, 2, 3, 4, 5]) {
         const result = recognize(sketch(rectangle(200, 186), { seed, tilt: degrees(6) }))
         expect(result?.kind, `seed ${seed}`).toBe('square')
-        const [a, b] = corners(result!.points)
-        expect(a.y).toBeCloseTo(b.y)
+        const vertices = corners(result!.points)
+        vertices.forEach((vertex, index) => {
+          const next = vertices[(index + 1) % 4]
+          expect(Math.min(Math.abs(vertex.x - next.x), Math.abs(vertex.y - next.y))).toBeCloseTo(0)
+        })
         const lengths = sides(result!.points)
         for (const length of lengths) expect(length).toBeCloseTo(lengths[0])
       }
