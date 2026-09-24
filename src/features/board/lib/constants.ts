@@ -44,15 +44,15 @@ export const STICKY_COLORS = {
 
 export const ACCENTS = [
   '#0a84ff',
-  '#577d6a',
-  '#50739a',
-  '#8a6b9f',
-  '#c58a44',
-  '#d1495b',
-  '#2a9d8f',
-  '#e76f51',
-  '#264653',
-  '#6c757d'
+  '#30d158',
+  '#bf5af2',
+  '#ff9f0a',
+  '#ff375f',
+  '#ff453a',
+  '#00c7be',
+  '#5e5ce6',
+  '#64d2ff',
+  '#ffd60a'
 ]
 
 export const THEMES = [

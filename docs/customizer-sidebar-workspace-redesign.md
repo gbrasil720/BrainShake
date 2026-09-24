@@ -43,7 +43,7 @@ As capturas enviadas são referências visuais. A primeira documenta o customize
 
 **Customize**
 
-1. **Appearance**: seletor de tema, quatro cores de destaque frequentes, disco arco-íris para abrir o seletor de cor customizada e `More` para revelar as outras opções. Grade fica no mesmo grupo.
+1. **Appearance**: seletor de tema, quatro cores de destaque de sistema, disco arco-íris sem miolo para abrir o seletor de cor customizada e `More` para revelar as outras opções. Os swatches têm contorno de seleção leve e animação curta ao interagir. Grade fica no mesmo grupo.
 2. **Drawing**: autocorreção de formas com um rótulo e uma descrição curta.
 3. **Accessibility**: controles compactos para tamanho do texto, alto contraste e movimento reduzido. Opções menos frequentes ficam em `More accessibility options`.
 4. **Advanced appearance** recolhido: posição do dock, auto-hide e cores customizadas de header, sidebar, canvas e panels, em uma lista compacta com seletor e reset por linha.
