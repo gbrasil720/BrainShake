@@ -146,7 +146,7 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
           <span>Fill HEX</span>
           <HexColorControl
             value={item.fillColor}
-            fallback={item.type === 'sticky' ? '#fff0ad' : '#d86e50'}
+            fallback={item.type === 'sticky' ? '#fff0ad' : '#0a84ff'}
             label="Fill HEX color"
             onChange={(fillColor) => onChange(item.id, { fillColor })}
           />
@@ -157,7 +157,7 @@ export function ObjectProperties({ item, onChange }: { item?: BoardItem; onChang
           <span>Stroke HEX</span>
           <HexColorControl
             value={item.strokeColor}
-            fallback="#536b5d"
+            fallback="#1d1d1f"
             label="Stroke HEX color"
             onChange={(strokeColor) => onChange(item.id, { strokeColor })}
           />

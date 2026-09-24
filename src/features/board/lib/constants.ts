@@ -43,7 +43,7 @@ export const STICKY_COLORS = {
 }
 
 export const ACCENTS = [
-  '#d86e50',
+  '#0a84ff',
   '#577d6a',
   '#50739a',
   '#8a6b9f',

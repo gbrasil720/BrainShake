@@ -4,7 +4,6 @@ import { useState } from 'react'
 import {
   BoxSelect,
   Hand,
-  ImagePlus,
   Link2,
   Pencil,
   Presentation,
@@ -31,20 +30,14 @@ export function Toolbar({
   editor,
   dockPosition,
   onDockChange,
-  onImportFiles,
   onToggleSlides,
-  keyboardNavigation,
-  autoSnapShapes,
-  onAutoSnapShapesChange
+  keyboardNavigation
 }: {
   editor: ReturnType<typeof useBoardEditor>
   dockPosition: string
   onDockChange: (position: string) => void
-  onImportFiles: () => void
   onToggleSlides: () => void
   keyboardNavigation: boolean
-  autoSnapShapes: boolean
-  onAutoSnapShapesChange: (value: boolean) => void
 }) {
   const [dockDragging, setDockDragging] = useState(false)
   const [openMenu, setOpenMenu] = useState<'shape' | 'stroke' | null>(null)
@@ -111,31 +104,22 @@ export function Toolbar({
         <StrokeMenu
           value={editor.strokeWidth}
           onChange={editor.setStrokeWidth}
-          autoSnap={autoSnapShapes}
-          onAutoSnapChange={onAutoSnapShapesChange}
           dockPosition={dockPosition}
           open={openMenu === 'stroke'}
           onOpenChange={(open) => setOpenMenu(open ? 'stroke' : null)}
         />
-        <Button
-          variant="ghost"
-          className={`tool-button ${editor.selected.length ? '' : 'disabled'}`}
-          title="Add or remove selected items from presentation"
-          aria-label="Add or remove selected items from presentation"
-          disabled={!editor.selected.length}
-          onClick={onToggleSlides}
-        >
-          <Presentation size={17} />
-        </Button>
+        {editor.selected.length > 0 && (
+          <Button
+            variant="ghost"
+            className="tool-button"
+            title="Add or remove selected items from presentation"
+            aria-label="Add or remove selected items from presentation"
+            onClick={onToggleSlides}
+          >
+            <Presentation size={17} />
+          </Button>
+        )}
         <div className="toolbar-divider" />
-        <Button
-          variant="ghost"
-          className="tool-button"
-          title="Import image, video, or file"
-          onClick={onImportFiles}
-        >
-          <ImagePlus size={17} />
-        </Button>
         <Button
           variant="ghost"
           className="tool-button"

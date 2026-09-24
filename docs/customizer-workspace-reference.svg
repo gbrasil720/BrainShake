@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" fill="none">
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" stroke="#D9DDE3" stroke-width="1" opacity=".52"/>
+    </pattern>
+    <linearGradient id="customAccent" x1="1300" y1="266" x2="1336" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F04F55"/><stop offset=".28" stop-color="#E6B33C"/><stop offset=".52" stop-color="#45A96E"/><stop offset=".76" stop-color="#4384D6"/><stop offset="1" stop-color="#9863CE"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#273244" flood-opacity=".10"/>
+    </filter>
+    <style>
+      text { font-family: Lexend, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #1D1D1F; }
+      .muted { fill: #6E6E73; }
+      .quiet { fill: #8C8C91; }
+      .tiny { font-size: 11px; }
+      .small { font-size: 13px; }
+      .medium { font-size: 14px; }
+      .section { font-size: 12px; font-weight: 650; letter-spacing: .15px; }
+    </style>
+  </defs>
+
+  <!-- app frame -->
+  <rect width="1440" height="900" fill="#F5F5F7"/>
+  <rect x="0.5" y="0.5" width="1439" height="899" rx="18" fill="#F5F5F7" stroke="#D8D8DC"/>
+  <path d="M18 1H1422A17 17 0 0 1 1439 18V70H1V18A17 17 0 0 1 18 1Z" fill="#FBFBFC"/>
+  <path d="M1 70.5H1439" stroke="#D2D2D7"/>
+  <circle cx="25" cy="35" r="6" fill="#FF5F57"/><circle cx="45" cy="35" r="6" fill="#FEBC2E"/><circle cx="65" cy="35" r="6" fill="#28C840"/>
+  <rect x="101" y="18" width="27" height="27" rx="8" fill="#E8E8ED"/>
+  <path d="M109 26H119V36H109z" stroke="#55565B" stroke-width="1.5"/><path d="M114 26V36M109 31H119" stroke="#55565B" stroke-width="1.2"/>
+  <text x="139" y="37" font-size="15" font-weight="650">BrainShake</text>
+  <path d="M246 27H247" stroke="#D2D2D7" stroke-width="18" stroke-linecap="round"/>
+  <text x="275" y="37" font-size="14" font-weight="600">Untitled board</text>
+  <rect x="1232" y="22" width="76" height="26" rx="13" fill="#F0F0F2"/>
+  <circle cx="1247" cy="35" r="4" fill="#34A853"/><text x="1257" y="39" class="tiny muted">Saved</text>
+  <rect x="1320" y="17" width="36" height="36" rx="10" fill="transparent"/>
+  <circle cx="1338" cy="27" r="1.6" fill="#55565B"/><circle cx="1338" cy="35" r="1.6" fill="#55565B"/><circle cx="1338" cy="43" r="1.6" fill="#55565B"/>
+  <rect x="1364" y="17" width="50" height="36" rx="10" fill="#1D1D1F"/>
+  <text x="1376" y="39" font-size="12" font-weight="600" fill="#FFFFFF">Export</text>
+
+  <!-- sidebar: customize selected -->
+  <rect x="1" y="71" width="300" height="828" fill="#FBFBFC"/>
+  <path d="M300.5 71V899" stroke="#D2D2D7"/>
+  <rect x="17" y="88" width="268" height="38" rx="11" fill="#F0F0F2"/>
+  <text x="38" y="112" class="small muted">Workspace</text>
+  <rect x="153" y="91" width="129" height="32" rx="8" fill="#FFFFFF" filter="url(#shadow)"/>
+  <path d="M169 101H180M174.5 97V108" stroke="#55565B" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="190" y="112" class="small" font-weight="600">Customize</text>
+  <text x="22" y="166" font-size="19" font-weight="600">Customize</text>
+  <text x="22" y="187" class="tiny muted">Make the workspace feel like yours.</text>
+
+  <text x="22" y="222" class="section">Appearance</text>
+  <text x="22" y="254" class="small">Theme</text>
+  <rect x="153" y="235" width="132" height="34" rx="9" fill="#FFFFFF" stroke="#D2D2D7"/>
+  <text x="166" y="257" class="small">Light</text>
+  <path d="M262 249L266 253L270 249" stroke="#77777D" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="22" y="300" class="small">Accent</text>
+  <circle cx="174" cy="294" r="11" fill="#0A84FF" stroke="#FFFFFF" stroke-width="3"/><circle cx="174" cy="294" r="13" stroke="#1D1D1F" stroke-width="1.2"/>
+  <circle cx="207" cy="294" r="11" fill="#577D6A"/><circle cx="240" cy="294" r="11" fill="#50739A"/><circle cx="273" cy="294" r="11" fill="#8A6B9F"/>
+  <text x="22" y="344" class="small">Show grid</text>
+  <rect x="237" y="327" width="44" height="24" rx="12" fill="#0A84FF"/><circle cx="268" cy="339" r="9" fill="#FFFFFF"/>
+
+  <path d="M16 374H284" stroke="#E2E2E6"/>
+  <text x="22" y="403" class="section">Drawing</text>
+  <text x="22" y="432" class="small">Auto-correct shapes</text>
+  <text x="22" y="451" class="tiny muted">Smooth hand-drawn shapes and arrows.</text>
+  <rect x="237" y="416" width="44" height="24" rx="12" fill="#0A84FF"/><circle cx="268" cy="428" r="9" fill="#FFFFFF"/>
+
+  <path d="M16 480H284" stroke="#E2E2E6"/>
+  <text x="22" y="510" class="section">Accessibility</text>
+  <text x="254" y="510" class="small" fill="#0A84FF">Tour</text>
+  <text x="22" y="548" class="small">Text size</text>
+  <rect x="171" y="528" width="114" height="34" rx="9" fill="#F0F0F2"/>
+  <rect x="174" y="531" width="31" height="28" rx="7" fill="#FFFFFF" filter="url(#shadow)"/>
+  <text x="181" y="550" class="tiny">A−</text><text x="213" y="550" class="tiny muted">Default</text><text x="263" y="550" class="tiny">A+</text>
+  <text x="22" y="594" class="small">High contrast</text>
+  <rect x="237" y="576" width="44" height="24" rx="12" fill="#D8D8DC"/><circle cx="250" cy="588" r="9" fill="#FFFFFF"/>
+  <text x="22" y="633" class="small">Reduce motion</text>
+  <rect x="237" y="615" width="44" height="24" rx="12" fill="#D8D8DC"/><circle cx="250" cy="627" r="9" fill="#FFFFFF"/>
+  <text x="22" y="672" class="tiny muted">More accessibility options</text>
+  <path d="M268 666L272 670L276 666" stroke="#77777D" stroke-width="1.3"/>
+  <rect x="16" y="700" width="268" height="42" rx="9" fill="#FFFFFF" stroke="#D2D2D7"/>
+  <text x="28" y="726" class="small" font-weight="500">Advanced appearance</text>
+  <path d="M264 717L268 721L272 717" stroke="#77777D" stroke-width="1.3"/>
+
+  <!-- canvas -->
+  <rect x="301" y="71" width="1138" height="828" fill="#F5F5F7"/>
+  <rect x="301" y="71" width="1138" height="828" fill="url(#grid)"/>
+  <rect x="579" y="272" width="272" height="160" rx="18" fill="#FFFFFF" stroke="#E2E2E6" filter="url(#shadow)"/>
+  <rect x="599" y="292" width="38" height="38" rx="12" fill="#E9EAFB"/>
+  <path d="M609 302H627V320H609z" stroke="#5D68D8" stroke-width="1.7"/><path d="M613 307H623M613 312H621" stroke="#5D68D8" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="599" y="356" font-size="17" font-weight="650">Start with an idea</text>
+  <text x="599" y="380" class="small muted">Drop a file, add a note, or choose a tool.</text>
+  <rect x="599" y="397" width="91" height="24" rx="7" fill="#F0F0F2"/>
+  <text x="612" y="413" class="tiny muted">⌘ + I  Import</text>
+
+  <!-- floating tool dock -->
+  <g filter="url(#shadow)">
+    <rect x="630" y="817" width="475" height="58" rx="17" fill="#FFFFFF" stroke="#E3E3E7"/>
+  </g>
+  <rect x="642" y="827" width="38" height="38" rx="11" fill="#E9EAFB"/>
+  <path d="M654 839L666 851M654 839V848H663" stroke="#5D68D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M699 838V854M691 846H707" stroke="#606067" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M733 838L746 854M746 838L733 854" stroke="#606067" stroke-width="1.7" stroke-linecap="round"/>
+  <text x="764" y="852" font-size="17" font-weight="500" class="muted">T</text>
+  <rect x="796" y="839" width="14" height="14" rx="3" stroke="#606067" stroke-width="1.6"/>
+  <path d="M825 853C831 838 836 838 842 853" stroke="#606067" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M856 846H870M863 839V853" stroke="#606067" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M892 827V865" stroke="#E3E3E7"/>
+  <path d="M914 840L926 852M926 840L914 852" stroke="#77777D" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M949 840L961 852M961 840L949 852" stroke="#A2A2A7" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="989" y="851" class="tiny muted">•••</text>
+  <rect x="1285" y="839" width="126" height="38" rx="12" fill="#FFFFFF" stroke="#E3E3E7" filter="url(#shadow)"/>
+  <text x="1300" y="863" class="small muted">−</text><text x="1324" y="862" class="tiny muted">100%</text><text x="1376" y="863" class="small muted">+</text>
+
+  <text x="314" y="887" class="tiny quiet">Visual reference · conceptual hierarchy and styling</text>
+</svg>

@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toPng } from 'html-to-image'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/hooks/useToast'
@@ -48,7 +48,18 @@ export default function App() {
   })
   const snapshots = useSnapshots({ editor, showToast })
   const transfer = useImportExport({ editor, snapshots, showToast })
-  const [showPanel, setShowPanel] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
+  const { board, selected } = editor
+  const selectionKey = selected.join('|')
+  const [panelState, setPanelState] = useState<{ selectionKey: string; hidden: boolean } | null>(
+    null
+  )
+  const showPanel =
+    selected.length > 0 && !(panelState?.selectionKey === selectionKey && panelState.hidden)
+  const closePanel = useCallback(
+    () => setPanelState({ selectionKey, hidden: true }),
+    [selectionKey]
+  )
+  const togglePanel = () => setPanelState({ selectionKey, hidden: showPanel })
   const [tourOpen, setTourOpen] = useState(false)
   const [presentationOpen, setPresentationOpen] = useState(false)
   const [presentationItemId, setPresentationItemId] = useState<string | null>(null)
@@ -56,17 +67,15 @@ export default function App() {
   useEffect(() => {
     const mobileQuery = window.matchMedia('(max-width: 720px)')
     const closePanelOnMobile = (event: MediaQueryListEvent) => {
-      if (event.matches) setShowPanel(false)
+      if (event.matches) closePanel()
     }
     mobileQuery.addEventListener('change', closePanelOnMobile)
     return () => mobileQuery.removeEventListener('change', closePanelOnMobile)
-  }, [])
+  }, [closePanel])
 
   const fileRef = useRef<HTMLInputElement>(null)
   const boardFileRef = useRef<HTMLInputElement>(null)
   const openFilePicker = () => fileRef.current?.click()
-  const { board, selected } = editor
-
   const toggleSlides = () => {
     const selectedItems = board.objects.filter((item) => selected.includes(item.id))
     if (!selectedItems.length) return
@@ -146,7 +155,7 @@ export default function App() {
           editor={editor}
           transfer={transfer}
           onImportBoard={() => boardFileRef.current?.click()}
-          onToggleSettings={() => setShowPanel((value) => !value)}
+          onToggleSettings={togglePanel}
           onOpenTour={() => setTourOpen(true)}
           onOpenPresentation={() => setPresentationOpen(true)}
         />
@@ -175,10 +184,7 @@ export default function App() {
             dockPosition={preferences.dockPosition}
             onDockChange={preferences.setDockPosition}
             onToggleSlides={toggleSlides}
-            onImportFiles={openFilePicker}
             keyboardNavigation={preferences.keyboardNavigation}
-            autoSnapShapes={preferences.autoSnapShapes}
-            onAutoSnapShapesChange={preferences.setAutoSnapShapes}
           />
           <ZoomControls
             zoom={viewport.zoom}
@@ -190,7 +196,7 @@ export default function App() {
             <PropertiesPanel
               item={board.objects.find((item) => item.id === selected[0])}
               onChange={editor.updateObject}
-              onClose={() => setShowPanel(false)}
+              onClose={closePanel}
             />
           )}
           {transfer.urlOpen && (

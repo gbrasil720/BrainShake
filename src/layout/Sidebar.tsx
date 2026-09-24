@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/button'
 import type { useBoardEditor } from '@/features/board/hooks/useBoardEditor'
 import type { useImportExport } from '@/features/import-export/hooks/useImportExport'
-import { BoxSelect, LayoutGrid, Link2, Menu, SlidersHorizontal, Upload, X } from 'lucide-react'
+import { LayoutGrid, Link2, Menu, Plus, SlidersHorizontal, Upload, X } from 'lucide-react'
 import { BoardList } from '@/features/board/components/BoardList'
-import { ExportMenu } from '@/features/import-export/components/ExportMenu'
 import { SidebarFooter } from './SidebarFooter'
 import { SidebarSettings } from './SidebarSettings'
 import { useEffect, useState, type CSSProperties } from 'react'
@@ -12,6 +11,12 @@ import { SnapshotList } from '@/features/workspace/SnapshotList'
 import type { useSnapshots } from '@/features/workspace/useSnapshots'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { STORAGE_KEYS } from '@/features/board/lib/storage'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 const MIN_SIDEBAR_WIDTH = 220
 const MAX_SIDEBAR_WIDTH = 560
@@ -112,6 +117,11 @@ export function Sidebar({
             className={`sidebar-tab ${page === 'workspace' ? 'active' : ''}`}
             role="tab"
             aria-selected={page === 'workspace'}
+            style={
+              page === 'workspace'
+                ? { background: 'var(--paper)', boxShadow: '0 1px 3px rgba(20, 24, 30, 0.08)' }
+                : { background: 'transparent', boxShadow: 'none' }
+            }
             title="Workspace"
             onClick={() => {
               setPage('workspace')
@@ -125,6 +135,11 @@ export function Sidebar({
             className={`sidebar-tab ${page === 'customize' ? 'active' : ''}`}
             role="tab"
             aria-selected={page === 'customize'}
+            style={
+              page === 'customize'
+                ? { background: 'var(--paper)', boxShadow: '0 1px 3px rgba(20, 24, 30, 0.08)' }
+                : { background: 'transparent', boxShadow: 'none' }
+            }
             title="Customize"
             onClick={() => {
               setPage('customize')
@@ -136,43 +151,37 @@ export function Sidebar({
         </div>
         {page === 'workspace' ? (
           <>
-            <div className="sidebar-section">
-              <div className="section-label">Workspace</div>
-              <Button
-                variant="ghost"
-                className="nav-item active"
-                onClick={() => setExpanded(false)}
-              >
-                <BoxSelect size={16} />
-                <span>Canvas</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className="nav-item"
-                onClick={() => {
-                  setExpanded(false)
-                  onImportFiles()
-                }}
-              >
-                <Upload size={16} />
-                <span>Import</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className="nav-item"
-                onClick={() => {
-                  setExpanded(false)
-                  transfer.openUrlDialog()
-                }}
-              >
-                <Link2 size={16} />
-                <span>Import image URL</span>
-              </Button>
-              <ExportMenu
-                onExport={transfer.exportAsBrainshake}
-                onExportJson={transfer.exportAsJson}
-              />
-            </div>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="workspace-add-button"
+                  title="Add to canvas"
+                  aria-label="Add to canvas"
+                >
+                  <Plus size={16} />
+                  <span>Add to canvas</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" sideOffset={8} className="workspace-actions-menu">
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setExpanded(false)
+                    onImportFiles()
+                  }}
+                >
+                  <Upload size={15} /> Import files
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setExpanded(false)
+                    transfer.openUrlDialog()
+                  }}
+                >
+                  <Link2 size={15} /> Add image from URL
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <BoardList
               boards={editor.boards}
               activeId={editor.board.id}

@@ -4,11 +4,6 @@ import { GithubIcon } from '@/components/icons/GithubIcon'
 export function SidebarFooter() {
   return (
     <div className="sidebar-foot">
-      <div className="sidebar-foot-copy">
-        Everything stays in your browser.
-        <br />
-        No account. No cloud. Just ideas.
-      </div>
       <div className="sidebar-links">
         <a
           className="sidebar-link"

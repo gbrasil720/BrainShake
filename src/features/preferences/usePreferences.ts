@@ -5,7 +5,7 @@ import { loadDockPosition } from './dockPosition'
 
 export function usePreferences() {
   const [theme, setTheme] = useLocalStorage(STORAGE_KEYS.theme, 'light')
-  const [accent, setAccent] = useLocalStorage(STORAGE_KEYS.accent, '#d86e50')
+  const [accent, setAccent] = useLocalStorage(STORAGE_KEYS.accent, '#0a84ff')
   const [dockPosition, setDockPosition] = useState(() => loadDockPosition(localStorage))
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.dock, JSON.stringify(dockPosition))
@@ -18,7 +18,7 @@ export function usePreferences() {
     true
   )
   const [enhancedFocus, setEnhancedFocus] = useLocalStorage(STORAGE_KEYS.enhancedFocus, true)
-  const [focusColor, setFocusColor] = useLocalStorage(STORAGE_KEYS.focusColor, '#d86e50')
+  const [focusColor, setFocusColor] = useLocalStorage(STORAGE_KEYS.focusColor, '#0a84ff')
   const [tutorialCompleted, setTutorialCompleted] = useLocalStorage(
     STORAGE_KEYS.tutorialCompleted,
     false
