@@ -1,5 +1,5 @@
 import type { Point } from '@/features/board/types'
-import { distance } from './geometry'
+import { distance, resample, rotate } from './geometry'
 
 // Convex hull (Andrew's monotone chain), counter-clockwise in screen coordinates,
 // without repeating the first point.
@@ -99,38 +99,40 @@ function thin(hull: Point[], limit: number) {
   )
 }
 
-// Largest triangle with its corners on the hull.
-export function largestTriangle(hull: Point[]): Point[] {
+// Largest polygon with `sides` corners on the hull, in hull order. For each
+// first corner, the best fan of triangles from it is built one corner at a time.
+export function largestPolygon(hull: Point[], sides: number): Point[] {
   const points = thin(hull, 40)
-  let best: Point[] = points.slice(0, 3)
+  const count = points.length
+  if (count <= sides) return points
+  const triangle = (a: Point, b: Point, c: Point) =>
+    Math.abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) / 2
+  let best: Point[] = points.slice(0, sides)
   let bestArea = -1
-  for (let a = 0; a < points.length; a++)
-    for (let b = a + 1; b < points.length; b++)
-      for (let c = b + 1; c < points.length; c++) {
-        const area = polygonArea([points[a], points[b], points[c]])
-        if (area > bestArea) {
-          bestArea = area
-          best = [points[a], points[b], points[c]]
-        }
-      }
-  return best
-}
-
-// Largest quadrilateral with its corners on the hull, in hull order.
-export function largestQuadrilateral(hull: Point[]): Point[] {
-  const points = thin(hull, 28)
-  let best: Point[] = points.slice(0, 4)
-  let bestArea = -1
-  for (let a = 0; a < points.length; a++)
-    for (let b = a + 1; b < points.length; b++)
-      for (let c = b + 1; c < points.length; c++)
-        for (let d = c + 1; d < points.length; d++) {
-          const area = polygonArea([points[a], points[b], points[c], points[d]])
-          if (area > bestArea) {
-            bestArea = area
-            best = [points[a], points[b], points[c], points[d]]
+  for (let first = 0; first < count; first++) {
+    const at = (index: number) => points[(first + index) % count]
+    // area[used][end]: largest fan from the first corner to `end` with `used` corners.
+    const area = Array.from({ length: sides + 1 }, () => new Array<number>(count).fill(-1))
+    const from = Array.from({ length: sides + 1 }, () => new Array<number>(count).fill(-1))
+    for (let end = 1; end < count; end++) area[2][end] = 0
+    for (let used = 3; used <= sides; used++)
+      for (let end = used - 1; end < count; end++)
+        for (let previous = used - 2; previous < end; previous++) {
+          if (area[used - 1][previous] < 0) continue
+          const total = area[used - 1][previous] + triangle(at(0), at(previous), at(end))
+          if (total > area[used][end]) {
+            area[used][end] = total
+            from[used][end] = previous
           }
         }
+    for (let end = sides - 1; end < count; end++) {
+      if (area[sides][end] <= bestArea) continue
+      bestArea = area[sides][end]
+      const corners = [end]
+      for (let used = sides; used > 2; used--) corners.unshift(from[used][corners[0]])
+      best = [0, ...corners].map(at)
+    }
+  }
   return best
 }
 
@@ -177,4 +179,60 @@ export function areaMoments(polygon: Point[]) {
     angle,
     radii: { major: 2 * Math.sqrt(major / size), minor: 2 * Math.sqrt(Math.max(0, minor) / size) }
   }
+}
+
+// The polygon stretched so its area moments are round: any ellipse becomes a
+// circle, and a stretched polygon keeps its corners.
+export function unstretch(polygon: Point[]): Point[] {
+  const { center, angle, radii } = areaMoments(polygon)
+  return rotate(polygon, -angle, center).map((point) => ({
+    x: (point.x - center.x) / radii.major,
+    y: (point.y - center.y) / radii.minor
+  }))
+}
+
+// The sharpest spots of a convex outline, sharpest first: where they are and how
+// much the outline turns there, as a share of the full turn. Each spot spans
+// `span` of the perimeter, so a rounded corner still counts as one; spots don't
+// overlap. A circle turns evenly, about `span` everywhere; a polygon turns almost
+// entirely at its corners.
+export function cornerTurns(hull: Point[], span = 0.06, count = 7): { share: number; at: Point }[] {
+  const ring = resample([...hull, hull[0]], 121).slice(0, -1)
+  const size = ring.length
+  const heading = ring.map((point, index) => {
+    const next = ring[(index + 1) % size]
+    return Math.atan2(next.y - point.y, next.x - point.x)
+  })
+  const turn = heading.map((value, index) => {
+    const delta = heading[(index + 1) % size] - value
+    return Math.max(0, Math.atan2(Math.sin(delta), Math.cos(delta)))
+  })
+  const total = turn.reduce((sum, value) => sum + value, 0)
+  const width = Math.max(1, Math.round(size * span))
+  const at = (index: number) => ((index % size) + size) % size
+  const windows = turn.map((_, start) => {
+    let sum = 0
+    for (let offset = 0; offset < width; offset++) sum += turn[at(start + offset)]
+    return sum
+  })
+  const taken = new Array<boolean>(size).fill(false)
+  const turns: { share: number; at: Point }[] = []
+  while (turns.length < count) {
+    let best = -1
+    for (let start = 0; start < size; start++) {
+      let free = true
+      for (let offset = 0; offset < width && free; offset++) free = !taken[at(start + offset)]
+      if (free && (best < 0 || windows[start] > windows[best])) best = start
+    }
+    if (best < 0) break
+    turns.push({
+      share: total ? windows[best] / total : 0,
+      at: ring[at(best + Math.floor(width / 2))]
+    })
+    // Keep a gap of half a spot on each side, so one corner isn't counted twice.
+    const pad = Math.floor(width / 2)
+    for (let offset = -pad; offset < width + pad; offset++) taken[at(best + offset)] = true
+  }
+  while (turns.length < count) turns.push({ share: 0, at: ring[0] })
+  return turns
 }
