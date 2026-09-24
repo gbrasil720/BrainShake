@@ -42,17 +42,18 @@ function TextFormatTooltip({
       <label title="Text color">
         <input
           type="color"
-          value={item.textColor || '#242a28'}
+          value={item.textColor || '#1d1d1f'}
           aria-label="Text color"
           onChange={(event) => onChange(item.id, { textColor: event.target.value })}
         />
       </label>
       <select
         className="text-font-input"
-        value={item.fontFamily || 'DM Sans'}
+        value={item.fontFamily || 'Lexend'}
         aria-label="Font family"
         onChange={(event) => onChange(item.id, { fontFamily: event.target.value })}
       >
+        <option value="Lexend">Lexend</option>
         <option value="DM Sans">DM Sans</option>
         <option value="Space Grotesk">Space Grotesk</option>
         <option value="JetBrains Mono NF">JetBrains Mono NF</option>

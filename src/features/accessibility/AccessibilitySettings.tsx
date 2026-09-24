@@ -1,13 +1,13 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { usePreferences } from '@/features/preferences/usePreferences'
-import { Minus, Plus, RotateCcw } from 'lucide-react'
 import { FONT_SIZES, normalizeFontSize } from './accessibility'
 
 const fontLabels = {
   small: 'Small',
   default: 'Default',
   large: 'Large',
-  'extra-large': 'Extra Large'
+  'extra-large': 'Extra large'
 } as const
 
 export function AccessibilitySettings({
@@ -17,102 +17,99 @@ export function AccessibilitySettings({
   preferences: ReturnType<typeof usePreferences>
   onOpenTour: () => void
 }) {
+  const [advancedOpen, setAdvancedOpen] = useState(false)
   const fontSize = normalizeFontSize(preferences.fontSize)
   const fontIndex = FONT_SIZES.indexOf(fontSize)
   const setFontAt = (index: number) => preferences.setFontSize(FONT_SIZES[index])
 
   return (
-    <section className="accessibility-settings" aria-labelledby="accessibility-heading">
-      <div className="settings-section-heading">
-        <h2 id="accessibility-heading">Accessibility</h2>
+    <section
+      className="customize-section accessibility-settings"
+      aria-labelledby="accessibility-heading"
+    >
+      <div className="customize-section-heading">
+        <h2 id="accessibility-heading" className="customize-section-title">
+          Accessibility
+        </h2>
         <Button variant="ghost" className="text-button" onClick={onOpenTour}>
-          Accessibility Tour
+          Tour
         </Button>
       </div>
-      <div className="settings-group">
-        <p className="settings-group-label">Text</p>
-        <div className="accessibility-row">
-          <div>
-            <strong>Font Size</strong>
-            <span>Adjust text across the workspace.</span>
-          </div>
-          <div className="font-size-control">
-            <Button
-              variant="ghost"
-              className="icon-button"
-              title="Decrease font size"
-              aria-label="Decrease font size"
-              disabled={fontIndex === 0}
-              onClick={() => setFontAt(fontIndex - 1)}
-            >
-              <Minus size={14} />
-            </Button>
-            <span aria-live="polite">{fontLabels[fontSize]}</span>
-            <Button
-              variant="ghost"
-              className="icon-button"
-              title="Increase font size"
-              aria-label="Increase font size"
-              disabled={fontIndex === FONT_SIZES.length - 1}
-              onClick={() => setFontAt(fontIndex + 1)}
-            >
-              <Plus size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              className="icon-button"
-              title="Reset font size"
-              aria-label="Reset font size"
-              onClick={() => preferences.setFontSize('default')}
-            >
-              <RotateCcw size={13} />
-            </Button>
-          </div>
+      <div className="customize-row accessibility-font-row">
+        <span>Text size</span>
+        <div
+          className="font-size-control"
+          role="group"
+          aria-label={`Text size: ${fontLabels[fontSize]}`}
+        >
+          <Button
+            variant="ghost"
+            className="font-size-step"
+            title="Decrease text size"
+            aria-label="Decrease text size"
+            disabled={fontIndex === 0}
+            onClick={() => setFontAt(fontIndex - 1)}
+          >
+            A−
+          </Button>
+          <span aria-live="polite">{fontLabels[fontSize]}</span>
+          <Button
+            variant="ghost"
+            className="font-size-step"
+            title="Increase text size"
+            aria-label="Increase text size"
+            disabled={fontIndex === FONT_SIZES.length - 1}
+            onClick={() => setFontAt(fontIndex + 1)}
+          >
+            A+
+          </Button>
         </div>
       </div>
-      <div className="settings-group">
-        <p className="settings-group-label">Visual</p>
-        <ToggleRow
-          label="High Contrast"
-          description="Increase contrast between text and surfaces."
-          value={preferences.highContrast}
-          onChange={() => preferences.setHighContrast((value) => !value)}
-        />
-        <ToggleRow
-          label="Reduce Motion"
-          description="Reduce animation and transition intensity."
-          value={preferences.reduceMotion}
-          onChange={() => preferences.setReduceMotion((value) => !value)}
-        />
-      </div>
-      <div className="settings-group">
-        <p className="settings-group-label">Navigation</p>
-        <ToggleRow
-          label="Keyboard Navigation"
-          description="Enable keyboard shortcuts and tool switching."
-          value={preferences.keyboardNavigation}
-          onChange={() => preferences.setKeyboardNavigation((value) => !value)}
-        />
-        <ToggleRow
-          label="Enhanced Focus"
-          description="Make the active keyboard focus easier to see."
-          value={preferences.enhancedFocus}
-          onChange={() => preferences.setEnhancedFocus((value) => !value)}
-        />
-        <div className="accessibility-row">
-          <div>
-            <strong>Focus Color</strong>
-            <span>Choose the color used by the enhanced focus ring.</span>
-          </div>
-          <input
-            className="focus-color-picker"
-            type="color"
-            value={preferences.focusColor}
-            aria-label="Enhanced focus color"
-            onChange={(event) => preferences.setFocusColor(event.target.value)}
+      <ToggleRow
+        label="High contrast"
+        value={preferences.highContrast}
+        onChange={() => preferences.setHighContrast((value) => !value)}
+      />
+      <ToggleRow
+        label="Reduce motion"
+        value={preferences.reduceMotion}
+        onChange={() => preferences.setReduceMotion((value) => !value)}
+      />
+      <Button
+        variant="ghost"
+        className="advanced-accessibility-trigger"
+        aria-expanded={advancedOpen}
+        onClick={() => setAdvancedOpen((current) => !current)}
+      >
+        More accessibility options
+        <span aria-hidden="true" className={`disclosure-chevron ${advancedOpen ? 'open' : ''}`} />
+      </Button>
+      {advancedOpen && (
+        <div className="advanced-accessibility-content">
+          <ToggleRow
+            label="Keyboard navigation"
+            description="Enable shortcuts and tool switching."
+            value={preferences.keyboardNavigation}
+            onChange={() => preferences.setKeyboardNavigation((value) => !value)}
           />
+          <ToggleRow
+            label="Enhanced focus"
+            description="Make keyboard focus easier to see."
+            value={preferences.enhancedFocus}
+            onChange={() => preferences.setEnhancedFocus((value) => !value)}
+          />
+          <label className="customize-row">
+            <span>Focus color</span>
+            <input
+              className="focus-color-picker"
+              type="color"
+              value={preferences.focusColor}
+              aria-label="Focus color"
+              onChange={(event) => preferences.setFocusColor(event.target.value)}
+            />
+          </label>
         </div>
-      </div>
+      )}
     </section>
   )
 }
@@ -124,23 +121,24 @@ export function ToggleRow({
   onChange
 }: {
   label: string
-  description: string
+  description?: string
   value: boolean
   onChange: () => void
 }) {
   return (
-    <div className="accessibility-row">
-      <div>
+    <div className="customize-row toggle-row">
+      <span className="toggle-row-copy">
         <strong>{label}</strong>
-        <span>{description}</span>
-      </div>
+        {description && <small>{description}</small>}
+      </span>
       <Button
         variant="ghost"
-        className={`segmented-toggle ${value ? 'on' : ''}`}
+        className={`switch-control ${value ? 'on' : ''}`}
+        aria-label={label}
         aria-pressed={value}
         onClick={onChange}
       >
-        {value ? 'On' : 'Off'}
+        <span />
       </Button>
     </div>
   )

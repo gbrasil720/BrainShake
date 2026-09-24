@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
@@ -6,24 +6,29 @@
 @custom-variant dark (&:is(.theme-dark *, .theme-oled *));
 
 :root {
-  font-family: 'DM Sans', sans-serif;
-  color: #242a28;
-  background: #f7f8f5;
+  font-family:
+    'Lexend',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  color: #1d1d1f;
+  background: #f5f5f7;
   font-synthesis: none;
-  --ink: #242a28;
-  --muted: #727974;
-  --line: #dfe4df;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --line: #d2d2d7;
   --paper: #ffffff;
-  --surface: #f7f8f5;
-  --primary: #d86e50;
+  --surface: #f5f5f7;
+  --primary: #0a84ff;
   --primary-soft: color-mix(in srgb, var(--primary) 14%, transparent);
-  --accent: #eef1ed;
-  --control-active: #e5eae5;
+  --accent: #f0f0f2;
+  --control-active: #e8e8ed;
   --green: #577d6a;
-  --stroke-color: #536b5d;
-  --shadow: 0 20px 50px rgba(33, 46, 40, 0.08);
+  --stroke-color: #1d1d1f;
+  --shadow: 0 20px 50px rgba(29, 29, 31, 0.08);
   --font-scale: 1;
-  --focus-ring: color-mix(in srgb, var(--focus-color, #d86e50) 28%, transparent);
+  --focus-ring: color-mix(in srgb, var(--focus-color, #0a84ff) 28%, transparent);
   --success-ink: #1a4f3d;
   --success-bg: rgba(87, 125, 106, 0.12);
   --warning-ink: #6d4d1b;
@@ -69,7 +74,7 @@ a:focus-visible,
 }
 .app {
   --accessibility-scale: var(--font-scale);
-  font-size: calc(13px * var(--font-scale));
+  font-size: calc(14px * var(--font-scale));
 }
 .font-size-small {
   --font-scale: 0.92;
@@ -147,14 +152,8 @@ a:focus-visible,
   object-fit: contain;
   border-radius: 8px;
 }
-.brand-logo {
-  animation: logo-shake 0.85s ease-in-out both;
-}
-.brand-logo:hover {
-  animation: logo-shake 0.7s ease-in-out;
-}
 .brand-name {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: inherit;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -779,7 +778,7 @@ a:focus-visible,
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
-  font-family: 'Space Grotesk';
+  font-family: inherit;
   font-size: 13px;
   font-weight: 600;
 }
@@ -869,7 +868,7 @@ a:focus-visible,
 .empty-state h1 {
   margin: 0 0 8px;
   color: var(--ink);
-  font-family: 'Space Grotesk';
+  font-family: inherit;
   font-size: 22px;
   letter-spacing: -0.04em;
 }
@@ -1339,7 +1338,7 @@ a:focus-visible,
   align-items: center;
   gap: 6px;
   color: var(--ink);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1455,7 +1454,7 @@ a:focus-visible,
 }
 .tour-title {
   color: var(--ink);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: inherit;
   font-size: 20px;
   letter-spacing: -0.04em;
 }
@@ -2072,27 +2071,6 @@ a:focus-visible,
     display: none;
   }
 }
-@keyframes logo-shake {
-  0%,
-  100% {
-    transform: translateX(0) rotate(0deg);
-  }
-  15% {
-    transform: translateX(-2px) rotate(6deg);
-  }
-  30% {
-    transform: translateX(3px) rotate(-5deg);
-  }
-  45% {
-    transform: translateX(-3px) rotate(4deg);
-  }
-  60% {
-    transform: translateX(2px) rotate(-3deg);
-  }
-  75% {
-    transform: translateX(-1px) rotate(2deg);
-  }
-}
 @keyframes menu-in {
   from {
     opacity: 0;
@@ -2183,7 +2161,7 @@ a:focus-visible,
 }
 
 .app {
-  font-size: calc(13px * var(--font-scale, 1));
+  font-size: calc(14px * var(--font-scale, 1));
 }
 
 .app button,
@@ -2299,7 +2277,10 @@ a:focus-visible,
 .settings-section-heading h2 {
   margin: 0;
   font:
-    600 15px 'Space Grotesk',
+    600 15px 'Lexend',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
     sans-serif;
 }
 
@@ -2410,7 +2391,10 @@ a:focus-visible,
 .tour-heading h2 {
   margin: 5px 0 0;
   font:
-    600 22px 'Space Grotesk',
+    600 22px 'Lexend',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
     sans-serif;
 }
 
@@ -2644,8 +2628,8 @@ kbd {
 }
 
 @theme inline {
-  --font-sans: 'DM Sans', sans-serif;
-  --font-heading: 'Space Grotesk', sans-serif;
+  --font-sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --color-background: var(--surface);
   --color-foreground: var(--ink);
   --color-popover: var(--paper);
